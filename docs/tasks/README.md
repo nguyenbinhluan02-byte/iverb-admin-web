@@ -4,8 +4,8 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 
 | ID | Tiêu đề | BE | Status |
 |---|---|---|---|
-| [TASK-001](./TASK-001-scaffold-auth-layout.md) | Scaffold, đăng nhập email + password, layout | TASK-015 | in-progress |
-| TASK-002 | Library, View, History | | todo |
+| [TASK-001](./TASK-001-scaffold-auth-layout.md) | Scaffold, đăng nhập email + password, layout | TASK-015 | done |
+| [TASK-002](./TASK-002-library.md) | Library, View, History | TASK-016 | in-progress |
 | TASK-003 | Form tạo / sửa / reuse câu hỏi | | todo |
 | TASK-004 | Schedule, Choose from library, Reuse calendar | | todo |
 | TASK-005 | Today + kiểm duyệt explanation | | todo |

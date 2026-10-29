@@ -14,6 +14,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_questions: { Args: never; Returns: Json }
+      admin_question_history: { Args: { p_question_id: number }; Returns: Json }
       claim_legacy_gift: {
         Args: { p_grant?: boolean; p_transactions: Json; p_user_id: string }
         Returns: Json
