@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "iverbs-400af"
+  },
+  "targets": {
+    "iverbs-400af": {
+      "hosting": {
+        "admin": ["iverbs-admin"]
+      }
+    }
+  }
+}
