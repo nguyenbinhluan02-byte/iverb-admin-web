@@ -20,7 +20,8 @@ Deploy web admin bằng GitHub Actions thay cho `yarn deploy` ở máy local. Ch
 ## Checklist
 - [x] Workflow + script.
 - [x] Kiểm tra build lấy `VITE_*` từ biến môi trường (thắng `.env.local`).
-- [ ] User: tạo site `iverbs-admin`, service account + secret `FIREBASE_SERVICE_ACCOUNT`, variables `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (project prod `gomejworljhapbfyorfj`).
+- [x] Firebase project riêng `iverbs-admin` (quyết định 2026-10-29, thay cho site phụ trong `iverbs-400af`), service account `id-github-actions-deploy`.
+- [ ] User: key JSON → secret + secret `FIREBASE_SERVICE_ACCOUNT`, variables `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (project prod `gomejworljhapbfyorfj`).
 - [ ] User: tài khoản admin trên Supabase production.
 - [ ] Chạy deploy đầu tiên.
 

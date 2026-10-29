@@ -6,7 +6,7 @@
 #
 # Setup (Settings → Environments → `production`):
 #   secret   FIREBASE_SERVICE_ACCOUNT  JSON key of a service account with the
-#                                      "Firebase Hosting Admin" role on iverbs-400af
+#                                      "Firebase Hosting Admin" role on iverbs-admin
 #   variable VITE_SUPABASE_URL         https://<prod ref>.supabase.co
 #   variable VITE_SUPABASE_ANON_KEY    anon (public) key of the production project
 # Never put a service_role key in a VITE_* variable: it ends up in public JS.
@@ -76,11 +76,11 @@ jobs:
       - run: yarn test
       - run: yarn build:prod
 
-      - name: Deploy to Firebase Hosting (site iverbs-admin)
+      - name: Deploy to Firebase Hosting (project iverbs-admin)
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          projectId: iverbs-400af
+          projectId: iverbs-admin
           target: admin
           channelId: live
 

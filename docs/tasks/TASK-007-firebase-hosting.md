@@ -5,7 +5,7 @@
 - **Branch:** chore/firebase-hosting
 
 ## Mục tiêu
-Deploy web admin (chỉ môi trường production) lên Firebase Hosting, site riêng `iverbs-admin` trong project `iverbs-400af` của app.
+Deploy web admin (chỉ môi trường production) lên Firebase Hosting, Firebase project riêng `iverbs-admin` (đổi 2026-10-29, ban đầu là site phụ trong `iverbs-400af`).
 
 ## Phạm vi
 **In scope**
