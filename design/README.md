@@ -61,6 +61,11 @@ Open the file directly in a browser to click through it (it needs `support.js` n
   - "Not published" = Upcoming + Drafts (not live).
 - Rows: grid `1fr | auto`. Badges (type, status, User submitted), text, author avatar. Actions: **View**, **History · N** (N = times used), then **Reuse** (published) or **Edit** (not published).
 - No date column (removed intentionally – usage dates live in History).
+- **Pagination** (below the list card, row `space-between`, gap 12, wraps): left "Showing 1–8 of N" (13/600 `#6E6E73`); right: ‹ prev, page numbers, › next (gap 6).
+  - Page size **8**. Buttons 34×34 (numbers min-width 34, padding 0 8), radius 9, border `1px #E4E4E7`, white, 13/700. Active page = bg/border `#17171A`, text white.
+  - Shows first, last, current ±1; gaps collapse to "…" (`#8E8E93`). Prev/next disabled at the ends (icon `#C7C7CC`).
+  - Page resets to 1 when search, Status, Added by, Type or Sort changes; page is clamped if results shrink. Hidden when there are no results.
+  - API: `GET /questions?…&page&pageSize=8` → `{ items, total }`.
 
 ### 4. New / Edit question (form)
 - Header kicker: "Add to schedule" / "Editing · …" / "Reusing · …" / "Reviewing submission"; H1 accordingly.
@@ -147,7 +152,7 @@ interface Explanation { id: string; name: string; pick: string; ok: boolean; tim
 Derived status: date < today → Published, = today → Live, > today → Scheduled/Draft.
 Usage history = all ScheduleEntries for the same question (or questions with identical content).
 
-UI state needed: current view, schedule mode (`next` | `month`) + month offset, library filters (query, status, source, type, sort), open dropdown id, modals (`pick` {day, query, status, source, type, sort, selected}, `reuse` {question, monthOffset, selectedDay}, `view` question, `history` question, reject, delete confirm), form draft, toast.
+UI state needed: current view, schedule mode (`next` | `month`) + month offset, library filters (query, status, source, type, sort) + library page, open dropdown id, modals (`pick` {day, query, status, source, type, sort, selected}, `reuse` {question, monthOffset, selectedDay}, `view` question, `history` question, reject, delete confirm), form draft, toast.
 
 Suggested endpoints: `GET /schedule?from&to`, `PUT /schedule/:date` (assign/move/replace), `GET /questions?status&source&type&q&sort`, `GET /questions/:id/usage`, `POST/PATCH /questions`, `GET /submissions?status`, `POST /submissions/:id/approve {date}`, `POST /submissions/:id/reject {reason,note}`, `GET /today`, explanation reply/delete/dismiss-report endpoints.
 

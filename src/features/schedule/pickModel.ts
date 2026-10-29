@@ -1,7 +1,9 @@
-import { matchesSource, type SourceFilter, type TypeFilter } from '@/features/library/filter'
-import { dayLabel, searchText } from '@/lib/question'
+import type { SourceFilter, TypeFilter } from '@/features/library/filter'
+import { dayLabel } from '@/lib/question'
 import type { Question } from '@/services/questions'
 
+// "Choose from library": api.admin_search_questions with p_pickable = true
+// (shown → copied, drafts / no day → moved; shown first).
 export type PickStatus = 'all' | 'published' | 'unpublished'
 export type PickSort = 'oldest' | 'recent'
 
@@ -19,48 +21,6 @@ export const DEFAULT_PICK: PickFilters = {
   source: 'all',
   type: 'all',
   sort: 'oldest',
-}
-
-/** Questions that can go on an empty day: shown before (copied), drafts and unscheduled (moved). */
-export function pickPool(questions: Question[]): Question[] {
-  return questions.filter(
-    (q) => q.status === 'published' || q.status === 'draft' || q.status === 'unscheduled',
-  )
-}
-
-const matchesStatus = (q: Question, s: PickStatus) =>
-  s === 'all' || (s === 'published') === (q.status === 'published')
-
-export function filterPool(pool: Question[], f: PickFilters): Question[] {
-  const query = f.query.trim().toLowerCase()
-  const rank = (q: Question) => (q.status === 'published' ? 0 : 1)
-  const byDate = (a: Question, b: Question) => {
-    // Undated last, then by id.
-    if (a.date !== b.date) {
-      if (!a.date) return 1
-      if (!b.date) return -1
-      return f.sort === 'oldest' ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date)
-    }
-    return a.id - b.id
-  }
-  return pool
-    .filter(
-      (q) =>
-        matchesStatus(q, f.status) &&
-        matchesSource(q, f.source) &&
-        (f.type === 'all' || q.type === f.type) &&
-        (!query || searchText(q).includes(query)),
-    )
-    .sort((a, b) => rank(a) - rank(b) || byDate(a, b))
-}
-
-export function countPool(pool: Question[], source: SourceFilter): Record<PickStatus, number> {
-  const bySource = pool.filter((q) => matchesSource(q, source))
-  return {
-    all: bySource.length,
-    published: bySource.filter((q) => matchesStatus(q, 'published')).length,
-    unpublished: bySource.filter((q) => matchesStatus(q, 'unpublished')).length,
-  }
 }
 
 export function pickWhen(q: Question): string {

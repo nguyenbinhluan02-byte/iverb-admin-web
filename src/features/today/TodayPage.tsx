@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { Avatar } from '@/components/Avatar'
 import { TypeBadge } from '@/components/Badge'
+import { LoadMore } from '@/components/LoadMore'
 import { Modal, ModalTitle } from '@/components/Modal'
 import { QuestionBody } from '@/features/library/QuestionBody'
 import { emptyDays } from '@/features/schedule/scheduleModel'
@@ -205,7 +206,9 @@ function QuestionCard({ question: q, stats }: { question: Question; stats: Today
 }
 
 function Explanations({ question, count }: { question: Question; count: number }) {
-  const { data: items, isPending, isError, error } = useExplanations(question.id)
+  const explanations = useExplanations(question.id)
+  const { isPending, isError, error } = explanations
+  const items = explanations.data?.pages.flatMap((p) => p.items)
   const remove = useRemoveExplanation()
   const [confirming, setConfirming] = useState<Explanation | null>(null)
 
@@ -265,6 +268,14 @@ function Explanations({ question, count }: { question: Question; count: number }
             </div>
           </div>
         ))}
+        {explanations.hasNextPage && (
+          <LoadMore
+            shown={items?.length ?? 0}
+            total={count}
+            loading={explanations.isFetchingNextPage}
+            onClick={() => explanations.fetchNextPage()}
+          />
+        )}
       </div>
 
       <Modal open={!!confirming} onClose={() => setConfirming(null)} maxWidth={420}>
