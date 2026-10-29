@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { useAuth } from '@/auth/useAuth'
 import { Button } from '@/components/Button'
@@ -103,6 +103,8 @@ function QuestionForm({
   requestedDate: string | null
 }) {
   const navigate = useNavigate()
+  const location = useLocation()
+  const backTo = (location.state as { from?: string } | null)?.from ?? '/schedule'
   const { me } = useAuth()
   const save = useSaveQuestion()
 
@@ -119,7 +121,11 @@ function QuestionForm({
   const locked = !!editing?.has_answers
 
   const defaultDate = (): string | null => {
-    if (editing) return editing.date
+    // Schedule → "Edit first" moves a draft to the chosen empty day.
+    if (editing)
+      return requestedDate && requestedDate > today && editing.status !== 'live'
+        ? requestedDate
+        : editing.date
     if (requestedDate && requestedDate > today) return requestedDate
     return days.find((d) => !taken.has(d)) ?? days[0]
   }
@@ -167,7 +173,7 @@ function QuestionForm({
       })
       const when = saved.date ? ` for ${dayLabel(saved.date)}` : ''
       toast.success(`${publish ? (live ? 'Saved' : 'Scheduled') : 'Draft saved'}${when}`)
-      navigate('/library')
+      navigate(backTo)
     } catch (e) {
       toast.error(errorMessage(e))
     }
@@ -465,7 +471,7 @@ function QuestionForm({
           </label>
 
           <div className="flex flex-wrap justify-end gap-2.5 border-t border-line pt-[18px]">
-            <Button variant="secondary" type="button" onClick={() => navigate(-1)}>
+            <Button variant="secondary" type="button" onClick={() => navigate(backTo)}>
               Cancel
             </Button>
             {!live && (

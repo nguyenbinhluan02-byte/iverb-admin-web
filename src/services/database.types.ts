@@ -30,6 +30,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_schedule_question: {
+        Args: { p_date: string; p_question_id: number }
+        Returns: Json
+      }
       claim_legacy_gift: {
         Args: { p_grant?: boolean; p_transactions: Json; p_user_id: string }
         Returns: Json
