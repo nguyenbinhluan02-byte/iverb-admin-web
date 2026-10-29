@@ -20,6 +20,24 @@ update private.profiles set role = 'admin', display_name = 'Tên hiển thị'
 where id = (select id from auth.users where email = '<email>');
 ```
 
+## Deploy (production → Firebase Hosting)
+Site `iverbs-admin` trong Firebase project `iverbs-400af` (cùng project với app). Chỉ có môi trường prod.
+
+Lần đầu:
+```bash
+npx -y firebase-tools@14 login                                   # tài khoản có quyền iverbs-400af
+npx -y firebase-tools@14 hosting:sites:create iverbs-admin --project iverbs-400af
+```
+
+Mỗi lần deploy:
+```bash
+# .env.production (không commit): URL + anon key của Supabase production
+yarn deploy        # test → build --mode production → firebase deploy --only hosting:admin
+```
+
+Trước khi deploy bản có RPC mới: `supabase db push` lên **production** ở repo `iverb-supabase` trước.
+Không bao giờ đặt `service_role` key vào biến `VITE_*` (bị đóng gói vào JS công khai).
+
 ## Tài liệu
 - Design: `design/README.md`
 - Task: `docs/tasks/`
