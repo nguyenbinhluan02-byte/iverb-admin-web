@@ -42,7 +42,7 @@ const renderAt = (path: string) =>
       <Routes>
         <Route path="/questions/new" element={<QuestionFormPage />} />
         <Route path="/questions/:id/edit" element={<QuestionFormPage />} />
-        <Route path="/library" element={<div>library</div>} />
+        <Route path="/schedule" element={<div>schedule</div>} />
       </Routes>
     </MemoryRouter>,
   )
@@ -86,7 +86,7 @@ describe('QuestionFormPage', () => {
         publish: true,
       }),
     )
-    expect(await screen.findByText('library')).toBeInTheDocument()
+    expect(await screen.findByText('schedule')).toBeInTheDocument()
   })
 
   it('warns when the picked day is taken', async () => {

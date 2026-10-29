@@ -111,3 +111,19 @@ export function useSaveQuestion() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: questionKeys.all }),
   })
 }
+
+/** Put a library question on an empty day: shown → copied, otherwise moved. */
+export function useScheduleQuestion() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, date }: { id: number; date: string }) => {
+      const { data, error } = await supabase.rpc('admin_schedule_question', {
+        p_question_id: id,
+        p_date: date,
+      })
+      if (error) throw error
+      return data as unknown as Question
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: questionKeys.all }),
+  })
+}

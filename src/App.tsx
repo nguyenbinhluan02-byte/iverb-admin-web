@@ -3,6 +3,7 @@ import { RequireAdmin } from '@/auth/RequireAdmin'
 import { AppLayout } from '@/components/AppLayout'
 import { LibraryPage } from '@/features/library/LibraryPage'
 import { QuestionFormPage } from '@/features/question-form/QuestionFormPage'
+import { SchedulePage } from '@/features/schedule/SchedulePage'
 import { ComingSoon } from '@/pages/ComingSoon'
 import { LoginPage } from '@/pages/LoginPage'
 
@@ -16,10 +17,7 @@ export function App() {
             path="/today"
             element={<ComingSoon kicker="Live now" title="Today" task="TASK-005" />}
           />
-          <Route
-            path="/schedule"
-            element={<ComingSoon kicker="Next 14 days" title="Schedule" task="TASK-004" />}
-          />
+          <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/questions/new" element={<QuestionFormPage />} />
           <Route path="/questions/:id/edit" element={<QuestionFormPage />} />

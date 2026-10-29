@@ -76,7 +76,7 @@ describe('LibraryPage', () => {
     expect(screen.getByText('Put the words in order. — She has been')).toBeInTheDocument()
     expect(screen.getByText('User submitted')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Reuse/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /Reuse/ })).toBeEnabled()
   })
 
   it('searches and filters', async () => {

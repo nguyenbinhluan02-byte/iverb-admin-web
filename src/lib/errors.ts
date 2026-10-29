@@ -6,6 +6,7 @@ const MESSAGES: Record<string, string> = {
   read_only: 'This question was already shown and can no longer be changed.',
   invalid_date: 'Pick a day from tomorrow on.',
   live_must_publish: "Today's question has to stay published.",
+  day_taken: 'That day already has a question. Pick an empty day.',
   has_answers: 'Users already answered this question, so its answers can no longer change.',
   'Invalid login credentials': 'Wrong email or password.',
 }

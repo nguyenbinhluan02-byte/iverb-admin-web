@@ -9,6 +9,9 @@ import {
 } from 'lucide-react'
 import { NavLink } from 'react-router'
 import { useAuth } from '@/auth/useAuth'
+import { emptyDays } from '@/features/schedule/scheduleModel'
+import { todayUTC } from '@/lib/dates'
+import { useQuestions } from '@/services/questions'
 import { Avatar } from './Avatar'
 
 const NAV: { to: string; label: string; icon: LucideIcon }[] = [
@@ -21,6 +24,11 @@ const NAV: { to: string; label: string; icon: LucideIcon }[] = [
 
 export function Sidebar() {
   const { me, signOut } = useAuth()
+  const { data: questions } = useQuestions()
+  // Grey badge: empty days in the next 14 (design).
+  const badges: Record<string, number> = {
+    '/schedule': questions ? emptyDays(questions, todayUTC()).length : 0,
+  }
 
   return (
     <aside className="sticky top-0 flex h-screen w-[228px] flex-[0_0_228px] flex-col border-r border-line bg-card px-3.5 py-[22px]">
@@ -48,6 +56,11 @@ export function Sidebar() {
           >
             <Icon size={18} strokeWidth={2} />
             <span className="flex-1">{label}</span>
+            {!!badges[to] && (
+              <span className="flex h-5 min-w-[22px] items-center justify-center rounded-full border border-line-strong bg-page px-1.5 text-[11px] font-extrabold text-ink">
+                {badges[to]}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>

@@ -11,10 +11,8 @@ import {
   Pencil,
   RefreshCw,
   Search,
-  Shield,
   Type,
   User,
-  Users,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
@@ -22,10 +20,10 @@ import { Avatar } from '@/components/Avatar'
 import { StatusBadge, TypeBadge, UserSubmittedBadge } from '@/components/Badge'
 import { FilterDropdown, type FilterOption } from '@/components/FilterDropdown'
 import { PageHeader } from '@/components/PageHeader'
-import { TYPE_ICONS } from '@/components/typeIcons'
 import { errorMessage } from '@/lib/errors'
-import { authorName, displayText, isUserSubmitted, TYPE_LABELS } from '@/lib/question'
-import { useQuestions, type Question, type QType } from '@/services/questions'
+import { authorName, displayText, isUserSubmitted } from '@/lib/question'
+import { ReuseDialog } from '@/features/schedule/ReuseDialog'
+import { useQuestions, type Question } from '@/services/questions'
 import {
   countFilters,
   DEFAULT_FILTERS,
@@ -36,12 +34,9 @@ import {
   type StatusFilter,
   type TypeFilter,
 } from './filter'
+import { GREEN_TINT, ORANGE_TINT, sourceOptions, typeOptions } from './filterOptions'
 import { HistoryDialog } from './HistoryDialog'
 import { QuestionViewDialog } from './QuestionViewDialog'
-
-const GREEN = { iconColor: 'var(--color-green-text)', iconBg: 'rgba(31,169,113,.12)' }
-const ORANGE = { iconColor: 'var(--color-brand-deep)', iconBg: 'rgba(242,113,28,.12)' }
-const TYPE_TINT = { iconColor: 'var(--color-brand-deep)', iconBg: 'rgba(242,113,28,.1)' }
 
 const rowButton = 'flex items-center gap-1.5 rounded-[9px] px-3 py-2 text-[13px] whitespace-nowrap'
 
@@ -77,12 +72,13 @@ export function LibraryPage() {
   const [filters, setFilters] = useLibraryFilters()
   const [viewing, setViewing] = useState<Question | null>(null)
   const [history, setHistory] = useState<Question | null>(null)
+  const [reusing, setReusing] = useState<Question | null>(null)
 
   const all = useMemo(() => questions ?? [], [questions])
   const rows = useMemo(() => filterQuestions(all, filters), [all, filters])
   const counts = useMemo(() => countFilters(all, filters.source), [all, filters.source])
 
-  const edit = (q: Question) => navigate(`/questions/${q.id}/edit`)
+  const edit = (q: Question) => navigate(`/questions/${q.id}/edit`, { state: { from: '/library' } })
 
   const statusOptions: FilterOption<StatusFilter>[] = [
     { value: 'all', label: 'All', icon: Layers, count: counts.status.all },
@@ -91,7 +87,7 @@ export function LibraryPage() {
       label: 'Published',
       icon: CircleCheck,
       count: counts.status.published,
-      ...GREEN,
+      ...GREEN_TINT,
     },
     {
       value: 'unpublished',
@@ -104,36 +100,9 @@ export function LibraryPage() {
       label: 'Upcoming',
       icon: CalendarDays,
       count: counts.status.upcoming,
-      ...ORANGE,
+      ...ORANGE_TINT,
     },
     { value: 'draft', label: 'Drafts', icon: Pencil, count: counts.status.draft },
-  ]
-  const sourceOptions: FilterOption<SourceFilter>[] = [
-    { value: 'all', label: 'Anyone', icon: Users, count: counts.sources.all },
-    {
-      value: 'admin',
-      label: 'Admins',
-      icon: Shield,
-      count: counts.sources.admin,
-      iconColor: 'var(--color-ink)',
-    },
-    {
-      value: 'user',
-      label: 'Users',
-      icon: User,
-      count: counts.sources.user,
-      iconColor: 'var(--color-blue-text)',
-      iconBg: 'rgba(91,108,240,.12)',
-    },
-  ]
-  const typeOptions: FilterOption<TypeFilter>[] = [
-    { value: 'all', label: 'All', icon: Type },
-    ...(Object.keys(TYPE_LABELS) as QType[]).map((t) => ({
-      value: t,
-      label: TYPE_LABELS[t],
-      icon: TYPE_ICONS[t],
-      ...TYPE_TINT,
-    })),
   ]
   const sortOptions: FilterOption<SortOrder>[] = [
     { value: 'newest', label: 'Newest date first', icon: ArrowDown },
@@ -166,14 +135,14 @@ export function LibraryPage() {
           label="Added by"
           icon={User}
           value={filters.source}
-          options={sourceOptions}
+          options={sourceOptions(counts.sources)}
           onChange={(source) => setFilters({ source })}
         />
         <FilterDropdown
           label="Type"
           icon={Type}
           value={filters.type}
-          options={typeOptions}
+          options={typeOptions()}
           onChange={(type) => setFilters({ type })}
         />
         <FilterDropdown
@@ -234,12 +203,10 @@ export function LibraryPage() {
                 </span>
               </button>
               {q.status === 'published' ? (
-                // Reuse calendar comes with the Schedule screen (TASK-004).
                 <button
                   type="button"
-                  disabled
-                  title="Coming soon"
-                  className={`${rowButton} bg-[rgba(242,113,28,.12)] px-3.5 font-extrabold text-brand-deep disabled:opacity-50`}
+                  onClick={() => setReusing(q)}
+                  className={`${rowButton} bg-[rgba(242,113,28,.12)] px-3.5 font-extrabold text-brand-deep hover:bg-[rgba(242,113,28,.2)]`}
                 >
                   <RefreshCw size={14} strokeWidth={2.4} />
                   Reuse
@@ -269,8 +236,13 @@ export function LibraryPage() {
           setViewing(null)
           edit(q)
         }}
+        onReuse={(q) => {
+          setViewing(null)
+          setReusing(q)
+        }}
       />
       <HistoryDialog question={history} onClose={() => setHistory(null)} />
+      <ReuseDialog question={reusing} onClose={() => setReusing(null)} />
     </div>
   )
 }
