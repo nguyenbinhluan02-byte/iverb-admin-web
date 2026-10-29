@@ -14,7 +14,7 @@ import {
   Type,
   User,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Avatar } from '@/components/Avatar'
 import { StatusBadge, TypeBadge, UserSubmittedBadge } from '@/components/Badge'
@@ -24,8 +24,14 @@ import { errorMessage } from '@/lib/errors'
 import { authorName, displayText, isUserSubmitted } from '@/lib/question'
 import { ReuseDialog } from '@/features/schedule/ReuseDialog'
 import { useDebounced } from '@/lib/useDebounced'
-import { useQuestionSearch, type Question, type SearchCounts } from '@/services/questions'
-import { LoadMore } from '@/components/LoadMore'
+import { pageCount } from '@/lib/pagination'
+import {
+  LIBRARY_PAGE_SIZE,
+  useQuestionPage,
+  type Question,
+  type SearchCounts,
+} from '@/services/questions'
+import { Pagination } from '@/components/Pagination'
 import {
   DEFAULT_FILTERS,
   type LibraryFilters,
@@ -45,8 +51,9 @@ const EMPTY_COUNTS: SearchCounts = {
 
 const rowButton = 'flex items-center gap-1.5 rounded-[9px] px-3 py-2 text-[13px] whitespace-nowrap'
 
-// Filters live in the URL so a filtered list can be shared / reloaded.
-function useLibraryFilters(): [LibraryFilters, (patch: Partial<LibraryFilters>) => void] {
+// Filters and the page live in the URL so a list can be shared / reloaded.
+// Changing a filter goes back to page 1 (design).
+function useLibraryFilters() {
   const [params, setParams] = useSearchParams()
   const filters: LibraryFilters = {
     query: params.get('q') ?? DEFAULT_FILTERS.query,
@@ -55,35 +62,45 @@ function useLibraryFilters(): [LibraryFilters, (patch: Partial<LibraryFilters>) 
     type: (params.get('type') as TypeFilter) ?? DEFAULT_FILTERS.type,
     sort: (params.get('sort') as SortOrder) ?? DEFAULT_FILTERS.sort,
   }
-  const update = (patch: Partial<LibraryFilters>) => {
-    const next = { ...filters, ...patch }
+  const page = Math.max(1, Number(params.get('page')) || 1)
+
+  const write = (next: LibraryFilters, nextPage: number) => {
     const entries: [string, string, string][] = [
       ['q', next.query, DEFAULT_FILTERS.query],
       ['status', next.status, DEFAULT_FILTERS.status],
       ['by', next.source, DEFAULT_FILTERS.source],
       ['type', next.type, DEFAULT_FILTERS.type],
       ['sort', next.sort, DEFAULT_FILTERS.sort],
+      ['page', String(nextPage), '1'],
     ]
     setParams(Object.fromEntries(entries.filter(([, v, d]) => v !== d).map(([k, v]) => [k, v])), {
       replace: true,
     })
   }
-  return [filters, update]
+  const setFilters = (patch: Partial<LibraryFilters>) => write({ ...filters, ...patch }, 1)
+  const setPage = (next: number) => write(filters, next)
+  return { filters, setFilters, page, setPage }
 }
 
 export function LibraryPage() {
   const navigate = useNavigate()
-  const [filters, setFilters] = useLibraryFilters()
+  const { filters, setFilters, page, setPage } = useLibraryFilters()
   const [viewing, setViewing] = useState<Question | null>(null)
   const [history, setHistory] = useState<Question | null>(null)
   const [reusing, setReusing] = useState<Question | null>(null)
 
   // Typing in the search box should not fire a request per key press.
   const query = useDebounced(filters.query)
-  const search = useQuestionSearch({ ...filters, query })
-  const rows = search.data?.pages.flatMap((p) => p.items) ?? []
-  const first = search.data?.pages[0]
-  const counts = first?.counts ?? EMPTY_COUNTS
+  const result = useQuestionPage({ ...filters, query }, page)
+  const rows = result.data?.items ?? []
+  const total = result.data?.total ?? 0
+  const counts = result.data?.counts ?? EMPTY_COUNTS
+
+  // Results shrank (e.g. after a delete elsewhere): clamp to the last page.
+  const pages = pageCount(total, LIBRARY_PAGE_SIZE)
+  useEffect(() => {
+    if (result.isSuccess && !result.isPlaceholderData && page > pages) setPage(pages)
+  })
 
   const edit = (q: Question) => navigate(`/questions/${q.id}/edit`, { state: { from: '/library' } })
 
@@ -162,9 +179,9 @@ export function LibraryPage() {
       </div>
 
       <div className="overflow-hidden rounded-[18px] border border-line bg-card">
-        {search.isPending && <Message>Loading questions…</Message>}
-        {search.isError && <Message>{errorMessage(search.error)}</Message>}
-        {search.isSuccess && rows.length === 0 && (
+        {result.isPending && <Message>Loading questions…</Message>}
+        {result.isError && <Message>{errorMessage(result.error)}</Message>}
+        {result.isSuccess && rows.length === 0 && (
           <Message>No questions match your search.</Message>
         )}
         {rows.map((q, i) => (
@@ -232,15 +249,9 @@ export function LibraryPage() {
             </div>
           </div>
         ))}
-        {search.hasNextPage && (
-          <LoadMore
-            shown={rows.length}
-            total={first?.total}
-            loading={search.isFetchingNextPage}
-            onClick={() => search.fetchNextPage()}
-          />
-        )}
       </div>
+
+      <Pagination page={page} size={LIBRARY_PAGE_SIZE} total={total} onChange={setPage} />
 
       <QuestionViewDialog
         question={viewing}

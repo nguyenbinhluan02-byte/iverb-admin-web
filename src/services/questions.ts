@@ -59,6 +59,7 @@ export interface QuestionUse {
 export const questionKeys = {
   all: ['questions'] as const,
   search: (params: SearchParams) => ['questions', 'search', params] as const,
+  page: (params: SearchParams, page: number) => ['questions', 'page', params, page] as const,
   history: (id: number) => ['questions', id, 'history'] as const,
 }
 
@@ -99,20 +100,42 @@ interface SearchPage {
 }
 
 const SEARCH_PAGE_SIZE = 30
+export const LIBRARY_PAGE_SIZE = 8
 
-/** Server-side filtered library, cursor paged (api.admin_search_questions). */
+const searchArgs = (params: SearchParams) => ({
+  p_query: params.query.trim() || undefined,
+  p_status: params.status,
+  p_source: params.source,
+  p_type: params.type === 'all' ? undefined : params.type,
+  p_sort: params.sort,
+  p_pickable: params.pickable ?? false,
+})
+
+/** One numbered page of the library (1-based), api.admin_search_questions + p_offset. */
+export function useQuestionPage(params: SearchParams, page: number) {
+  return useQuery({
+    queryKey: questionKeys.page(params, page),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('admin_search_questions', {
+        ...searchArgs(params),
+        p_limit: LIBRARY_PAGE_SIZE,
+        p_offset: (page - 1) * LIBRARY_PAGE_SIZE,
+      })
+      if (error) throw error
+      return data as unknown as SearchPage
+    },
+    placeholderData: keepPreviousData,
+  })
+}
+
+/** Server-side filtered questions, cursor paged for Load more (Choose from library). */
 export function useQuestionSearch(params: SearchParams) {
   return useInfiniteQuery({
     queryKey: questionKeys.search(params),
     initialPageParam: null as Json | null,
     queryFn: async ({ pageParam }) => {
       const { data, error } = await supabase.rpc('admin_search_questions', {
-        p_query: params.query.trim() || undefined,
-        p_status: params.status,
-        p_source: params.source,
-        p_type: params.type === 'all' ? undefined : params.type,
-        p_sort: params.sort,
-        p_pickable: params.pickable ?? false,
+        ...searchArgs(params),
         p_limit: SEARCH_PAGE_SIZE,
         p_cursor: pageParam ?? undefined,
       })
