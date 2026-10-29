@@ -1,0 +1,93 @@
+# Deploy the admin web to Firebase Hosting (production only).
+#
+#   Run from a release/vX.Y.Z branch, type the version again to confirm. The
+#   version must not be older than the current production release (tag
+#   prod-vX.Y.Z of this repo) and the branch must contain that release.
+#
+# Setup (Settings → Environments → `production`):
+#   secret   FIREBASE_SERVICE_ACCOUNT  JSON key of a service account with the
+#                                      "Firebase Hosting Admin" role on iverbs-400af
+#   variable VITE_SUPABASE_URL         https://<prod ref>.supabase.co
+#   variable VITE_SUPABASE_ANON_KEY    anon (public) key of the production project
+# Never put a service_role key in a VITE_* variable: it ends up in public JS.
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_version:
+        description: "Type the release version exactly as in the branch name (e.g. v1.0.0)"
+        type: string
+        required: true
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: write # prod-vX.Y.Z tag
+
+jobs:
+  check:
+    name: Check release branch
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Release branch and confirmation
+        id: release
+        env:
+          BRANCH: ${{ github.ref_name }}
+          CONFIRM: ${{ inputs.confirm_version }}
+        run: .github/scripts/check-release.sh "$BRANCH" "$CONFIRM"
+
+  deploy:
+    name: Deploy to production
+    needs: check
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Check Supabase config
+        run: |
+          if [[ -z "$VITE_SUPABASE_URL" || -z "$VITE_SUPABASE_ANON_KEY" ]]; then
+            echo "::error::Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY on the production environment."
+            exit 1
+          fi
+          echo "Supabase: $VITE_SUPABASE_URL" >> "$GITHUB_STEP_SUMMARY"
+
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: yarn test
+      - run: yarn build:prod
+
+      - name: Deploy to Firebase Hosting (site iverbs-admin)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: iverbs-400af
+          target: admin
+          channelId: live
+
+      - name: Tag production release
+        env:
+          VERSION: ${{ needs.check.outputs.version }}
+        run: |
+          git tag -f "prod-$VERSION"
+          git push -f origin "prod-$VERSION"
+          echo "Deployed **$VERSION** to https://iverbs-admin.web.app (tag \`prod-$VERSION\`)." >> "$GITHUB_STEP_SUMMARY"
