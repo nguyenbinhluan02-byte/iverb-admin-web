@@ -16,3 +16,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-010](./TASK-010-library-pagination.md) | Library phân trang theo số trang (design mới) | TASK-022 | done |
 | [TASK-011](./TASK-011-dropdown-in-modal.md) | Fix: dropdown lọc không mở được trong Choose from library | | done |
 | [TASK-012](./TASK-012-rename-iverbs-admin.md) | Đổi tên hiển thị "Quiz Admin" → "IVerbs Admin" | | done |
+| [TASK-013](./TASK-013-login-me-error.md) | Fix: đăng nhập im lặng khi `get_me` lỗi, không gọi lại sau khi sửa server | | done |
