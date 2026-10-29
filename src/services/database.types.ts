@@ -14,6 +14,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_explanations_page: {
+        Args: { p_cursor?: Json; p_limit?: number; p_question_id: number }
+        Returns: Json
+      }
       admin_get_today: { Args: never; Returns: Json }
       admin_list_explanations: {
         Args: { p_limit?: number; p_question_id: number }
@@ -38,6 +42,19 @@ export type Database = {
       }
       admin_schedule_question: {
         Args: { p_date: string; p_question_id: number }
+        Returns: Json
+      }
+      admin_search_questions: {
+        Args: {
+          p_cursor?: Json
+          p_limit?: number
+          p_pickable?: boolean
+          p_query?: string
+          p_sort?: string
+          p_source?: string
+          p_status?: string
+          p_type?: string
+        }
         Returns: Json
       }
       claim_legacy_gift: {

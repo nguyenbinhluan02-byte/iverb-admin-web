@@ -1,5 +1,5 @@
 import { CircleCheck, Clock, EyeOff, History, Layers, Search, Type, User } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { FilterDropdown, type FilterOption } from '@/components/FilterDropdown'
@@ -9,12 +9,11 @@ import { GREEN_TINT, sourceOptions, typeOptions } from '@/features/library/filte
 import { todayUTC } from '@/lib/dates'
 import { errorMessage } from '@/lib/errors'
 import { dayLabel, displayText, isUserSubmitted, TYPE_LABELS } from '@/lib/question'
-import { useQuestions, useScheduleQuestion } from '@/services/questions'
+import { LoadMore } from '@/components/LoadMore'
+import { useDebounced } from '@/lib/useDebounced'
+import { useQuestionSearch, useScheduleQuestion, type Question } from '@/services/questions'
 import {
-  countPool,
   DEFAULT_PICK,
-  filterPool,
-  pickPool,
   pickWhen,
   type PickFilters,
   type PickSort,
@@ -39,16 +38,21 @@ export function PickFromLibraryDialog({
 
 function Picker({ date, onClose }: { date: string; onClose: () => void }) {
   const navigate = useNavigate()
-  const { data: questions = [] } = useQuestions()
   const schedule = useScheduleQuestion()
   const [filters, setFilters] = useState<PickFilters>(DEFAULT_PICK)
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [selected, setSelected] = useState<Question | null>(null)
   const set = (patch: Partial<PickFilters>) => setFilters((f) => ({ ...f, ...patch }))
 
-  const pool = useMemo(() => pickPool(questions), [questions])
-  const rows = useMemo(() => filterPool(pool, filters), [pool, filters])
-  const counts = countPool(pool, filters.source)
-  const selected = pool.find((q) => q.id === selectedId) ?? null
+  const query = useDebounced(filters.query)
+  const search = useQuestionSearch({
+    ...filters,
+    query,
+    sort: filters.sort === 'oldest' ? 'oldest' : 'newest',
+    pickable: true,
+  })
+  const rows = search.data?.pages.flatMap((p) => p.items) ?? []
+  const first = search.data?.pages[0]
+  const counts = first?.counts.status ?? { all: 0, published: 0, unpublished: 0 }
 
   const statusOptions: FilterOption<PickStatus>[] = [
     { value: 'all', label: 'All', icon: Layers, count: counts.all },
@@ -144,14 +148,14 @@ function Picker({ date, onClose }: { date: string; onClose: () => void }) {
 
       <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-3 py-2" role="radiogroup">
         {rows.map((q) => {
-          const on = q.id === selectedId
+          const on = q.id === selected?.id
           return (
             <button
               key={q.id}
               type="button"
               role="radio"
               aria-checked={on}
-              onClick={() => setSelectedId(q.id)}
+              onClick={() => setSelected(q)}
               className={`mb-1.5 grid w-full grid-cols-[20px_minmax(0,1fr)] items-start gap-3 rounded-xl border-[1.5px] p-3 text-left text-ink ${
                 on ? 'border-brand bg-brand-tint-2' : 'border-line bg-card'
               }`}
@@ -183,16 +187,31 @@ function Picker({ date, onClose }: { date: string; onClose: () => void }) {
             </button>
           )
         })}
-        {rows.length === 0 && (
+        {search.isPending && (
+          <div className="px-4 py-10 text-center text-sm font-semibold text-muted">Loading…</div>
+        )}
+        {search.isError && (
+          <div className="px-4 py-10 text-center text-sm font-semibold text-muted">
+            {errorMessage(search.error)}
+          </div>
+        )}
+        {search.isSuccess && rows.length === 0 && (
           <div className="px-4 py-10 text-center text-sm font-semibold text-muted">
             No questions match these filters.
           </div>
+        )}
+        {search.hasNextPage && (
+          <LoadMore
+            shown={rows.length}
+            loading={search.isFetchingNextPage}
+            onClick={() => search.fetchNextPage()}
+          />
         )}
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-line px-6 py-3.5">
         <span className="text-[13px] font-semibold text-muted">
-          {rows.length} question{rows.length === 1 ? '' : 's'}
+          {first?.total ?? 0} question{first?.total === 1 ? '' : 's'}
         </span>
         <div className="flex gap-2">
           <button

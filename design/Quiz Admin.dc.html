@@ -405,6 +405,19 @@
             </div>
           </sc-for>
         </div>
+        <sc-if value="{{ showLibPager }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+            <span style="font-size:13px;font-weight:600;color:#6E6E73">{{ libRange }}</span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button onClick="{{ libPrev }}" disabled="{{ libPrevOff }}" title="Previous page" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:9px;border:1px solid #E4E4E7;background:#fff;cursor:pointer;color:{{ libPrevColor }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+              <sc-for list="{{ libPageBtns }}" as="p" hint-placeholder-count="3">
+                <sc-if value="{{ p.isNum }}"><button onClick="{{ p.onClick }}" style="min-width:34px;height:34px;padding:0 8px;border-radius:9px;border:1px solid {{ p.border }};background:{{ p.bg }};color:{{ p.color }};font-size:13px;font-weight:700;cursor:pointer">{{ p.label }}</button></sc-if>
+                <sc-if value="{{ p.isGap }}"><span style="min-width:20px;text-align:center;font-size:13px;color:#8E8E93">…</span></sc-if>
+              </sc-for>
+              <button onClick="{{ libNext }}" disabled="{{ libNextOff }}" title="Next page" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:9px;border:1px solid #E4E4E7;background:#fff;cursor:pointer;color:{{ libNextColor }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
+            </div>
+          </div>
+        </sc-if>
       </div>
     </sc-if>
 
@@ -1338,7 +1351,7 @@ class Component extends DCLogic {
     }));
     const lq = s.libQuery.trim().toLowerCase();
     const LST = { past: ['Published', '#F2F2F3', '#6E6E73'], live: ['Live today', 'rgba(242,113,28,0.12)', '#C25A14'], upcoming: ['Scheduled', 'rgba(31,169,113,0.12)', '#137A51'], draft: ['Draft', '#F2F2F3', '#6E6E73'] };
-    const libRows = (s.libSort === 'oldest' ? [...all].reverse() : all).filter(x => {
+    const libAllRows = (s.libSort === 'oldest' ? [...all].reverse() : all).filter(x => {
       const k = stOf(x);
       if (!srcOk(x)) return false;
       if ((s.libType || 'all') !== 'all' && x.type !== s.libType) return false;
@@ -1354,6 +1367,13 @@ class Component extends DCLogic {
         authInit: initials(x.author), authColor: colorFor(x.author), borderTop: i ? '1px solid #ECECEE' : 'none', hasStats: !!x.answers, stats: x.answers ? `${x.answers.toLocaleString('en-US')} answers · ${x.correct}% correct` : '',
         canReuse: k === 'past', canEdit: k !== 'past', onReuse: () => this.setState({ reuse: { x, m: 0, sel: null } }), onEdit: () => this.openEdit(x.off) };
     });
+    const PS = 8, libPages = Math.max(1, Math.ceil(libAllRows.length / PS)), libPage = Math.min(s.libPage || 1, libPages);
+    const libRows = libAllRows.slice((libPage - 1) * PS, libPage * PS).map((r, i) => ({ ...r, borderTop: i ? '1px solid #ECECEE' : 'none' }));
+    const goLibPage = p => this.setState({ libPage: Math.max(1, Math.min(libPages, p)) });
+    const pgNums = [];
+    for (let p = 1; p <= libPages; p++) { if (p === 1 || p === libPages || Math.abs(p - libPage) <= 1) pgNums.push(p); else if (pgNums[pgNums.length - 1] !== '…') pgNums.push('…'); }
+    const libPageBtns = pgNums.map(p => ({ label: String(p), isGap: p === '…', isNum: p !== '…', onClick: () => goLibPage(p),
+      bg: p === libPage ? '#17171A' : '#fff', color: p === libPage ? '#fff' : '#17171A', border: p === libPage ? '#17171A' : '#E4E4E7' }));
     const formDups = this.findDups(f, [f.editing, f.reuseOf].filter(v => v !== null && v !== undefined));
 
     // SUBMISSIONS
@@ -1519,8 +1539,11 @@ class Component extends DCLogic {
       libFilterVal: s.libFilter, libSrcVal: libSrc, libTypeVal: s.libType || 'all', libSortVal: s.libSort || 'newest',
       libStAll: `All (${libCounts.all})`, libStPast: `Published (${libCounts.past})`, libStUnpub: `Not published (${libCounts.unpub})`, libStUp: `Upcoming (${libCounts.upcoming})`, libStDraft: `Drafts (${libCounts.draft})`,
       libSrcAll: libSrcChips[0].label + ` (${libSrcChips[0].count})`, libSrcAdmin: libSrcChips[1].label + ` (${libSrcChips[1].count})`, libSrcUsers: libSrcChips[2].label + ` (${libSrcChips[2].count})`,
-      onLibFilter: e => this.setState({ libFilter: e.target.value }), onLibSrc: e => this.setState({ libSrc: e.target.value }),
-      onLibType: e => this.setState({ libType: e.target.value }), onLibSort: e => this.setState({ libSort: e.target.value }), libEmpty: libRows.length === 0, libTotal: all.length, libQuery: s.libQuery, onLibQuery: e => this.setState({ libQuery: e.target.value }),
+      onLibFilter: e => this.setState({ libFilter: e.target.value, libPage: 1 }), onLibSrc: e => this.setState({ libSrc: e.target.value, libPage: 1 }),
+      onLibType: e => this.setState({ libType: e.target.value, libPage: 1 }), onLibSort: e => this.setState({ libSort: e.target.value, libPage: 1 }), libEmpty: libRows.length === 0, libPageBtns, showLibPager: libAllRows.length > 0,
+      libRange: libAllRows.length ? `Showing ${(libPage - 1) * PS + 1}–${Math.min(libPage * PS, libAllRows.length)} of ${libAllRows.length}` : '',
+      libPrev: () => goLibPage(libPage - 1), libNext: () => goLibPage(libPage + 1),
+      libPrevOff: libPage <= 1, libNextOff: libPage >= libPages, libPrevColor: libPage <= 1 ? '#C7C7CC' : '#17171A', libNextColor: libPage >= libPages ? '#C7C7CC' : '#17171A', libTotal: all.length, libQuery: s.libQuery, onLibQuery: e => this.setState({ libQuery: e.target.value, libPage: 1 }),
       formDups, formHasDups: formDups.length > 0,
       isSubs: s.view === 'submissions', navSubsBg: nav('submissions').bg, navSubsColor: nav('submissions').color,
       goSubs: () => this.go('submissions'), hasPending: subCounts.pending > 0, pendingCount: subCounts.pending,

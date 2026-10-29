@@ -1,5 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import type { Json } from './database.types'
 import type { Question } from './questions'
 
 export interface TodayStats {
@@ -44,17 +45,24 @@ export function useToday() {
   })
 }
 
+const EXPLANATIONS_PAGE_SIZE = 20
+
+/** Newest first, cursor paged (api.admin_explanations_page). */
 export function useExplanations(questionId: number | null) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: todayKeys.explanations(questionId ?? 0),
     enabled: questionId != null,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('admin_list_explanations', {
+    initialPageParam: null as Json | null,
+    queryFn: async ({ pageParam }) => {
+      const { data, error } = await supabase.rpc('admin_explanations_page', {
         p_question_id: questionId!,
+        p_limit: EXPLANATIONS_PAGE_SIZE,
+        p_cursor: pageParam ?? undefined,
       })
       if (error) throw error
-      return data as unknown as Explanation[]
+      return data as unknown as { items: Explanation[]; next_cursor: Json | null }
     },
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
     refetchInterval: 60_000,
   })
 }

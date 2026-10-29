@@ -19,19 +19,27 @@ const remove = vi.fn(async () => {})
 vi.mock('@/services/today', () => ({
   useToday: () => ({ data: today, isPending: false, isError: false }),
   useExplanations: () => ({
-    data: [
-      {
-        id: 11,
-        user: { name: 'Bao Le', avatar_url: null },
-        response: { option_ids: ['b'] },
-        is_correct: false,
-        explanation: 'I thought gone.',
-        likes_count: 4,
-        reports_count: 0,
-        moderation_status: 'visible',
-        created_at: new Date().toISOString(),
-      },
-    ],
+    hasNextPage: false,
+    data: {
+      pages: [
+        {
+          next_cursor: null,
+          items: [
+            {
+              id: 11,
+              user: { name: 'Bao Le', avatar_url: null },
+              response: { option_ids: ['b'] },
+              is_correct: false,
+              explanation: 'I thought gone.',
+              likes_count: 4,
+              reports_count: 0,
+              moderation_status: 'visible',
+              created_at: new Date().toISOString(),
+            },
+          ],
+        },
+      ],
+    },
     isPending: false,
     isError: false,
   }),

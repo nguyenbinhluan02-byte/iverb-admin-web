@@ -14,7 +14,7 @@ import {
   Type,
   User,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Avatar } from '@/components/Avatar'
 import { StatusBadge, TypeBadge, UserSubmittedBadge } from '@/components/Badge'
@@ -23,11 +23,11 @@ import { PageHeader } from '@/components/PageHeader'
 import { errorMessage } from '@/lib/errors'
 import { authorName, displayText, isUserSubmitted } from '@/lib/question'
 import { ReuseDialog } from '@/features/schedule/ReuseDialog'
-import { useQuestions, type Question } from '@/services/questions'
+import { useDebounced } from '@/lib/useDebounced'
+import { useQuestionSearch, type Question, type SearchCounts } from '@/services/questions'
+import { LoadMore } from '@/components/LoadMore'
 import {
-  countFilters,
   DEFAULT_FILTERS,
-  filterQuestions,
   type LibraryFilters,
   type SortOrder,
   type SourceFilter,
@@ -37,6 +37,11 @@ import {
 import { GREEN_TINT, ORANGE_TINT, sourceOptions, typeOptions } from './filterOptions'
 import { HistoryDialog } from './HistoryDialog'
 import { QuestionViewDialog } from './QuestionViewDialog'
+
+const EMPTY_COUNTS: SearchCounts = {
+  status: { all: 0, published: 0, unpublished: 0, upcoming: 0, draft: 0 },
+  sources: { all: 0, admin: 0, user: 0 },
+}
 
 const rowButton = 'flex items-center gap-1.5 rounded-[9px] px-3 py-2 text-[13px] whitespace-nowrap'
 
@@ -68,15 +73,17 @@ function useLibraryFilters(): [LibraryFilters, (patch: Partial<LibraryFilters>) 
 
 export function LibraryPage() {
   const navigate = useNavigate()
-  const { data: questions, isPending, isError, error } = useQuestions()
   const [filters, setFilters] = useLibraryFilters()
   const [viewing, setViewing] = useState<Question | null>(null)
   const [history, setHistory] = useState<Question | null>(null)
   const [reusing, setReusing] = useState<Question | null>(null)
 
-  const all = useMemo(() => questions ?? [], [questions])
-  const rows = useMemo(() => filterQuestions(all, filters), [all, filters])
-  const counts = useMemo(() => countFilters(all, filters.source), [all, filters.source])
+  // Typing in the search box should not fire a request per key press.
+  const query = useDebounced(filters.query)
+  const search = useQuestionSearch({ ...filters, query })
+  const rows = search.data?.pages.flatMap((p) => p.items) ?? []
+  const first = search.data?.pages[0]
+  const counts = first?.counts ?? EMPTY_COUNTS
 
   const edit = (q: Question) => navigate(`/questions/${q.id}/edit`, { state: { from: '/library' } })
 
@@ -111,7 +118,7 @@ export function LibraryPage() {
 
   return (
     <div className="mx-auto flex max-w-[1040px] flex-col gap-5">
-      <PageHeader kicker={`${all.length} questions`} title="Library" />
+      <PageHeader kicker={`${counts.sources.all} questions`} title="Library" />
 
       <div className="flex items-center gap-2.5 rounded-xl border border-line bg-card px-3.5">
         <Search size={18} strokeWidth={2.2} className="shrink-0 text-muted" />
@@ -155,9 +162,11 @@ export function LibraryPage() {
       </div>
 
       <div className="overflow-hidden rounded-[18px] border border-line bg-card">
-        {isPending && <Message>Loading questions…</Message>}
-        {isError && <Message>{errorMessage(error)}</Message>}
-        {questions && rows.length === 0 && <Message>No questions match your search.</Message>}
+        {search.isPending && <Message>Loading questions…</Message>}
+        {search.isError && <Message>{errorMessage(search.error)}</Message>}
+        {search.isSuccess && rows.length === 0 && (
+          <Message>No questions match your search.</Message>
+        )}
         {rows.map((q, i) => (
           <div
             key={q.id}
@@ -223,6 +232,14 @@ export function LibraryPage() {
             </div>
           </div>
         ))}
+        {search.hasNextPage && (
+          <LoadMore
+            shown={rows.length}
+            total={first?.total}
+            loading={search.isFetchingNextPage}
+            onClick={() => search.fetchNextPage()}
+          />
+        )}
       </div>
 
       <QuestionViewDialog
