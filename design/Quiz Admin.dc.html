@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #F2F2F3; }
+    button, input, textarea { font-family: inherit; }
+    input:focus, textarea:focus { outline: none; border-color: #F2711C !important; box-shadow: 0 0 0 3px rgba(242,113,28,0.15); }
+    a { color: #F2711C; } a:hover { color: #D85F10; }
+    @keyframes qa-toast { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;background:#F2F2F3;font-family:'Manrope',system-ui,sans-serif;color:#17171A">
+
+  <!-- SIDEBAR -->
+  <aside style="width:228px;flex:0 0 228px;background:#FFFFFF;border-right:1px solid #ECECEE;display:flex;flex-direction:column;padding:22px 14px;position:sticky;top:0;height:100vh">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 8px">
+      <span style="width:32px;height:32px;border-radius:9px;background:#F2711C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px">Q</span>
+      <span style="display:flex;flex-direction:column;line-height:1.2">
+        <span style="font-weight:800;font-size:15px">Quiz Admin</span>
+        <span style="font-size:12px;color:#6E6E73">English daily quiz</span>
+      </span>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:4px;margin-top:30px">
+      <button onClick="{{ goToday }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;background:{{ navTodayBg }};color:{{ navTodayColor }}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+        <span style="flex:1;text-align:left">Today</span>
+        <sc-if value="{{ hasUnreplied }}" hint-placeholder-val="{{ true }}"><span style="min-width:22px;height:20px;padding:0 6px;border-radius:999px;background:#F2711C;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ unrepliedCount }}</span></sc-if>
+      </button>
+      <button onClick="{{ goSchedule }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;background:{{ navSchedBg }};color:{{ navSchedColor }}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
+        <span style="flex:1;text-align:left">Schedule</span>
+        <sc-if value="{{ hasGaps }}" hint-placeholder-val="{{ true }}"><span style="min-width:22px;height:20px;padding:0 6px;border-radius:999px;background:#F2F2F3;color:#17171A;border:1px solid #E4E4E7;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ gapCount }}</span></sc-if>
+      </button>
+      <button onClick="{{ goLib }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;background:{{ navLibBg }};color:{{ navLibColor }}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
+        <span style="flex:1;text-align:left">Library</span>
+      </button>
+      <button onClick="{{ goAdd }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;background:{{ navAddBg }};color:{{ navAddColor }}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>
+        <span style="flex:1;text-align:left">New question</span>
+      </button>
+      <button onClick="{{ goSubs }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;background:{{ navSubsBg }};color:{{ navSubsColor }}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"></path><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.1z"></path></svg>
+        <span style="flex:1;text-align:left">Submissions</span>
+        <sc-if value="{{ hasPending }}" hint-placeholder-val="{{ true }}"><span style="min-width:22px;height:20px;padding:0 6px;border-radius:999px;background:#F2711C;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ pendingCount }}</span></sc-if>
+      </button>
+    </nav>
+    <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid #ECECEE">
+      <span style="width:32px;height:32px;border-radius:50%;background:#1FA971;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">LT</span>
+      <span style="display:flex;flex-direction:column;line-height:1.25;min-width:0">
+        <span style="font-size:13px;font-weight:700">Linh Tran</span>
+        <span style="font-size:12px;color:#6E6E73">Content admin</span>
+      </span>
+    </div>
+  </aside>
+
+  <main style="flex:1 1 auto;min-width:0;padding:30px 32px 64px">
+
+    <!-- ================= TODAY ================= -->
+    <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+      <div style="max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:22px">
+        <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:#F2711C;letter-spacing:0.06em;text-transform:uppercase"><span style="width:8px;height:8px;border-radius:50%;background:#F2711C"></span>Live now</div>
+            <h1 style="font-size:28px;font-weight:800;margin:6px 0 0;letter-spacing:-0.01em">Today · Tue, Oct 27</h1>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+            <span style="font-size:13px;color:#6E6E73;white-space:nowrap">Closes in <b style="color:#17171A">9h 12m</b></span>
+            <button onClick="{{ editToday }}" style="flex:0 0 auto;white-space:nowrap;padding:10px 16px;border-radius:10px;border:1px solid #E4E4E7;background:#fff;font-size:14px;font-weight:700;cursor:pointer;color:#17171A">Edit question</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:14px">
+          <div style="background:#fff;border:1px solid #ECECEE;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:13px;color:#6E6E73;font-weight:600">Answers</span>
+            <span style="font-size:30px;font-weight:800;letter-spacing:-0.02em">1,284</span>
+            <span style="font-size:12px;color:#1FA971;font-weight:700">+18% vs 7-day avg</span>
+          </div>
+          <div style="background:#fff;border:1px solid #ECECEE;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:13px;color:#6E6E73;font-weight:600">Correct rate</span>
+            <span style="font-size:30px;font-weight:800;letter-spacing:-0.02em">62%</span>
+            <span style="font-size:12px;color:#6E6E73">796 picked the right answer</span>
+          </div>
+          <div style="background:#fff;border:1px solid #ECECEE;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:13px;color:#6E6E73;font-weight:600">User explanations</span>
+            <span style="font-size:30px;font-weight:800;letter-spacing:-0.02em">{{ explCount }}</span>
+            <span style="font-size:12px;color:#6E6E73">{{ repliedCount }} replied</span>
+          </div>
+          <div style="background:#FFF4EC;border:1px solid #FBDCC6;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:13px;color:#B4500F;font-weight:700">Next empty day</span>
+            <span style="font-size:24px;line-height:1.25;font-weight:800;letter-spacing:-0.01em;color:#17171A">{{ nextGapLabel }}</span>
+            <button onClick="{{ fillNextGap }}" style="align-self:flex-start;padding:0;border:none;background:none;font-size:12px;font-weight:800;color:#B4500F;cursor:pointer">{{ nextGapAction }}</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:18px;align-items:start">
+          <!-- question + distribution -->
+          <div style="background:#fff;border:1px solid #ECECEE;border-radius:18px;padding:22px 24px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(242,113,28,0.1);color:#C25A14;font-size:12px;font-weight:700">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"></circle></svg>
+                Single choice
+              </span>
+              <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6E6E73">By
+                <span style="width:22px;height:22px;border-radius:50%;background:#5B6CF0;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center">MA</span>
+                <b style="color:#17171A">Minh Anh</b>
+              </span>
+            </div>
+            <h2 style="font-size:18px;line-height:1.45;font-weight:700;margin:0;text-wrap:pretty">Choose the correct form: "She has already ___ the letter."</h2>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ todayOptions }}" as="o" hint-placeholder-count="4">
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <div style="display:flex;align-items:center;gap:10px;font-size:14px">
+                    <span style="width:24px;height:24px;border-radius:7px;background:{{ o.letterBg }};color:{{ o.letterColor }};font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto">{{ o.letter }}</span>
+                    <span style="font-weight:700;flex:1">{{ o.text }}</span>
+                    <sc-if value="{{ o.isCorrect }}"><span style="font-size:12px;font-weight:800;color:#1FA971">Correct</span></sc-if>
+                    <span style="font-weight:700;min-width:44px;text-align:right">{{ o.count }}</span>
+                    <span style="color:#6E6E73;min-width:38px;text-align:right">{{ o.pct }}%</span>
+                  </div>
+                  <div style="height:8px;border-radius:4px;background:#F2F2F3;overflow:hidden">
+                    <div style="height:100%;border-radius:4px;width:{{ o.pct }}%;background:{{ o.barColor }}"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="padding:14px 16px;border-radius:12px;background:#F2F2F3;display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:12px;font-weight:800;color:#6E6E73;text-transform:uppercase;letter-spacing:0.05em">Official explanation</span>
+              <span style="font-size:14px;line-height:1.5;text-wrap:pretty">write – wrote – <b>written</b>. After "has" we use the past participle (present perfect).</span>
+            </div>
+          </div>
+
+          <!-- explanations -->
+          <div style="background:#fff;border:1px solid #ECECEE;border-radius:18px;padding:22px 24px 8px;display:flex;flex-direction:column;overflow:hidden">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
+              <h3 style="font-size:16px;font-weight:800;margin:0">User explanations</h3>
+              <div style="display:flex;gap:4px;padding:4px;border-radius:10px;background:#F2F2F3">
+                <sc-for list="{{ filterTabs }}" as="f" hint-placeholder-count="3">
+                  <button onClick="{{ f.onClick }}" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;background:{{ f.bg }};color:{{ f.color }};box-shadow:{{ f.shadow }}">
+                    <sc-if value="{{ f.isAll }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></sc-if>
+                    <sc-if value="{{ f.isReplied }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17 4 12l5-5"></path><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg></sc-if>
+                    <sc-if value="{{ f.isReported }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 8 2a6 6 0 0 0 3.6-1.2.5.5 0 0 1 .4.4V14a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.5"></path></svg></sc-if>
+                    <span>{{ f.label }} · {{ f.count }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="max-height:min(640px,calc(100vh - 220px));overflow-y:auto;margin:0 -24px;padding:0 24px;overscroll-behavior:contain">
+            <sc-if value="{{ explEmpty }}">
+              <div style="padding:40px 0;text-align:center;font-size:14px;color:#6E6E73;border-top:1px solid #ECECEE">All caught up — nothing here.</div>
+            </sc-if>
+            <sc-for list="{{ explList }}" as="e" hint-placeholder-count="4">
+              <div style="display:flex;gap:12px;padding:16px 0;border-top:1px solid #ECECEE">
+                <span style="width:36px;height:36px;border-radius:50%;background:{{ e.color }};color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto">{{ e.init }}</span>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                    <b style="font-size:14px">{{ e.name }}</b>
+                    <span style="padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800;background:{{ e.pickBg }};color:{{ e.pickColor }}">Picked {{ e.pick }}</span>
+                    <span style="font-size:12px;color:#6E6E73;margin-left:auto">{{ e.time }}</span>
+                  </div>
+                  <p style="margin:0;font-size:14px;line-height:1.5;text-wrap:pretty">{{ e.text }}</p>
+                  <sc-if value="{{ e.isReported }}">
+                    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(245,51,63,0.08)">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C21D29" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 8 2a6 6 0 0 0 3.6-1.2.5.5 0 0 1 .4.4V14a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.5"></path></svg>
+                      <span style="flex:1;min-width:140px;font-size:13px;font-weight:700;color:#C21D29">{{ e.reportLabel }}</span>
+                      <button onClick="{{ e.onDismiss }}" style="padding:6px 12px;border-radius:8px;border:1px solid #E4E4E7;background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:#17171A">Dismiss</button>
+                      <button onClick="{{ e.onAskDelete }}" style="padding:6px 12px;border-radius:8px;border:none;background:#F5333F;font-size:12px;font-weight:800;cursor:pointer;color:#fff">Delete</button>
+                    </div>
+                  </sc-if>
+                  <div style="display:flex;align-items:center;gap:14px;font-size:12px;color:#6E6E73;font-weight:700">
+                    <span style="display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18v-6H5l7-8 7 8h-4v6z"></path><path d="M9 21h6"></path></svg>{{ e.likes }}</span>
+                    <sc-if value="{{ e.canReply }}">
+                      <button onClick="{{ e.onReply }}" style="padding:0;border:none;background:none;font-size:12px;font-weight:800;color:#F2711C;cursor:pointer">Reply</button>
+                    </sc-if>
+                    <sc-if value="{{ true }}">
+                      <button onClick="{{ e.onAskDelete }}" style="margin-left:auto;display:flex;align-items:center;gap:5px;padding:0;border:none;background:none;font-size:12px;font-weight:700;color:#6E6E73;cursor:pointer">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>Delete
+                      </button>
+                    </sc-if>
+
+                  </div>
+                  <sc-if value="{{ e.hasReplies }}">
+                    <div style="display:flex;flex-direction:column;gap:10px;padding-left:4px">
+                      <sc-for list="{{ e.replies }}" as="r" hint-placeholder-count="0">
+                        <div style="display:flex;gap:10px">
+                          <span style="width:28px;height:28px;border-radius:50%;background:{{ r.color }};color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto">{{ r.init }}</span>
+                          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:12px;background:{{ r.bg }}">
+                            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px">
+                              <b style="font-size:13px;color:{{ r.nameColor }}">{{ r.name }}</b>
+                              <sc-if value="{{ r.isAdmin }}"><span style="padding:2px 7px;border-radius:999px;background:#F2711C;color:#fff;font-size:10px;font-weight:800">Admin</span></sc-if>
+                              <span style="color:#6E6E73">{{ r.time }}</span>
+                              <button onClick="{{ r.onAskDelete }}" style="margin-left:auto;padding:0;border:none;background:none;font-size:12px;font-weight:800;color:#C21D29;cursor:pointer">Delete</button>
+                            </div>
+                            <span style="font-size:14px;line-height:1.5;text-wrap:pretty">{{ r.text }}</span>
+                            <sc-if value="{{ r.isReported }}">
+                              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:6px;border-top:1px solid rgba(245,51,63,0.18)">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C21D29" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 8 2a6 6 0 0 0 3.6-1.2.5.5 0 0 1 .4.4V14a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.5"></path></svg>
+                                <span style="flex:1;font-size:12px;font-weight:700;color:#C21D29">{{ r.reportLabel }}</span>
+                                <button onClick="{{ r.onDismiss }}" style="padding:4px 10px;border-radius:7px;border:1px solid #E4E4E7;background:#fff;font-size:11px;font-weight:700;cursor:pointer;color:#17171A">Dismiss</button>
+                              </div>
+                            </sc-if>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ e.isReplying }}">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <textarea value="{{ replyText }}" onChange="{{ onReplyText }}" placeholder="Write a reply as Admin…" rows="3" style="width:100%;resize:vertical;padding:10px 12px;border-radius:10px;border:1px solid #E4E4E7;font-size:14px;line-height:1.45;color:#17171A"></textarea>
+                      <div style="display:flex;justify-content:flex-end;gap:8px">
+                        <button onClick="{{ cancelReply }}" style="padding:8px 14px;border-radius:9px;border:1px solid #E4E4E7;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#17171A">Cancel</button>
+                        <button onClick="{{ sendReply }}" disabled="{{ replyEmpty }}" style="padding:8px 16px;border-radius:9px;border:none;font-size:13px;font-weight:800;cursor:pointer;background:{{ sendBg }};color:{{ sendColor }}">Send reply</button>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                </div>
+              </div>
+            </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ================= SCHEDULE ================= -->
+    <sc-if value="{{ isSchedule }}">
+      <div style="max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#6E6E73;letter-spacing:0.06em;text-transform:uppercase">{{ schedKicker }}</div>
+            <h1 style="font-size:28px;font-weight:800;margin:6px 0 0;letter-spacing:-0.01em">Schedule</h1>
+          </div>
+          <button onClick="{{ goAdd }}" style="display:flex;align-items:center;gap:8px;padding:11px 18px;border-radius:11px;border:none;background:#F2711C;color:#fff;font-size:14px;font-weight:800;cursor:pointer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>New question
+          </button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:-4px">
+          <div style="display:flex;gap:4px;padding:4px;border-radius:10px;background:#E9E9EB">
+            <sc-for list="{{ schedTabs }}" as="t" hint-placeholder-count="2">
+              <button onClick="{{ t.onClick }}" style="white-space:nowrap;padding:7px 14px;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;background:{{ t.bg }};color:{{ t.color }};box-shadow:{{ t.shadow }}">{{ t.label }}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ isMonthMode }}">
+            <div style="display:flex;align-items:center;gap:4px;padding:4px;border-radius:10px;border:1px solid #E4E4E7;background:#fff">
+              <button onClick="{{ prevMonth }}" title="Previous month" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:none;border-radius:7px;background:transparent;cursor:pointer;color:#17171A" style-hover="background:#F2F2F3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+              <span style="min-width:110px;text-align:center;font-size:14px;font-weight:800">{{ monthLabel }}</span>
+              <button onClick="{{ nextMonth }}" title="Next month" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:none;border-radius:7px;background:transparent;cursor:pointer;color:#17171A" style-hover="background:#F2F2F3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="background:#fff;border:1px solid #ECECEE;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;flex-wrap:wrap;gap:18px;font-size:13px;color:#6E6E73">
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#F2711C"></span><b style="color:#17171A">{{ scheduledCount }}</b> scheduled</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#F9C29C"></span><b style="color:#17171A">{{ draftCount }}</b> draft</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#E4E4E7"></span><b style="color:#17171A">{{ schedGapCount }}</b> empty</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat({{ coverageCols }},minmax(0,1fr));gap:4px">
+            <sc-for list="{{ coverage }}" as="c" hint-placeholder-count="14">
+              <div title="{{ c.title }}" style="height:10px;border-radius:3px;background:{{ c.color }}"></div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #ECECEE;border-radius:18px;overflow:hidden">
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:60px minmax(0,1fr) auto;gap:18px;align-items:center;padding:14px 20px;border-top:{{ r.borderTop }};background:{{ r.rowBg }};opacity:{{ r.rowOpacity }}">
+              <div style="display:flex;flex-direction:column;align-items:center;line-height:1.1">
+                <span style="font-size:11px;font-weight:800;color:#6E6E73;text-transform:uppercase;letter-spacing:0.05em">{{ r.wd }}</span>
+                <span style="font-size:22px;font-weight:800">{{ r.day }}</span>
+                <span style="font-size:11px;color:#6E6E73">{{ r.mo }}</span>
+              </div>
+              <sc-if value="{{ r.hasQ }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                    <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;background:rgba(242,113,28,0.1);color:#C25A14;font-size:11px;font-weight:800">
+                      <sc-if value="{{ r.isSingle }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"></circle></svg></sc-if>
+                      <sc-if value="{{ r.isMulti }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"></rect><path d="m8 12 3 3 5-6"></path></svg></sc-if>
+                      <sc-if value="{{ r.isFill }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg></sc-if>
+                      <sc-if value="{{ r.isOrder }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="m15 15 6 6"></path><path d="M4 4l5 5"></path></svg></sc-if>
+                      {{ r.typeLabel }}
+                    </span>
+                    <span style="padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;background:{{ r.statusBg }};color:{{ r.statusColor }}">{{ r.statusLabel }}</span>
+                    <sc-if value="{{ r.isCommunity }}"><span style="white-space:nowrap;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;background:rgba(91,108,240,0.12);color:#3F4FC9">User submitted</span></sc-if>
+                  </div>
+                  <span style="font-size:15px;font-weight:700;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.text }}</span>
+                  <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6E6E73"><span style="width:18px;height:18px;flex:0 0 auto;border-radius:999px;background:{{ r.authColor }};color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ r.authInit }}</span><span>By <b style="color:#17171A">{{ r.author }}</b></span></span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ r.isEmpty }}">
+                <div style="padding:14px 16px;border-radius:12px;border:1.5px dashed #E4E4E7;font-size:14px;color:#6E6E73;font-weight:600">{{ r.emptyText }}</div>
+              </sc-if>
+              <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+              <sc-if value="{{ r.hasQ }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ r.onView }}" title="View question" style="display:flex;align-items:center;gap:6px;white-space:nowrap;padding:8px 12px;border-radius:9px;border:1px solid #E4E4E7;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#17171A" style-hover="background:#F2F2F3">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>View
+                </button>
+              </sc-if>
+              <sc-if value="{{ r.showEdit }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ r.onEdit }}" style="padding:8px 14px;border-radius:9px;border:1px solid #E4E4E7;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#17171A">Edit</button>
+              </sc-if>
+              
+              <sc-if value="{{ r.showAdd }}">
+                <button onClick="{{ r.onAdd }}" style="display:flex;align-items:center;gap:6px;white-space:nowrap;padding:8px 14px;border-radius:9px;border:1px solid transparent;background:rgba(242,113,28,0.12);font-size:13px;font-weight:800;cursor:pointer;color:#C25A14" style-hover="background:rgba(242,113,28,0.2)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Add question</button>
+              </sc-if>
+              <sc-if value="{{ r.showAdd }}">
+                <button onClick="{{ r.onPick }}" style="display:flex;align-items:center;gap:6px;white-space:nowrap;padding:8px 14px;border-radius:9px;border:1px solid #E4E4E7;background:#fff;font-size:13px;font-weight:800;cursor:pointer;color:#17171A" style-hover="background:#F2F2F3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>From library</button>
+              </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ================= LIBRARY ================= -->
+    <sc-if value="{{ isLib }}">
+      <div style="max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+        <sc-if value="{{ hasLibTarget }}">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 18px;border-radius:14px;background:#FFF3E9;border:1px solid rgba(242,113,28,0.25)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C25A14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
+            <div style="flex:1;min-width:200px;font-size:14px;font-weight:600;color:#17171A">Pick a published question to schedule for <b>{{ libTargetLabel }}</b>. Tap <b>Reuse</b> to review it before saving.</div>
+            <button onClick="{{ cancelLibTarget }}" style="padding:8px 14px;border-radius:9px;border:1px solid #E4E4E7;background:#fff;font-size:13px;font-weight:800;cursor:pointer;color:#17171A">Cancel</button>
+          </div>
+        </sc-if>
+        <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#6E6E73;letter-spacing:0.06em;text-transform:uppercase">{{ libTotal }} questions</div>
+            <h1 style="font-size:28px;font-weight:800;margin:6px 0 0;letter-spacing:-0.01em">Library</h1>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;padding:0 14px;border-radius:12px;background:#fff;border:1px solid #ECECEE">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6E73" stroke-width="2.2" stroke-linecap="round" style="flex:0 0 auto"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <input value="{{ libQuery }}" onChange="{{ onLibQuery }}" placeholder="Search by word, answer or author — e.g. &quot;swim&quot;" style="flex:1;min-width:0;padding:13px 0;border:none;font-size:15px;color:#17171A;background:transparent;box-shadow:none">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-8px;position:relative;z-index:5">
+            <sc-for list="{{ libDDs }}" as="d" hint-placeholder-count="4">
+              <div style="position:relative">
+                <button onClick="{{ d.onToggle }}" style="display:flex;align-items:center;gap:7px;height:34px;padding:0 10px;border-radius:9px;border:1px solid {{ d.border }};background:{{ d.bg }};cursor:pointer;font-family:inherit;white-space:nowrap" style-hover="border-color:#C9C9CE">
+                  <span style="width:15px;height:15px;flex:0 0 auto;background-image:url({{ d.icon }});background-size:contain;background-repeat:no-repeat"></span>
+                  <span style="font-size:13px;font-weight:600;color:#6E6E73">{{ d.label }}</span>
+                  <span style="font-size:13px;font-weight:800;color:#17171A">{{ d.value }}</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6E73" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+                <sc-if value="{{ d.open }}">
+                  <div style="position:absolute;top:calc(100% + 6px);left:0;z-index:40;min-width:230px;padding:6px;background:#fff;border:1px solid #ECECEE;border-radius:12px;box-shadow:0 14px 36px rgba(23,23,26,0.14);display:flex;flex-direction:column;gap:2px">
+                    <sc-for list="{{ d.options }}" as="o" hint-placeholder-count="3">
+                      <button onClick="{{ o.onClick }}" style="display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;border:none;border-radius:8px;background:{{ o.bg }};cursor:pointer;font-family:inherit;text-align:left;color:#17171A" style-hover="background:#F2F2F3">
+                        <span style="width:28px;height:28px;flex:0 0 auto;border-radius:8px;background:{{ o.iconBg }};display:flex;align-items:center;justify-content:center"><span style="width:15px;height:15px;background-image:url({{ o.icon }});background-size:contain;background-repeat:no-repeat"></span></span>
+                        <span style="flex:1;font-size:14px;font-weight:{{ o.weight }};white-space:nowrap">{{ o.label }}</span>
+                        <span style="font-size:12px;font-weight:700;color:#8E8E93">{{ o.count }}</span>
+                        <span style="width:16px;display:flex;justify-content:center"><sc-if value="{{ o.on }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2711C" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></sc-if></span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+        <div style="background:#fff;border:1px solid #ECECEE;border-radius:18px;overflow:hidden">
+          <sc-if value="{{ libEmpty }}">
+            <div style="padding:48px 20px;text-align:center;font-size:14px;color:#6E6E73">No questions match your search.</div>
+          </sc-if>
+          <sc-for list="{{ libRows }}" as="r" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;padding:14px 20px;border-top:{{ r.borderTop }};background:{{ r.rowBg }};opacity:{{ r.rowOpacity }}">
+              <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                  <span style="white-space:nowrap;padding:3px 9px;border-radius:999px;background:rgba(242,113,28,0.1);color:#C25A14;font-size:11px;font-weight:800">{{ r.typeLabel }}</span>
+                  <span style="white-space:nowrap;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;background:{{ r.statusBg }};color:{{ r.statusColor }}">{{ r.statusLabel }}</span>
+                  <sc-if value="{{ r.isCommunity }}"><span style="white-space:nowrap;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;background:rgba(91,108,240,0.12);color:#3F4FC9">User submitted</span></sc-if>
+                </div>
+                <span style="font-size:15px;font-weight:700;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.text }}</span>
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6E6E73"><span style="width:18px;height:18px;flex:0 0 auto;border-radius:999px;background:{{ r.authColor }};color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ r.authInit }}</span><span>By <b style="color:#17171A">{{ r.author }}</b></span></span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+              <button onClick="{{ r.onView }}" title="View question" style="display:flex;align-items:center;gap:6px;white-space:nowrap;padding:8px 12px;border-radius:9px;border:1px solid #E4E4E7;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#17171A" style-hover="background:#F2F2F3">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>View
+              </button>
+              <button onClick="{{ r.onHistory }}" title="Usage history" style="display:flex;align-items:center;gap:6px;white-space:nowrap;padding:8px 12px;border-radius:9px;border:1px solid #E4E4E7;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#17171A" style-hover="background:#F2F2F3">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5M12 7v5l3 2"></path></svg>History<span style="min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#F2F2F3;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ r.useCount }}</span>
+              </button>
+              <sc-if value="{{ r.canReuse }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ r.onReuse }}" style="display:flex;align-items:center;gap:6px;white-space:nowrap;padding:8px 14px;border-radius:9px;border:none;background:rgba(242,113,28,0.12);font-size:13px;font-weight:800;cursor:pointer;color:#C25A14">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path><path d="M8 16H3v5"></path></svg>Reuse
+                </button>
+              </sc-if>
+              <sc-if value="{{ r.canEdit }}">
+                <button onClick="{{ r.onEdit }}" style="padding:8px 14px;border-radius:9px;border:1px solid #E4E4E7;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#17171A">Edit</button>
+              </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ================= SUBMISSIONS ================= -->
+    <sc-if value="{{ isSubs }}">
+      <div style="max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#6E6E73;letter-spacing:0.06em;text-transform:uppercase">From the app</div>
+            <h1 style="font-size:28px;font-weight:800;margin:6px 0 0;letter-spacing:-0.01em">User submissions</h1>
+          </div>
+          <div style="display:flex;gap:4px;padding:4px;border-radius:10px;background:#E9E9EB">
+            <sc-for list="{{ subTabs }}" as="f" hint-placeholder-count="3">
+              <button onClick="{{ f.onClick }}" style="white-space:nowrap;padding:7px 14px;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;background:{{ f.bg }};color:{{ f.color }};box-shadow:{{ f.shadow }}">{{ f.label }} · {{ f.count }}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+          <div style="flex:1 1 340px;max-width:420px;min-width:0;background:#fff;border:1px solid #ECECEE;border-radius:18px;overflow:hidden;max-height:calc(100vh - 160px);overflow-y:auto;overscroll-behavior:contain">
+            <sc-if value="{{ subsEmpty }}">
+              <div style="padding:48px 20px;text-align:center;font-size:14px;color:#6E6E73">Nothing here.</div>
+            </sc-if>
+            <sc-for list="{{ subList }}" as="s" hint-placeholder-count="5">
+              <button onClick="{{ s.onSelect }}" style="width:100%;display:flex;gap:12px;padding:16px 18px;border:none;border-top:{{ s.borderTop }};border-left:3px solid {{ s.accent }};background:{{ s.bg }};text-align:left;cursor:pointer;color:#17171A">
+                <span style="width:34px;height:34px;border-radius:50%;background:{{ s.color }};color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto">{{ s.init }}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+                  <span style="display:flex;align-items:center;gap:8px">
+                    <b style="font-size:14px">{{ s.name }}</b>
+                    <span style="margin-left:auto;font-size:12px;color:#6E6E73;white-space:nowrap">{{ s.time }}</span>
+                  </span>
+                  <span style="font-size:14px;line-height:1.4;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ s.text }}</span>
+                  <span style="display:flex;flex-wrap:wrap;gap:6px">
+                    <span style="padding:2px 8px;border-radius:999px;background:rgba(242,113,28,0.1);color:#C25A14;font-size:11px;font-weight:800">{{ s.typeLabel }}</span>
+                    <sc-if value="{{ s.hasMeta }}"><span style="padding:2px 8px;border-radius:999px;background:{{ s.metaBg }};color:{{ s.metaColor }};font-size:11px;font-weight:800">{{ s.meta }}</span></sc-if>
+                  </span>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:2 1 480px;min-width:0;background:#fff;border:1px solid #ECECEE;border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:22px">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+                <span style="width:42px;height:42px;border-radius:50%;background:{{ sel.color }};color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto">{{ sel.init }}</span>
+                <span style="display:flex;flex-direction:column;gap:2px;line-height:1.3">
+                  <b style="font-size:15px">{{ sel.name }}</b>
+                  <span style="font-size:12px;color:#6E6E73">Submitted {{ sel.time }} · {{ sel.history }}</span>
+                </span>
+                <span style="margin-left:auto;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800;background:{{ sel.statusBg }};color:{{ sel.statusColor }}">{{ sel.statusLabel }}</span>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:14px;padding-top:20px;border-top:1px solid #ECECEE">
+                <span style="align-self:flex-start;padding:5px 10px;border-radius:999px;background:rgba(242,113,28,0.1);color:#C25A14;font-size:12px;font-weight:700">{{ sel.typeLabel }}</span>
+                <h2 style="font-size:19px;line-height:1.45;font-weight:700;margin:0;text-wrap:pretty">{{ sel.text }}</h2>
+                <sc-if value="{{ sel.isChoice }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <sc-for list="{{ sel.options }}" as="o" hint-placeholder-count="4">
+                      <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;border:1.5px solid {{ o.border }};background:{{ o.bg }};font-size:14px;font-weight:600">
+                        <span style="width:24px;height:24px;border-radius:7px;background:{{ o.letterBg }};color:{{ o.letterColor }};font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto">{{ o.letter }}</span>
+                        <span style="flex:1">{{ o.text }}</span>
+                        <sc-if value="{{ o.isCorrect }}"><span style="font-size:12px;font-weight:800;color:#137A51">Correct</span></sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ sel.isFill }}">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <div style="padding:14px 16px;border-radius:12px;background:#F2F2F3;font-size:15px;line-height:1.7">{{ sel.before }} <b style="padding:2px 8px;border-radius:6px;background:rgba(31,169,113,0.15);color:#137A51">{{ sel.answer }}</b> {{ sel.after }}</div>
+                    <sc-if value="{{ sel.hasHint }}"><span style="font-size:13px;color:#6E6E73">Hint shown to users: <b style="color:#17171A">{{ sel.hint }}</b></span></sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ sel.isOrder }}">
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <div style="padding:14px 16px;border-radius:12px;background:rgba(31,169,113,0.1);font-size:15px;font-weight:700;color:#137A51">{{ sel.sentence }}</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px">
+                      <span style="font-size:12px;color:#6E6E73;align-self:center">Users see:</span>
+                      <sc-for list="{{ sel.tiles }}" as="w" hint-placeholder-count="5">
+                        <span style="padding:6px 10px;border-radius:8px;border:1.5px solid #ECECEE;font-size:13px;font-weight:700">{{ w }}</span>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ sel.hasDups }}">
+                <div style="display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:12px;background:#FFF4EC;border:1px solid #FBDCC6">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B4500F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><rect x="8" y="8" width="13" height="13" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg>
+                    <span style="flex:1;font-size:13px;font-weight:800;color:#B4500F">Possible duplicate — check before approving</span>
+                  </div>
+                  <sc-for list="{{ sel.dups }}" as="m" hint-placeholder-count="0">
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:#fff">
+                      <span style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">
+                        <span style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.text }}</span>
+                        <span style="font-size:12px;color:#6E6E73">{{ m.when }} · {{ m.typeLabel }}</span>
+                      </span>
+                      <span style="flex:0 0 auto;padding:3px 8px;border-radius:999px;background:rgba(242,113,28,0.12);color:#B4500F;font-size:11px;font-weight:800;white-space:nowrap">{{ m.pct }}% match</span>
+                    </div>
+                  </sc-for>
+                </div>
+                </sc-if>
+                <sc-if value="{{ sel.noDups }}">
+                  <span style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#137A51"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>No similar questions in the library</span>
+                </sc-if>
+                <div style="padding:14px 16px;border-radius:12px;background:#F2F2F3;display:flex;flex-direction:column;gap:6px">
+                  <span style="font-size:12px;font-weight:800;color:#6E6E73;text-transform:uppercase;letter-spacing:0.05em">Submitter's explanation</span>
+                  <span style="font-size:14px;line-height:1.5;text-wrap:pretty;color:{{ sel.explColor }}">{{ sel.explanation }}</span>
+                </div>
+              </div>
+
+              <sc-if value="{{ sel.isPending }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:10px;padding-top:20px;border-top:1px solid #ECECEE">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+                    <span style="font-size:13px;font-weight:800">Publish date</span>
+                    <span style="font-size:12px;color:#6E6E73">{{ subDateLabel }}</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">
+                    <sc-for list="{{ subChips }}" as="d" hint-placeholder-count="14">
+                      <button onClick="{{ d.onClick }}" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border-radius:10px;cursor:pointer;background:{{ d.bg }};border:1.5px solid {{ d.border }};color:{{ d.color }}">
+                        <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;opacity:0.8">{{ d.wd }}</span>
+                        <span style="font-size:16px;font-weight:800">{{ d.day }}</span>
+                        <span style="width:5px;height:5px;border-radius:50%;background:{{ d.dot }}"></span>
+                      </button>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ subTaken }}">
+                    <span style="font-size:12px;font-weight:700;color:#B4500F">This day already has a question — approving will replace it.</span>
+                  </sc-if>
+                  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px">
+                    <button onClick="{{ askReject }}" style="padding:11px 18px;border-radius:11px;border:1px solid rgba(245,51,63,0.35);background:#fff;font-size:14px;font-weight:800;cursor:pointer;color:#C21D29">Reject</button>
+                    <span style="flex:1"></span>
+                    <button onClick="{{ editSub }}" style="padding:11px 18px;border-radius:11px;border:1px solid #E4E4E7;background:#fff;font-size:14px;font-weight:700;cursor:pointer;color:#17171A">Edit before approving</button>
+                    <button onClick="{{ approveSub }}" style="padding:11px 22px;border-radius:11px;border:none;background:#F2711C;font-size:14px;font-weight:800;cursor:pointer;color:#fff">Approve &amp; schedule</button>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ sel.isApproved }}">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;background:rgba(31,169,113,0.1)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#137A51" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                  <span style="flex:1;font-size:14px;font-weight:700;color:#137A51">Scheduled for {{ sel.dateLabel }} · {{ sel.name }} was notified</span>
+                  <button onClick="{{ goSchedule }}" style="padding:7px 12px;border-radius:9px;border:1px solid #E4E4E7;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#17171A">View schedule</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ sel.isRejected }}">
+                <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:rgba(245,51,63,0.08)">
+                  <span style="font-size:14px;font-weight:800;color:#C21D29">Rejected · {{ sel.reason }}</span>
+                  <sc-if value="{{ sel.hasNote }}"><span style="font-size:14px;line-height:1.5;color:#17171A">"{{ sel.note }}"</span></sc-if>
+                  <span style="font-size:12px;color:#6E6E73">{{ sel.name }} was notified in the app.</span>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ================= ADD / EDIT ================= -->
+    <sc-if value="{{ isAdd }}">
+      <div style="max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#6E6E73;letter-spacing:0.06em;text-transform:uppercase">{{ formKicker }}</div>
+            <h1 style="font-size:28px;font-weight:800;margin:6px 0 0;letter-spacing:-0.01em">{{ formTitle }}</h1>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start">
+          <div style="flex:1 1 520px;min-width:0;background:#fff;border:1px solid #ECECEE;border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:26px">
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:13px;font-weight:800">Question type</span>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
+                <sc-for list="{{ typeCards }}" as="t" hint-placeholder-count="4">
+                  <button onClick="{{ t.onClick }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:14px;border-radius:12px;cursor:pointer;text-align:left;background:{{ t.bg }};border:1.5px solid {{ t.border }};color:#17171A">
+                    <span style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:{{ t.iconBg }};color:{{ t.iconColor }}">
+                      <sc-if value="{{ t.isSingle }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"></circle></svg></sc-if>
+                      <sc-if value="{{ t.isMulti }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"></rect><path d="m8 12 3 3 5-6"></path></svg></sc-if>
+                      <sc-if value="{{ t.isFill }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg></sc-if>
+                      <sc-if value="{{ t.isOrder }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="m15 15 6 6"></path><path d="M4 4l5 5"></path></svg></sc-if>
+                    </span>
+                    <span style="font-size:14px;font-weight:800">{{ t.label }}</span>
+                    <span style="font-size:12px;color:#6E6E73">{{ t.desc }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <label style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:13px;font-weight:800">Question</span>
+              <textarea value="{{ fText }}" onChange="{{ onText }}" rows="2" placeholder="{{ textPlaceholder }}" style="width:100%;resize:vertical;padding:12px 14px;border-radius:11px;border:1px solid #E4E4E7;font-size:15px;line-height:1.45;color:#17171A"></textarea>
+            </label>
+
+            <sc-if value="{{ isChoiceF }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+                  <span style="font-size:13px;font-weight:800">Options</span>
+                  <span style="font-size:12px;color:#6E6E73">{{ optionHelp }}</span>
+                </div>
+                <sc-for list="{{ formOptions }}" as="o" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <button onClick="{{ o.onToggle }}" title="Mark as correct" style="width:26px;height:26px;flex:0 0 auto;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;border-radius:{{ o.radius }};border:2px solid {{ o.markBorder }};background:{{ o.markBg }};color:#fff">
+                      <sc-if value="{{ o.checked }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+                    </button>
+                    <span style="width:18px;font-size:13px;font-weight:800;color:#6E6E73">{{ o.letter }}</span>
+                    <input value="{{ o.text }}" onChange="{{ o.onChange }}" placeholder="Option text" style="flex:1;min-width:0;padding:11px 13px;border-radius:10px;border:1px solid #E4E4E7;font-size:14px;color:#17171A">
+                    <button onClick="{{ o.onRemove }}" disabled="{{ o.cannotRemove }}" title="Remove" style="width:34px;height:34px;flex:0 0 auto;border-radius:9px;border:none;background:#F2F2F3;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6E6E73;opacity:{{ o.removeOpacity }}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                    </button>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ canAddOption }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ addOption }}" style="white-space:nowrap;align-self:flex-start;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px dashed #E4E4E7;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#17171A">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Add option
+                  </button>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isFillF }}">
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <label style="display:flex;flex-direction:column;gap:8px">
+                  <span style="font-size:13px;font-weight:800">Sentence <span style="font-weight:600;color:#6E6E73">— use ___ for the blank</span></span>
+                  <input value="{{ fSentence }}" onChange="{{ onSentence }}" placeholder="I have never ___ sushi before." style="padding:12px 14px;border-radius:11px;border:1px solid #E4E4E7;font-size:15px;color:#17171A">
+                </label>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+                  <label style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font-size:13px;font-weight:800">Correct answer</span>
+                    <input value="{{ fAnswer }}" onChange="{{ onAnswer }}" placeholder="eaten" style="padding:12px 14px;border-radius:11px;border:1px solid #E4E4E7;font-size:15px;color:#17171A">
+                  </label>
+                  <label style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font-size:13px;font-weight:800">Hint <span style="font-weight:600;color:#6E6E73">— optional</span></span>
+                    <input value="{{ fHint }}" onChange="{{ onHint }}" placeholder="eat" style="padding:12px 14px;border-radius:11px;border:1px solid #E4E4E7;font-size:15px;color:#17171A">
+                  </label>
+                </div>
+                <sc-if value="{{ blankMissing }}">
+                  <span style="font-size:12px;font-weight:700;color:#D12530">Add ___ where the blank should go.</span>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isOrderF }}">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <label style="display:flex;flex-direction:column;gap:8px">
+                  <span style="font-size:13px;font-weight:800">Correct sentence <span style="font-weight:600;color:#6E6E73">— words are shuffled for users</span></span>
+                  <input value="{{ fSentence }}" onChange="{{ onSentence }}" placeholder="She has never been to London" style="padding:12px 14px;border-radius:11px;border:1px solid #E4E4E7;font-size:15px;color:#17171A">
+                </label>
+                <span style="font-size:12px;color:#6E6E73">{{ wordCountLabel }}</span>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ formHasDups }}">
+                <div style="display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:12px;background:#FFF4EC;border:1px solid #FBDCC6">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B4500F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><rect x="8" y="8" width="13" height="13" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg>
+                    <span style="flex:1;font-size:13px;font-weight:800;color:#B4500F">Similar questions already exist</span>
+                  </div>
+                  <sc-for list="{{ formDups }}" as="m" hint-placeholder-count="0">
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:#fff">
+                      <span style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">
+                        <span style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.text }}</span>
+                        <span style="font-size:12px;color:#6E6E73">{{ m.when }} · {{ m.typeLabel }}</span>
+                      </span>
+                      <span style="flex:0 0 auto;padding:3px 8px;border-radius:999px;background:rgba(242,113,28,0.12);color:#B4500F;font-size:11px;font-weight:800;white-space:nowrap">{{ m.pct }}% match</span>
+                    </div>
+                  </sc-for>
+                </div>
+            </sc-if>
+
+            <label style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:13px;font-weight:800">Explanation <span style="font-weight:600;color:#6E6E73">— shown after users answer</span></span>
+              <textarea value="{{ fExpl }}" onChange="{{ onExpl }}" rows="3" placeholder="Why is this the correct answer?" style="width:100%;resize:vertical;padding:12px 14px;border-radius:11px;border:1px solid #E4E4E7;font-size:14px;line-height:1.5;color:#17171A"></textarea>
+            </label>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+                <span style="font-size:13px;font-weight:800">Publish date</span>
+                <span style="font-size:12px;color:#6E6E73">{{ selectedDateLabel }}</span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">
+                <sc-for list="{{ dateChips }}" as="d" hint-placeholder-count="14">
+                  <button onClick="{{ d.onClick }}" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border-radius:10px;cursor:pointer;background:{{ d.bg }};border:1.5px solid {{ d.border }};color:{{ d.color }}">
+                    <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;opacity:0.8">{{ d.wd }}</span>
+                    <span style="font-size:16px;font-weight:800">{{ d.day }}</span>
+                    <span style="width:5px;height:5px;border-radius:50%;background:{{ d.dot }}"></span>
+                  </button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ takenWarning }}">
+                <span style="font-size:12px;font-weight:700;color:#B4500F">This day already has a question — scheduling will replace it.</span>
+              </sc-if>
+            </div>
+
+            <label style="display:flex;flex-direction:column;gap:8px;max-width:320px">
+              <span style="font-size:13px;font-weight:800">Shown as author</span>
+              <input value="{{ fAuthor }}" onChange="{{ onAuthor }}" placeholder="Name" style="padding:12px 14px;border-radius:11px;border:1px solid #E4E4E7;font-size:14px;color:#17171A">
+            </label>
+
+            <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding-top:18px;border-top:1px solid #ECECEE">
+              <button onClick="{{ cancelForm }}" style="padding:11px 18px;border-radius:11px;border:1px solid #E4E4E7;background:#fff;font-size:14px;font-weight:700;cursor:pointer;color:#17171A">Cancel</button>
+              <button onClick="{{ saveDraft }}" disabled="{{ cannotDraft }}" style="padding:11px 18px;border-radius:11px;border:1px solid #E4E4E7;background:#fff;font-size:14px;font-weight:700;cursor:pointer;color:{{ draftColor }}">Save draft</button>
+              <button onClick="{{ saveScheduled }}" disabled="{{ cannotSubmit }}" style="padding:11px 22px;border-radius:11px;border:none;font-size:14px;font-weight:800;cursor:pointer;background:{{ submitBg }};color:{{ submitColor }}">{{ submitLabel }}</button>
+            </div>
+          </div>
+
+          <!-- PREVIEW -->
+          <sc-if value="{{ showPreview }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:0 1 360px;min-width:300px;position:sticky;top:24px;display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:12px;font-weight:800;color:#6E6E73;letter-spacing:0.06em;text-transform:uppercase">App preview</span>
+              <div style="background:#fff;border:1px solid #ECECEE;border-radius:28px;padding:22px;box-shadow:0 18px 50px rgba(0,0,0,0.08);display:flex;flex-direction:column;gap:16px">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(242,113,28,0.1);color:#C25A14;font-size:12px;font-weight:700">{{ pvTypeLabel }}</span>
+                  <span style="display:flex;align-items:center;gap:6px;min-width:0">
+                    <span style="width:26px;height:26px;border-radius:50%;background:{{ pvColor }};color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto">{{ pvInit }}</span>
+                    <span style="display:flex;flex-direction:column;min-width:0;line-height:1.25">
+                      <span style="font-size:11px;color:#6E6E73">By</span>
+                      <b style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">{{ pvAuthor }}</b>
+                    </span>
+                  </span>
+                </div>
+                <h2 style="font-size:16px;line-height:1.4;font-weight:700;margin:0;text-wrap:pretty;color:{{ pvTextColor }}">{{ pvText }}</h2>
+                <sc-if value="{{ isChoiceF }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <sc-for list="{{ pvOptions }}" as="p" hint-placeholder-count="4">
+                      <div style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:13px;border:1.5px solid #ECECEE;font-size:14px;font-weight:600;color:{{ p.color }}">
+                        <span style="width:20px;height:20px;flex:0 0 auto;border:2px solid #D4D4D8;border-radius:{{ p.radius }}"></span>{{ p.text }}
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ isFillF }}">
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <div style="padding:14px;border-radius:13px;background:#F2F2F3;font-size:15px;line-height:1.9;text-wrap:pretty">{{ pvBefore }} <span style="display:inline-block;min-width:70px;border-bottom:2px solid #F2711C">&nbsp;</span> {{ pvAfter }}</div>
+                    <div style="padding:12px 14px;border-radius:12px;border:1.5px solid #ECECEE;font-size:14px;color:#8E8E93">Type your answer</div>
+                    <sc-if value="{{ pvHasHint }}"><span style="font-size:13px;color:#6E6E73">Hint: <b style="color:#17171A">{{ fHint }}</b></span></sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ isOrderF }}">
+                  <div style="display:flex;flex-direction:column;gap:14px">
+                    <div style="min-height:70px;padding:12px;border-radius:13px;border:1.5px dashed #E4E4E7;font-size:13px;color:#8E8E93">Tap the words below to build the sentence</div>
+                    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px">
+                      <sc-for list="{{ pvTiles }}" as="w" hint-placeholder-count="5">
+                        <span style="padding:9px 13px;border-radius:10px;background:#fff;border:1.5px solid #ECECEE;box-shadow:0 2px 0 #ECECEE;font-size:14px;font-weight:700">{{ w }}</span>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+                <div style="padding:14px;border-radius:14px;background:#E4E4E7;color:#8E8E93;text-align:center;font-size:15px;font-weight:800">Submit</div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+
+  <sc-if value="{{ hasConfirm }}">
+    <div onClick="{{ cancelDelete }}" style="position:fixed;inset:0;background:rgba(23,23,26,0.45);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50">
+      <div onClick="{{ stop }}" style="width:100%;max-width:420px;background:#fff;border-radius:18px;padding:24px;box-shadow:0 24px 60px rgba(0,0,0,0.25);display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:40px;height:40px;border-radius:12px;background:rgba(245,51,63,0.1);color:#C21D29;display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>
+          </span>
+          <h3 style="margin:0;font-size:17px;font-weight:800">{{ confirmTitle }}</h3>
+        </div>
+        <div style="padding:12px 14px;border-radius:12px;background:#F5F5F6;display:flex;flex-direction:column;gap:4px">
+          <b style="font-size:13px">{{ confirmName }}</b>
+          <span style="font-size:14px;line-height:1.5;color:#17171A;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">{{ confirmText }}</span>
+        </div>
+        <span style="font-size:13px;line-height:1.5;color:#6E6E73">{{ confirmNote }}</span>
+        <div style="display:flex;justify-content:flex-end;gap:10px">
+          <button onClick="{{ cancelDelete }}" style="padding:10px 18px;border-radius:10px;border:1px solid #E4E4E7;background:#fff;font-size:14px;font-weight:700;cursor:pointer;color:#17171A">Cancel</button>
+          <button onClick="{{ confirmDelete }}" style="padding:10px 18px;border-radius:10px;border:none;background:#F5333F;font-size:14px;font-weight:800;cursor:pointer;color:#fff">Delete</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ ddOpen }}">
+    <div onClick="{{ closeDD }}" style="position:fixed;inset:0;z-index:4"></div>
+  </sc-if>
+  <sc-if value="{{ hasView }}">
+    <div onClick="{{ closeView }}" style="position:fixed;inset:0;background:rgba(23,23,26,0.45);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50">
+      <div onClick="{{ stop }}" style="width:100%;max-width:520px;max-height:min(720px,100%);background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,0.25);display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:20px 22px 14px;display:flex;align-items:flex-start;gap:12px;border-bottom:1px solid #ECECEE">
+          <div style="flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:6px">
+            <span style="display:flex;align-items:center;gap:5px;white-space:nowrap;padding:3px 9px;border-radius:999px;background:rgba(242,113,28,0.1);color:#C25A14;font-size:11px;font-weight:800"><span style="width:12px;height:12px;background-image:url({{ vw.typeIcon }});background-size:contain;background-repeat:no-repeat"></span>{{ vw.typeLabel }}</span>
+            <span style="white-space:nowrap;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;background:{{ vw.statusBg }};color:{{ vw.statusColor }}">{{ vw.statusLabel }}</span>
+            <sc-if value="{{ vw.isCommunity }}"><span style="white-space:nowrap;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;background:rgba(91,108,240,0.12);color:#3F4FC9">User submitted</span></sc-if>
+          </div>
+          <button onClick="{{ closeView }}" title="Close" style="width:34px;height:34px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;border:none;border-radius:9px;background:#F2F2F3;cursor:pointer;color:#17171A"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+        </div>
+        <div style="flex:1;min-height:0;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:16px">
+          <div style="font-size:18px;font-weight:800;line-height:1.4;text-wrap:pretty">{{ vw.text }}</div>
+          <sc-if value="{{ vw.hasOptions }}">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ vw.options }}" as="o" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;border:1.5px solid {{ o.border }};background:{{ o.bg }}">
+                  <span style="width:24px;height:24px;flex:0 0 auto;border-radius:7px;background:{{ o.letterBg }};color:{{ o.letterColor }};font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ o.letter }}</span>
+                  <span style="flex:1;font-size:15px;font-weight:700">{{ o.text }}</span>
+                  <sc-if value="{{ o.correct }}"><span style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:800;color:#137A51"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Correct</span></sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ vw.isFill }}">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="padding:14px 16px;border-radius:12px;background:#F2F2F3;font-size:16px;font-weight:700;line-height:1.5">{{ vw.sentBefore }}<span style="display:inline-block;padding:0 10px;margin:0 4px;border-radius:7px;background:rgba(31,169,113,0.14);color:#137A51;font-weight:800">{{ vw.answer }}</span>{{ vw.sentAfter }}</div>
+              <sc-if value="{{ vw.hasHint }}"><div style="font-size:13px;color:#6E6E73;font-weight:600">Hint: <b style="color:#17171A">{{ vw.hint }}</b></div></sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{ vw.isOrder }}">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:12px;font-weight:800;color:#6E6E73;letter-spacing:0.06em;text-transform:uppercase">Correct order</span>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ vw.words }}" as="w" hint-placeholder-count="5">
+                  <span style="padding:7px 12px;border-radius:9px;border:1px solid #E4E4E7;background:#fff;font-size:14px;font-weight:700">{{ w }}</span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ vw.hasExpl }}">
+            <div style="padding:14px 16px;border-radius:12px;background:#FFF8F2;display:flex;flex-direction:column;gap:4px">
+              <span style="font-size:12px;font-weight:800;color:#C25A14;letter-spacing:0.06em;text-transform:uppercase">Explanation</span>
+              <span style="font-size:14px;line-height:1.5;color:#17171A">{{ vw.explanation }}</span>
+            </div>
+          </sc-if>
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#6E6E73">
+            <span style="width:24px;height:24px;border-radius:999px;background:{{ vw.authColor }};color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ vw.authInit }}</span>
+            <span>By <b style="color:#17171A">{{ vw.author }}</b></span>
+          </div>
+        </div>
+        <div style="padding:14px 22px;border-top:1px solid #ECECEE;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px">
+          <button onClick="{{ vw.onHistory }}" style="white-space:nowrap;padding:10px 16px;border-radius:10px;border:1px solid #E4E4E7;background:#fff;font-size:14px;font-weight:800;cursor:pointer;color:#17171A">History · {{ vw.useCount }}</button>
+          <sc-if value="{{ vw.canEdit }}"><button onClick="{{ vw.onEdit }}" style="white-space:nowrap;padding:10px 16px;border-radius:10px;border:1px solid #E4E4E7;background:#fff;font-size:14px;font-weight:800;cursor:pointer;color:#17171A">Edit</button></sc-if>
+          <sc-if value="{{ vw.canReuse }}"><button onClick="{{ vw.onReuse }}" style="white-space:nowrap;padding:10px 16px;border-radius:10px;border:none;background:#F2711C;font-size:14px;font-weight:800;cursor:pointer;color:#fff">Reuse</button></sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasHist }}">
+    <div onClick="{{ closeHist }}" style="position:fixed;inset:0;background:rgba(23,23,26,0.45);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50">
+      <div onClick="{{ stop }}" style="width:100%;max-width:480px;max-height:min(640px,100%);background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,0.25);display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:20px 22px 16px;display:flex;align-items:flex-start;gap:12px;border-bottom:1px solid #ECECEE">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:800;color:#6E6E73;letter-spacing:0.06em;text-transform:uppercase">Usage history</div>
+            <div style="font-size:15px;font-weight:700;margin-top:6px;line-height:1.4;text-wrap:pretty">{{ histText }}</div>
+            <div style="font-size:13px;font-weight:600;color:#6E6E73;margin-top:6px">{{ histSummary }}</div>
+          </div>
+          <button onClick="{{ closeHist }}" title="Close" style="width:34px;height:34px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;border:none;border-radius:9px;background:#F2F2F3;cursor:pointer;color:#17171A"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+        </div>
+        <div style="flex:1;min-height:0;overflow-y:auto;padding:8px 22px 18px;display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ histYears }}" as="y" hint-placeholder-count="2">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="position:sticky;top:0;background:#fff;display:flex;align-items:baseline;justify-content:space-between;padding:10px 0 6px;border-bottom:1px solid #ECECEE">
+                <span style="font-size:18px;font-weight:800">{{ y.year }}</span>
+                <span style="font-size:12px;font-weight:700;color:#6E6E73">{{ y.countLabel }}</span>
+              </div>
+              <sc-for list="{{ y.items }}" as="e" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
+                  <span style="width:8px;height:8px;flex:0 0 auto;border-radius:999px;background:{{ e.dot }}"></span>
+                  <span style="flex:1;font-size:14px;font-weight:700">{{ e.label }}</span>
+                  <span style="white-space:nowrap;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;background:{{ e.bg }};color:{{ e.color }}">{{ e.status }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <sc-if value="{{ histEmpty }}">
+            <div style="padding:32px 0;text-align:center;font-size:14px;font-weight:600;color:#6E6E73">This question hasn't been used yet.</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasReuse }}">
+    <div onClick="{{ closeReuse }}" style="position:fixed;inset:0;background:rgba(23,23,26,0.45);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50">
+      <div onClick="{{ stop }}" style="width:100%;max-width:440px;background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,0.25);display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:20px 22px 14px;display:flex;align-items:flex-start;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:800;color:#6E6E73;letter-spacing:0.06em;text-transform:uppercase">Reuse question</div>
+            <div style="font-size:15px;font-weight:700;margin-top:6px;line-height:1.4;text-wrap:pretty">{{ reuseText }}</div>
+          </div>
+          <button onClick="{{ closeReuse }}" title="Close" style="width:34px;height:34px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;border:none;border-radius:9px;background:#F2F2F3;cursor:pointer;color:#17171A"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+        </div>
+        <div style="padding:0 22px 16px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <button onClick="{{ reusePrev }}" title="Previous month" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid #E4E4E7;border-radius:9px;background:#fff;cursor:pointer;color:#17171A" style-hover="background:#F2F2F3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+            <span style="font-size:15px;font-weight:800">{{ reuseMonth }}</span>
+            <button onClick="{{ reuseNext }}" title="Next month" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid #E4E4E7;border-radius:9px;background:#fff;cursor:pointer;color:#17171A" style-hover="background:#F2F2F3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">
+            <sc-for list="{{ reuseWd }}" as="w" hint-placeholder-count="7">
+              <span style="text-align:center;font-size:11px;font-weight:800;color:#8E8E93;letter-spacing:0.04em;padding:4px 0">{{ w }}</span>
+            </sc-for>
+            <sc-for list="{{ reuseCells }}" as="c" hint-placeholder-count="35">
+              <button onClick="{{ c.onClick }}" disabled="{{ c.disabled }}" title="{{ c.title }}" style="height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:10px;font-family:inherit;font-size:14px;font-weight:{{ c.weight }};cursor:{{ c.cursor }};border:1.5px {{ c.borderStyle }} {{ c.border }};background:{{ c.bg }};color:{{ c.color }};visibility:{{ c.vis }}">
+                <span>{{ c.n }}</span>
+                <span style="width:5px;height:5px;border-radius:999px;background:{{ c.dot }}"></span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;font-weight:600;color:#6E6E73">
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:4px;border:1.5px dashed #C9C9CE;background:#fff"></span>Empty</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:999px;background:#F2711C"></span>Scheduled</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:999px;background:#F9C29C"></span>Draft</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:999px;background:#C9C9CE"></span>Past</span>
+          </div>
+        </div>
+        <div style="padding:14px 22px;border-top:1px solid #ECECEE;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px">
+          <span style="font-size:13px;font-weight:700;color:{{ reuseSelColor }}">{{ reuseSelLabel }}</span>
+          <div style="display:flex;gap:8px">
+            <button onClick="{{ closeReuse }}" style="white-space:nowrap;padding:10px 16px;border-radius:10px;border:1px solid #E4E4E7;background:#fff;font-size:14px;font-weight:800;cursor:pointer;color:#17171A">Cancel</button>
+            <button onClick="{{ reuseConfirm }}" disabled="{{ reuseNone }}" style="white-space:nowrap;padding:10px 16px;border-radius:10px;border:none;font-size:14px;font-weight:800;cursor:pointer;background:{{ reuseBtnBg }};color:{{ reuseBtnColor }}">Schedule</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasPick }}">
+    <div onClick="{{ closePick }}" style="position:fixed;inset:0;background:rgba(23,23,26,0.45);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50">
+      <div onClick="{{ pickPanelClick }}" style="width:100%;max-width:640px;max-height:min(720px,100%);background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,0.25);display:flex;flex-direction:column;overflow:hidden">
+        <div style="position:relative;z-index:5;padding:18px 20px 14px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid #ECECEE">
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:800;color:#6E6E73;letter-spacing:0.06em;text-transform:uppercase">{{ pickDayLabel }}</div>
+              <div style="font-size:20px;font-weight:800;margin-top:4px">Choose from library</div>
+            </div>
+            <button onClick="{{ closePick }}" title="Close" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:none;border-radius:9px;background:#F2F2F3;cursor:pointer;color:#17171A"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:0 12px;height:40px;border-radius:10px;background:#F2F2F3">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6E73" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+            <input value="{{ pickQuery }}" onChange="{{ onPickQuery }}" placeholder="Search question or verb" style="flex:1;min-width:0;border:none;background:transparent;outline:none;font-size:14px;font-family:inherit;color:#17171A"></input>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;position:relative;z-index:5">
+            <sc-for list="{{ pickDDs }}" as="d" hint-placeholder-count="4">
+              <div data-dd="1" style="position:relative">
+                <button onClick="{{ d.onToggle }}" style="display:flex;align-items:center;gap:7px;height:34px;padding:0 10px;border-radius:9px;border:1px solid {{ d.border }};background:{{ d.bg }};cursor:pointer;font-family:inherit;white-space:nowrap" style-hover="border-color:#C9C9CE">
+                  <span style="width:15px;height:15px;flex:0 0 auto;background-image:url({{ d.icon }});background-size:contain;background-repeat:no-repeat"></span>
+                  <span style="font-size:13px;font-weight:600;color:#6E6E73">{{ d.label }}</span>
+                  <span style="font-size:13px;font-weight:800;color:#17171A">{{ d.value }}</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6E73" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+                <sc-if value="{{ d.open }}">
+                  <div style="position:absolute;top:calc(100% + 6px);left:0;z-index:40;min-width:230px;padding:6px;background:#fff;border:1px solid #ECECEE;border-radius:12px;box-shadow:0 14px 36px rgba(23,23,26,0.14);display:flex;flex-direction:column;gap:2px">
+                    <sc-for list="{{ d.options }}" as="o" hint-placeholder-count="3">
+                      <button onClick="{{ o.onClick }}" style="display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;border:none;border-radius:8px;background:{{ o.bg }};cursor:pointer;font-family:inherit;text-align:left;color:#17171A" style-hover="background:#F2F2F3">
+                        <span style="width:28px;height:28px;flex:0 0 auto;border-radius:8px;background:{{ o.iconBg }};display:flex;align-items:center;justify-content:center"><span style="width:15px;height:15px;background-image:url({{ o.icon }});background-size:contain;background-repeat:no-repeat"></span></span>
+                        <span style="flex:1;font-size:14px;font-weight:{{ o.weight }};white-space:nowrap">{{ o.label }}</span>
+                        <span style="font-size:12px;font-weight:700;color:#8E8E93">{{ o.count }}</span>
+                        <span style="width:16px;display:flex;justify-content:center"><sc-if value="{{ o.on }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2711C" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></sc-if></span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:8px 12px">
+          <sc-for list="{{ pickRows }}" as="p" hint-placeholder-count="4">
+            <button onClick="{{ p.onClick }}" style="box-sizing:border-box;width:100%;text-align:left;display:grid;grid-template-columns:20px minmax(0,1fr);gap:12px;align-items:start;padding:12px;border-radius:12px;cursor:pointer;font-family:inherit;color:#17171A;border:1.5px solid {{ p.border }};background:{{ p.bg }};margin-bottom:6px">
+              <span style="width:18px;height:18px;margin-top:2px;border-radius:999px;border:2px solid {{ p.dot }};display:flex;align-items:center;justify-content:center"><span style="width:8px;height:8px;border-radius:999px;background:{{ p.dotFill }}"></span></span>
+              <span style="display:flex;flex-direction:column;gap:5px;min-width:0">
+                <span style="font-size:14px;font-weight:700;line-height:1.4;text-wrap:pretty">{{ p.text }}</span>
+                <span style="display:flex;flex-wrap:wrap;gap:6px 10px;font-size:12px;color:#6E6E73;font-weight:600">
+                  <span style="display:flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;background:rgba(242,113,28,0.1);color:#C25A14;font-weight:700"><span style="width:12px;height:12px;flex:0 0 auto;background-image:url({{ p.typeIcon }});background-size:contain;background-repeat:no-repeat"></span>{{ p.typeLabel }}</span>
+                  <sc-if value="{{ p.isUser }}"><span style="padding:2px 8px;border-radius:6px;background:rgba(91,108,240,0.12);color:#3F4FC9;font-weight:700">User submitted</span></sc-if>
+                  <span>{{ p.when }}</span>
+                </span>
+              </span>
+            </button>
+          </sc-for>
+          <sc-if value="{{ pickEmpty }}">
+            <div style="padding:40px 16px;text-align:center;font-size:14px;font-weight:600;color:#6E6E73">No questions match these filters.</div>
+          </sc-if>
+        </div>
+        <div style="padding:14px 24px;border-top:1px solid #ECECEE;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px">
+          <span style="font-size:13px;font-weight:600;color:#6E6E73">{{ pickCountLabel }}</span>
+          <div style="display:flex;gap:8px">
+            <button onClick="{{ pickEdit }}" disabled="{{ pickNone }}" style="white-space:nowrap;padding:10px 16px;border-radius:10px;border:1px solid #E4E4E7;background:#fff;font-size:14px;font-weight:800;cursor:pointer;color:{{ pickEditColor }}">Edit first</button>
+            <button onClick="{{ pickConfirm }}" disabled="{{ pickNone }}" style="white-space:nowrap;padding:10px 16px;border-radius:10px;border:none;font-size:14px;font-weight:800;cursor:pointer;background:{{ pickBtnBg }};color:{{ pickBtnColor }}">Schedule</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasReject }}">
+    <div onClick="{{ cancelReject }}" style="position:fixed;inset:0;background:rgba(23,23,26,0.45);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50">
+      <div onClick="{{ stop }}" style="width:100%;max-width:460px;background:#fff;border-radius:18px;padding:24px;box-shadow:0 24px 60px rgba(0,0,0,0.25);display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:40px;height:40px;border-radius:12px;background:rgba(245,51,63,0.1);color:#C21D29;display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="m5.6 5.6 12.8 12.8"></path></svg>
+          </span>
+          <span style="display:flex;flex-direction:column;gap:2px">
+            <h3 style="margin:0;font-size:17px;font-weight:800">Reject this question?</h3>
+            <span style="font-size:13px;color:#6E6E73">{{ sel.name }} will see the reason in the app.</span>
+          </span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:13px;font-weight:800">Reason</span>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ reasonChips }}" as="c" hint-placeholder-count="5">
+              <button onClick="{{ c.onClick }}" style="white-space:nowrap;padding:8px 12px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;background:{{ c.bg }};border:1.5px solid {{ c.border }};color:{{ c.color }}">{{ c.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:13px;font-weight:800">Note to user <span style="font-weight:600;color:#6E6E73">— optional</span></span>
+          <textarea value="{{ rejectNote }}" onChange="{{ onRejectNote }}" rows="3" placeholder="e.g. The past simple of &quot;go&quot; is &quot;went&quot;, not &quot;gone&quot;." style="width:100%;resize:vertical;padding:10px 12px;border-radius:10px;border:1px solid #E4E4E7;font-size:14px;line-height:1.45;color:#17171A"></textarea>
+        </label>
+        <div style="display:flex;justify-content:flex-end;gap:10px">
+          <button onClick="{{ cancelReject }}" style="padding:10px 18px;border-radius:10px;border:1px solid #E4E4E7;background:#fff;font-size:14px;font-weight:700;cursor:pointer;color:#17171A">Cancel</button>
+          <button onClick="{{ confirmReject }}" disabled="{{ noReason }}" style="padding:10px 18px;border-radius:10px;border:none;font-size:14px;font-weight:800;cursor:pointer;background:{{ rejectBg }};color:{{ rejectColor }}">Reject &amp; notify</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}">
+    <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);padding:12px 18px;border-radius:12px;background:#1B1B1D;color:#fff;font-size:14px;font-weight:700;box-shadow:0 12px 30px rgba(0,0,0,0.25);animation:qa-toast 0.25s ease-out;display:flex;align-items:center;gap:8px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1FA971" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>{{ toast }}
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;today&quot;,&quot;schedule&quot;,&quot;add&quot;,&quot;submissions&quot;,&quot;library&quot;],&quot;default&quot;:&quot;today&quot;,&quot;tsType&quot;:&quot;'today'|'schedule'|'add'|'submissions'|'library'&quot;},&quot;showPreview&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const OR = '#F2711C', GR = '#1FA971', RD = '#F5333F';
+const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const BASE = new Date(2026, 9, 27);
+const TL = { single: 'Single choice', multi: 'Multiple choice', fill: 'Fill in the blank', order: 'Reorder words' };
+const TD = { single: 'One correct option', multi: 'Several correct options', fill: 'Type the missing word', order: 'Build the sentence' };
+const PH = { single: 'e.g. What is the past simple of "catch"?', multi: 'e.g. Which of these verbs are irregular?', fill: 'e.g. Complete the sentence with the correct verb form.', order: 'e.g. Put the words in the correct order.' };
+const COLORS = ['#F2711C','#1FA971','#5B6CF0','#D64F9A','#0E9FB5','#8A5CF6','#C98A00','#4B5563'];
+const day = off => { const d = new Date(BASE); d.setDate(d.getDate() + off); return { wd: WD[d.getDay()], day: d.getDate(), mo: MO[d.getMonth()], label: `${WD[d.getDay()]}, ${MO[d.getMonth()]} ${d.getDate()}` }; };
+const initials = n => (n || '').split(' ').filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || '?';
+const colorFor = n => { let h = 0; for (const c of (n || '')) h = (h * 31 + c.charCodeAt(0)) % 997; return COLORS[h % COLORS.length]; };
+const flags = t => ({ isSingle: t === 'single', isMulti: t === 'multi', isFill: t === 'fill', isOrder: t === 'order' });
+const shuffle = ws => ws.map((w, i) => ({ w, k: (w.length * 7 + i * 13) % 11 })).sort((a, b) => a.k - b.k).map(x => x.w);
+const opts = (arr, correct) => arr.map((t, i) => ({ text: t, correct: correct.includes(i) }));
+
+const SCHEDULE0 = {
+  1: { type: 'multi', text: 'Which of these verbs are irregular?', options: opts(['go','play','see','walk'], [0, 2]), author: 'Linh Tran', status: 'scheduled', explanation: 'go – went – gone and see – saw – seen don\'t follow the -ed pattern.' },
+  2: { type: 'fill', text: 'Complete the sentence with the correct verb form.', sentence: 'I have never ___ sushi before.', answer: 'eaten', hint: 'eat', author: 'Minh Anh', status: 'scheduled', explanation: 'Present perfect uses the past participle: eat – ate – eaten.' },
+  3: { type: 'order', text: 'Put the words in the correct order.', sentence: 'She has never been to London', author: 'Linh Tran', status: 'scheduled', explanation: '"Never" goes between "has" and the past participle.' },
+  4: { type: 'single', text: 'What is the past simple of "catch"?', options: opts(['catched','caught','catch','cought'], [1]), author: 'Sarah Kim', status: 'scheduled', explanation: 'catch – caught – caught.' },
+  6: { type: 'single', text: '"They ___ home before it started to rain."', options: opts(['had gone','have gone','goes','had went'], [0]), author: 'Quang Huy Nguyen', status: 'scheduled', explanation: 'Past perfect: had + past participle (gone).' },
+  7: { type: 'fill', text: 'Fill in the past simple form.', sentence: 'The bell ___ at 8 o\'clock yesterday.', answer: 'rang', hint: 'ring', author: 'Linh Tran', status: 'scheduled', explanation: 'ring – rang – rung.' },
+  8: { type: 'multi', text: 'Which sentences are in the past perfect?', options: opts(['She had left.','She has left.','They had eaten.','They eat.'], [0, 2]), author: 'Minh Anh', status: 'scheduled', explanation: 'Past perfect = had + V3.' },
+  10: { type: 'order', text: 'Put the words in the correct order.', sentence: 'We bought a new car last year', author: 'Sarah Kim', status: 'scheduled', explanation: 'buy – bought – bought.' },
+  11: { type: 'single', text: 'Choose the past participle of "begin".', options: opts(['began','begun','beginned','begined'], [1]), author: 'Linh Tran', status: 'draft', explanation: '' },
+  14: { type: 'fill', text: 'Fill in the past simple form.', sentence: 'He ___ his keys on the table.', answer: 'left', hint: 'leave', author: 'Linh Tran', status: 'draft', explanation: '' },
+};
+
+const TODAY_Q = { type: 'single', text: 'Choose the correct form: "She has already ___ the letter."', options: opts(['wrote','written','writed','writing'], [1]), author: 'Minh Anh', explanation: 'write – wrote – written. After "has" we use the past participle (present perfect).' };
+const TODAY_OPTS = [{ t: 'wrote', n: 212 }, { t: 'written', n: 796, c: true }, { t: 'writed', n: 148 }, { t: 'writing', n: 128 }];
+const LETTERS = 'ABCDEF';
+
+const EXPL0 = [
+  { id: 1, name: 'Minh Anh', pick: 'B', ok: true, time: '12 min ago', likes: 42, text: 'write – wrote – written. After "has" you always need the past participle, so it must be "written".', reply: 'Exactly right — has/have + V3 is the present perfect.', replyTime: '5 min ago' },
+  { id: 2, name: 'Quang Huy', pick: 'A', ok: false, time: '20 min ago', likes: 3, text: 'I picked "wrote" because the action already happened in the past. Why is that wrong?' },
+  { id: 3, name: 'Sarah Kim', pick: 'B', ok: true, time: '34 min ago', likes: 27, text: 'Tip: "already" is a strong signal for the present perfect.' },
+  { id: 4, name: 'Tuan Nguyen', pick: 'C', ok: false, time: '1h ago', likes: 1, text: 'Isn\'t "writed" the regular past form? I thought all verbs add -ed.' },
+  { id: 5, name: 'Hoa Pham', pick: 'B', ok: true, time: '1h ago', likes: 18, text: 'Same pattern as drive – drove – driven.', reply: 'Nice comparison! ride – rode – ridden works the same way.', replyTime: '48 min ago' },
+  { id: 6, name: 'Bao Le', pick: 'D', ok: false, time: '2h ago', likes: 2, text: '"has writing" sounded like the present continuous to me.' },
+  { id: 7, name: 'David Ho', pick: 'A', ok: false, time: '3h ago', likes: 0, text: 'In spoken English people say "she already wrote it", so I chose A.' },
+  { id: 8, name: 'English Pro Center', pick: 'B', ok: true, time: '25 min ago', likes: 0, text: 'Want to master English in 30 days? Join our free course now at bit.ly/eng-pro-free !!!', reports: 6, reason: 'Spam' },
+  { id: 9, name: 'Khoa Vu', pick: 'A', ok: false, time: '2h ago', likes: 1, text: 'This question is dumb, whoever wrote it clearly doesn\'t know English.', reports: 3, reason: 'Harassment' },
+  { id: 10, name: 'Lan Do', pick: 'C', ok: false, time: '2h ago', likes: 4, text: '"writed" is also correct in American English, both forms are fine.', reports: 2, reason: 'Wrong information' },
+];
+
+const SUBS0 = [
+  { id: 1, name: 'Tuan Nguyen', time: '25 min ago', history: 'First submission', type: 'single', text: 'What is the past participle of "swim"?', options: opts(['swam','swum','swimmed','swimming'], [1]), explanation: 'swim – swam – swum. The past participle ends in -um.', status: 'pending' },
+  { id: 2, name: 'Hoa Pham', time: '1h ago', history: '4 submitted · 2 approved', type: 'fill', text: 'Complete the sentence with the past simple.', sentence: 'Yesterday we ___ to the beach.', answer: 'went', hint: 'go', explanation: '"Yesterday" means a finished past time, so we use the past simple: go – went.', status: 'pending' },
+  { id: 3, name: 'Bao Le', time: '3h ago', history: '2 submitted · 1 approved', type: 'multi', text: 'Which of these are past participles?', options: opts(['taken','took','written','wrote'], [0, 2]), explanation: 'take – took – taken, write – wrote – written.', status: 'pending' },
+  { id: 4, name: 'David Ho', time: '5h ago', history: 'First submission', type: 'order', text: 'Put the words in the correct order.', sentence: 'I have just finished my homework', explanation: '"Just" goes between "have" and the past participle.', status: 'pending' },
+  { id: 5, name: 'Khoa Vu', time: 'Yesterday', history: '3 submitted · 0 approved', type: 'single', text: 'What is the past simple of "go"?', options: opts(['goed','went','gone','go'], [2]), explanation: '', status: 'pending' },
+  { id: 6, name: 'Sarah Kim', time: 'Oct 24', history: '9 submitted · 7 approved', type: 'single', text: 'What is the past simple of "catch"?', options: opts(['catched','caught','catch','cought'], [1]), explanation: 'catch – caught – caught.', status: 'approved', day: 4 },
+  { id: 7, name: 'Phong Tran', time: 'Oct 23', history: '1 submitted · 0 approved', type: 'single', text: 'Choose the past participle of "write".', options: opts(['wrote','written','writed','writing'], [1]), explanation: '', status: 'rejected', reason: 'Duplicate question', note: 'Very similar to the Oct 27 question — try a different verb!' },
+];
+const PAST0 = [
+  { off: -1, type: 'single', text: 'What is the past simple of "teach"?', options: opts(['teached','taught','thought','teach'], [1]), author: 'Linh Tran', explanation: 'teach – taught – taught.', answers: 1102, correct: 71 },
+  { off: -2, type: 'order', text: 'Put the words in the correct order.', sentence: 'They have lived here since 2015', author: 'Minh Anh', explanation: 'Present perfect + since for a starting point.', answers: 964, correct: 54 },
+  { off: -3, type: 'multi', text: 'Which of these verbs are irregular?', options: opts(['run','jump','eat','cook'], [0, 2]), author: 'Sarah Kim', explanation: 'run – ran – run, eat – ate – eaten.', answers: 1210, correct: 47 },
+  { off: -5, type: 'single', text: 'Choose the past participle of "swim".', options: opts(['swam','swum','swimmed','swimming'], [1]), author: 'Linh Tran', explanation: 'swim – swam – swum.', answers: 980, correct: 58 },
+  { off: -6, type: 'fill', text: 'Fill in the past simple form.', sentence: 'She ___ a new phone last week.', answer: 'bought', hint: 'buy', author: 'Minh Anh', explanation: 'buy – bought – bought.', answers: 1045, correct: 66 },
+  { off: -8, type: 'single', text: 'What is the past participle of "go"?', options: opts(['went','gone','goed','going'], [1]), author: 'Quang Huy Nguyen', explanation: 'go – went – gone.', answers: 1320, correct: 74 },
+  { off: -9, type: 'order', text: 'Put the words in the correct order.', sentence: 'He has already eaten breakfast', author: 'Linh Tran', explanation: '"Already" sits between "has" and the past participle.', answers: 870, correct: 61 },
+  { off: -12, type: 'fill', text: 'Complete the sentence with the past simple.', sentence: 'We ___ to Da Nang last summer.', answer: 'went', hint: 'go', author: 'Sarah Kim', explanation: 'go – went – gone.', answers: 1156, correct: 80, community: true },
+  { off: -15, type: 'single', text: 'What is the past simple of "write"?', options: opts(['wrote','written','writed','writing'], [0]), author: 'Minh Anh', explanation: 'write – wrote – written.', answers: 1018, correct: 69 },
+];
+const STOP = new Set('a an the of to in on at for and or is are was were be been what which who choose correct form forms sentence sentences complete fill put words word order verb verbs past simple participle present perfect continuous these this that with use uses i you he she we they it my your his her our their has have had do does did not'.split(' '));
+const toks = q => new Set([q.text, q.sentence || '', q.answer || '', q.hint || '', ...(q.options || []).map(o => o.text)].join(' ').toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(w => w.length > 1 && !STOP.has(w)));
+const simScore = (a, b) => { const A = toks(a), B = toks(b); if (A.size < 2 || B.size < 2) return 0; let n = 0; A.forEach(w => { if (B.has(w)) n++; }); return n / Math.min(A.size, B.size); };
+const whenLabel = off => off < 0 ? `Shown ${day(off).label}` : off === 0 ? 'Live today' : `Scheduled ${day(off).label}`;
+const REASONS = ['Wrong answer', 'Duplicate question', 'Unclear wording', 'Too easy / too hard', 'Not appropriate'];
+
+const blankForm = off => ({ type: 'single', text: '', options: opts(['', '', '', ''], []), sentence: '', answer: '', hint: '', explanation: '', author: 'Linh Tran', dayOffset: off, editing: null });
+
+const REPLIES0 = {
+  1: [{ rid: 101, name: 'Linh Tran', admin: true, time: '5 min ago', text: 'Exactly right — has/have + V3 is the present perfect.' }, { rid: 102, name: 'Bao Le', time: '3 min ago', text: 'Thanks, the "has + V3" rule makes it click for me.' }],
+  2: [{ rid: 201, name: 'Sarah Kim', time: '15 min ago', text: '"Already" with "has" means present perfect, so you need V3 (written), not V2 (wrote).' }, { rid: 202, name: 'Phong Tran', time: '10 min ago', text: 'Lol how do you not know this, so basic', reports: 2, reason: 'Harassment' }],
+  4: [{ rid: 401, name: 'Hoa Pham', time: '40 min ago', text: 'write is irregular, so there is no "writed".' }],
+  5: [{ rid: 501, name: 'Linh Tran', admin: true, time: '48 min ago', text: 'Nice comparison! ride – rode – ridden works the same way.' }],
+  10: [{ rid: 1001, name: 'Minh Anh', time: '1h ago', text: 'That\'s not right — "writed" isn\'t used in any variety of English.' }],
+};
+
+const ICP = {
+  all: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/>',
+  pub: '<circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+  unpub: '<path d="M3 3l18 18"/><path d="M10.6 5.1A9.8 9.8 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-2.6 3.4M6.6 6.6C3.9 8.3 2.5 12 2.5 12S6 19 12 19c1.8 0 3.4-.6 4.7-1.4"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  upcoming: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  draft: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  anyone: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/>',
+  admin: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  type: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  single: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor"/>',
+  multi: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/>',
+  fill: '<path d="M4 7V5h16v2M12 5v12M9 19h6"/>',
+  order: '<path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/>',
+  sort: '<path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/>',
+  newest: '<path d="M12 5v14M6 13l6 6 6-6"/>',
+  oldest: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+};
+const icon = (k, c) => '"data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c}" color="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICP[k]}</svg>`) + '"';
+const ICC = { all: '#6E6E73', pub: '#137A51', unpub: '#6E6E73', upcoming: '#C25A14', draft: '#6E6E73', anyone: '#6E6E73', admin: '#17171A', user: '#3F4FC9', type: '#6E6E73', single: '#C25A14', multi: '#C25A14', fill: '#C25A14', order: '#C25A14', newest: '#6E6E73', oldest: '#6E6E73', history: '#6E6E73', clock: '#6E6E73' };
+const ICB = { pub: 'rgba(31,169,113,0.12)', upcoming: 'rgba(242,113,28,0.12)', user: 'rgba(91,108,240,0.12)', single: 'rgba(242,113,28,0.1)', multi: 'rgba(242,113,28,0.1)', fill: 'rgba(242,113,28,0.1)', order: 'rgba(242,113,28,0.1)' };
+
+const qKey = q => (q.text + '|' + (q.sentence || '') + '|' + (q.options || []).map(o => o.text).join(',')).toLowerCase();
+const hashStr = t => { let n = 7; for (const c of t) n = (n * 31 + c.charCodeAt(0)) % 100003; return n; };
+const mockOlder = q => { const n = hashStr(qKey(q)), out = []; [2025, 2024].forEach((y, yi) => { const k = (n >> (yi * 3)) % 4; for (let i = 0; i < k; i++) out.push(new Date(y, (n * (i + 3) + yi * 5) % 12, 1 + ((n >> i) % 27))); }); return out; };
+
+class Component extends DCLogic {
+  usageOf = x => {
+    const key = qKey(x);
+    const now = this.allQs().filter(q => qKey(q) === key).map(q => { const d = new Date(BASE); d.setDate(d.getDate() + q.off); return { d, k: q.off < 0 ? 'past' : q.off === 0 ? 'live' : q.status === 'draft' ? 'draft' : 'upcoming' }; });
+    return [...now, ...mockOlder(x).map(d => ({ d, k: 'past' }))].sort((a, b) => b.d - a.d);
+  };
+  mkDD = (id, label, trig, value, opts, set) => {
+    const open = this.state.dd === id, cur = opts.find(o => o.v === value) || opts[0];
+    return { label, value: cur.label, icon: icon(trig, '#6E6E73'), open, border: open ? '#17171A' : '#E4E4E7', bg: '#fff',
+      onToggle: () => this.setState(st => ({ dd: st.dd === id ? null : id })),
+      options: opts.map(o => ({ label: o.label, count: o.count ?? '', icon: icon(o.ic, ICC[o.ic] || '#6E6E73'), iconBg: ICB[o.ic] || '#F2F2F3', on: o.v === value, bg: o.v === value ? '#FFF8F2' : 'transparent', weight: o.v === value ? 800 : 600,
+        onClick: () => { this.setState({ dd: null }); set(o.v); } })) };
+  };
+  state = { view_q: null, hist: null, reuse: null, pick: null, schedMode: 'next', schedMonth: 0, view: this.props.defaultView ?? 'today', filter: 'all', expl: EXPL0.map(e => ({ ...e, replies: REPLIES0[e.id] || [] })), replyingId: null, replyText: '', confirm: null, schedule: { ...SCHEDULE0, 4: { ...SCHEDULE0[4], community: true } }, form: blankForm(5), toast: null, subs: SUBS0, subFilter: 'pending', selSub: 1, subDay: 5, reject: null, libFilter: 'all', libQuery: '' };
+
+  go = view => this.setState({ view, libTarget: null });
+  updReplies = (id, fn) => this.setState(st => ({ expl: st.expl.map(x => x.id === id ? { ...x, replies: fn(x.replies) } : x) }));
+  firstGap = () => { for (let i = 1; i <= 14; i++) if (!this.state.schedule[i]) return i; return 1; };
+  openAdd = off => this.setState({ view: 'add', form: blankForm(off ?? this.firstGap()) });
+  openEdit = off => {
+    const q = off === 0 ? TODAY_Q : this.state.schedule[off];
+    this.setState({ view: 'add', form: { ...blankForm(off), ...JSON.parse(JSON.stringify(q)), dayOffset: off, editing: off } });
+  };
+  allQs = () => [...PAST0, { ...TODAY_Q, off: 0, answers: 1284, correct: 62 }, ...Object.keys(this.state.schedule).map(k => ({ ...this.state.schedule[k], off: +k }))];
+  findDups = (q, exclude = []) => this.allQs().filter(x => !exclude.includes(x.off)).map(x => ({ x, s: simScore(q, x) })).filter(m => m.s >= 0.6).sort((a, b) => b.s - a.s).slice(0, 3)
+    .map(({ x, s }) => ({ text: x.text + (x.type === 'fill' || x.type === 'order' ? ' — ' + x.sentence : ''), when: whenLabel(x.off), typeLabel: TL[x.type], pct: Math.round(s * 100) }));
+  openReuse = x => { const off = this.state.libTarget ?? this.firstGap(); const c = JSON.parse(JSON.stringify(x)); this.setState({ view: 'add', form: { ...blankForm(off), ...c, options: c.options || opts(['', '', '', ''], []), sentence: c.sentence || '', answer: c.answer || '', hint: c.hint || '', dayOffset: off, editing: null, reuseOf: x.off } }); };
+  selectFirst = filter => { const x = this.state.subs.find(s => s.status === filter); return x ? x.id : null; };
+  pickSub = id => { const sub = this.state.subs.find(s => s.id === id); this.setState({ selSub: id, subDay: sub && sub.day ? sub.day : this.firstGap() }); };
+  subToQ = sub => { const q = { type: sub.type, text: sub.text, author: sub.name, status: 'scheduled', explanation: sub.explanation, community: true }; if (sub.options) q.options = sub.options; else { q.sentence = sub.sentence; q.answer = sub.answer || ''; q.hint = sub.hint || ''; } return q; };
+  resolveSub = (id, patch) => this.setState(st => {
+    const subs = st.subs.map(x => x.id === id ? { ...x, ...patch } : x);
+    const next = subs.find(x => x.status === 'pending');
+    let subDay = st.subDay; for (let i = 1; i <= 14; i++) if (!st.schedule[i]) { subDay = i; break; }
+    return { subs, selSub: next ? next.id : id, subFilter: next ? 'pending' : st.subFilter, subDay };
+  });
+  setF = patch => this.setState(s => ({ form: { ...s.form, ...patch } }));
+  flash = msg => { this.setState({ toast: msg }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2400); };
+  componentWillUnmount() { clearTimeout(this._t); }
+
+  valid(f) {
+    if (!f.text.trim()) return false;
+    if (f.type === 'single' || f.type === 'multi') {
+      const filled = f.options.filter(o => o.text.trim());
+      const nc = filled.filter(o => o.correct).length;
+      return filled.length >= 2 && (f.type === 'single' ? nc === 1 : nc >= 1);
+    }
+    if (f.type === 'fill') return f.sentence.includes('___') && !!f.answer.trim();
+    return f.sentence.trim().split(/\s+/).length >= 3;
+  }
+
+  save = status => {
+    const f = this.state.form;
+    const q = { type: f.type, text: f.text.trim(), author: f.author.trim() || 'Admin', status, explanation: f.explanation };
+    if (f.type === 'single' || f.type === 'multi') q.options = f.options.filter(o => o.text.trim());
+    else { q.sentence = f.sentence.trim(); q.answer = f.answer.trim(); q.hint = f.hint.trim(); }
+    if (f.fromSub) q.community = true;
+    if (f.dayOffset === 0) { this.setState({ view: 'today' }); this.flash('Today\'s question updated'); return; }
+    this.setState(s => {
+      const sch = { ...s.schedule };
+      if (f.editing && f.editing !== f.dayOffset) delete sch[f.editing];
+      sch[f.dayOffset] = q;
+      return { schedule: sch, view: f.fromSub ? 'submissions' : 'schedule' };
+    });
+    if (f.fromSub) { this.resolveSub(f.fromSub, { status: 'approved', day: f.dayOffset }); this.flash(`Approved · scheduled for ${day(f.dayOffset).label}`); return; }
+    this.flash(`${status === 'draft' ? 'Draft saved' : 'Scheduled'} for ${day(f.dayOffset).label}`);
+  };
+
+  renderVals() {
+    const s = this.state, f = s.form;
+    const navOn = v => (s.view === 'add' && f.fromSub ? 'submissions' : s.view) === v;
+    const nav = v => ({ bg: navOn(v) ? 'rgba(242,113,28,0.1)' : 'transparent', color: navOn(v) ? '#C25A14' : '#17171A' });
+
+    // TODAY
+    const total = TODAY_OPTS.reduce((a, o) => a + o.n, 0);
+    const todayOptions = TODAY_OPTS.map((o, i) => ({
+      letter: LETTERS[i], text: o.t, count: o.n.toLocaleString('en-US'), pct: Math.round(o.n / total * 100), isCorrect: !!o.c,
+      barColor: o.c ? GR : 'rgba(245,51,63,0.45)', letterBg: o.c ? GR : '#F2F2F3', letterColor: o.c ? '#fff' : '#17171A',
+    }));
+    const hasAdmin = e => e.replies.some(r => r.admin);
+    const isRep = e => e.reports || e.replies.some(r => r.reports);
+    const replied = s.expl.filter(hasAdmin).length;
+    const unreplied = s.expl.length - replied;
+    const reported = s.expl.filter(isRep).length;
+    const tabs = [['all', 'All', s.expl.length], ['replied', 'Replied', replied], ['reported', 'Reported', reported]];
+    const filterTabs = tabs.map(([id, label, count]) => ({
+      label, count, onClick: () => this.setState({ filter: id }), isAll: id === 'all', isReplied: id === 'replied', isReported: id === 'reported',
+      bg: s.filter === id ? '#fff' : 'transparent', color: s.filter === id ? '#17171A' : '#6E6E73', shadow: s.filter === id ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+    }));
+    const shown = s.expl.filter(e => s.filter === 'all' || (s.filter === 'replied' ? hasAdmin(e) : isRep(e)));
+    const explList = shown.map(e => ({
+      ...e, init: initials(e.name), color: colorFor(e.name),
+      pick: `${e.pick} · ${TODAY_OPTS[LETTERS.indexOf(e.pick)].t}`,
+      pickBg: e.ok ? 'rgba(31,169,113,0.12)' : 'rgba(245,51,63,0.1)', pickColor: e.ok ? '#137A51' : '#C21D29',
+      isReplying: s.replyingId === e.id, canReply: s.replyingId !== e.id, hasReplies: e.replies.length > 0,
+      onReply: () => this.setState({ replyingId: e.id, replyText: '' }),
+      replies: e.replies.map(r => ({
+        ...r, isAdmin: !!r.admin, init: initials(r.name), color: r.admin ? OR : colorFor(r.name),
+        bg: r.admin ? '#FFF4EC' : '#F5F5F6', nameColor: r.admin ? '#B4500F' : '#17171A',
+        isReported: !!r.reports, reportLabel: r.reports ? `Reported ${r.reports} ${r.reports > 1 ? 'times' : 'time'} · ${r.reason}` : '',
+        onAskDelete: () => this.setState({ confirm: { eid: e.id, rid: r.rid, name: r.name, text: r.text, title: 'Delete this reply?', note: 'It will be removed from the app. This can\'t be undone.' } }),
+        onDismiss: () => { this.updReplies(e.id, rs => rs.map(x => x.rid === r.rid ? { ...x, reports: 0 } : x)); this.flash('Reports dismissed'); },
+      })),
+      isReported: !!e.reports, reportLabel: e.reports ? `Reported ${e.reports} ${e.reports > 1 ? 'times' : 'time'} · ${e.reason}` : '',
+      onAskDelete: () => this.setState({ confirm: { eid: e.id, name: e.name, text: e.text, title: 'Delete this explanation?', note: `It will be removed from the app${e.replies.length ? ` along with ${e.replies.length} ${e.replies.length > 1 ? 'replies' : 'reply'}` : ''}. This can't be undone.` } }),
+      onDismiss: () => { this.setState(st => ({ expl: st.expl.map(x => x.id === e.id ? { ...x, reports: 0, reason: '' } : x) })); this.flash('Reports dismissed'); },
+    }));
+    const replyEmpty = !s.replyText.trim();
+
+    // SCHEDULE
+    const sch = s.schedule;
+    let scheduledCount = 0, draftCount = 0, gapCount = 0;
+    const coverage = [], rows = [];
+    let n14 = 0, n14gap = 0;
+    for (let i = 1; i <= 14; i++) if (!sch[i]) n14gap++;
+    const isMonthMode = s.schedMode === 'month';
+    const mStart = new Date(BASE.getFullYear(), BASE.getMonth() + s.schedMonth, 1);
+    const mDays = new Date(mStart.getFullYear(), mStart.getMonth() + 1, 0).getDate();
+    const offs = isMonthMode ? Array.from({ length: mDays }, (_, k) => Math.round((new Date(mStart.getFullYear(), mStart.getMonth(), k + 1) - BASE) / 864e5)) : Array.from({ length: 14 }, (_, k) => k + 1);
+    offs.forEach((i, idx) => {
+      const past = i < 0, live = i === 0;
+      const pq = past ? PAST0.find(p => p.off === i) : null;
+      const q = past ? pq : live ? TODAY_Q : sch[i], d = day(i);
+      if (!past && !live) { if (!q) gapCount++; else if (q.status === 'draft') draftCount++; else scheduledCount++; }
+      coverage.push({ color: past ? (q ? '#C9C9CE' : '#F2F2F3') : live ? '#17171A' : !q ? '#E4E4E7' : q.status === 'draft' ? '#F9C29C' : OR, title: d.label });
+      const st = past ? ['Published', '#F2F2F3', '#6E6E73'] : live ? ['Live today', 'rgba(242,113,28,0.12)', '#C25A14'] : q && q.status === 'draft' ? ['Draft', '#F2F2F3', '#6E6E73'] : ['Scheduled', 'rgba(31,169,113,0.12)', '#137A51'];
+      rows.push({
+        ...d, ...flags(q && q.type), hasQ: !!q, isEmpty: !q, borderTop: idx === 0 ? 'none' : '1px solid #ECECEE',
+        rowBg: live ? '#FFF8F2' : '#fff', rowOpacity: past ? 0.6 : 1,
+        showEdit: !!q && !past, showAdd: !q && !past, isPastRow: past, pastNote: q && q.answers ? q.answers.toLocaleString('en-US') + ' answers' : '',
+        emptyText: past ? 'No question was shown this day.' : 'No question scheduled — users will see an empty day.',
+        typeLabel: q ? TL[q.type] : '', text: q ? q.text : '', author: q ? q.author : '', authInit: q ? initials(q.author) : '', authColor: q ? colorFor(q.author) : '#C9C9CE',
+        statusLabel: st[0], statusBg: st[1], statusColor: st[2], isCommunity: !!(q && q.community),
+        onEdit: () => this.openEdit(i), onAdd: () => this.openAdd(i),
+        onView: () => q && this.setState({ view_q: { ...q, off: i } }),
+        onPick: () => this.setState({ pick: { off: i, q: '', type: 'all', sort: 'oldest', sel: null } }),
+      });
+    });
+    const tab = on => ({ bg: on ? '#fff' : 'transparent', color: on ? '#17171A' : '#6E6E73', shadow: on ? '0 1px 2px rgba(0,0,0,0.08)' : 'none' });
+    const schedTabs = [
+      { label: 'Next 14 days', ...tab(!isMonthMode), onClick: () => this.setState({ schedMode: 'next' }) },
+      { label: 'Month', ...tab(isMonthMode), onClick: () => this.setState({ schedMode: 'month' }) },
+    ];
+    const monthLabel = MO[mStart.getMonth()] + ' ' + mStart.getFullYear();
+    const schedKicker = isMonthMode ? monthLabel + ' · ' + mDays + ' days' : 'Next 14 days';
+
+    // FORM
+    const isChoice = f.type === 'single' || f.type === 'multi';
+    const typeCards = ['single', 'multi', 'fill', 'order'].map(t => {
+      const on = f.type === t;
+      return {
+        ...flags(t), label: TL[t], desc: TD[t],
+        bg: on ? '#FFF4EC' : '#fff', border: on ? OR : '#ECECEE', iconBg: on ? OR : '#F2F2F3', iconColor: on ? '#fff' : '#17171A',
+        onClick: () => {
+          let options = f.options;
+          if (t === 'single') { let seen = false; options = options.map(o => { const c = o.correct && !seen; if (c) seen = true; return { ...o, correct: c }; }); }
+          this.setF({ type: t, options });
+        },
+      };
+    });
+    const formOptions = f.options.map((o, i) => ({
+      letter: LETTERS[i], text: o.text, checked: o.correct, radius: f.type === 'single' ? '50%' : '7px',
+      markBorder: o.correct ? GR : '#D4D4D8', markBg: o.correct ? GR : '#fff',
+      cannotRemove: f.options.length <= 2, removeOpacity: f.options.length <= 2 ? 0.4 : 1,
+      onChange: e => { const v = e.target.value; this.setF({ options: f.options.map((x, j) => j === i ? { ...x, text: v } : x) }); },
+      onToggle: () => this.setF({ options: f.options.map((x, j) => f.type === 'single' ? { ...x, correct: j === i } : j === i ? { ...x, correct: !x.correct } : x) }),
+      onRemove: () => f.options.length > 2 && this.setF({ options: f.options.filter((_, j) => j !== i) }),
+    }));
+    const ok = this.valid(f);
+    const taken = !!sch[f.dayOffset] && f.editing !== f.dayOffset && f.dayOffset !== 0;
+    const dateChips = [];
+    for (let i = 1; i <= 14; i++) {
+      const d = day(i), on = f.dayOffset === i, has = !!sch[i];
+      dateChips.push({ wd: d.wd, day: d.day, bg: on ? OR : '#fff', border: on ? OR : '#ECECEE', color: on ? '#fff' : '#17171A', dot: has ? (on ? '#fff' : '#D4D4D8') : 'transparent', onClick: () => this.setF({ dayOffset: i }) });
+    }
+    const words = f.sentence.trim() ? f.sentence.trim().split(/\s+/) : [];
+    const blankIdx = f.sentence.indexOf('___');
+    const author = f.author.trim() || 'Admin';
+    const preview = this.props.showPreview ?? true;
+
+    // LIBRARY
+    const dupOf = x => this.findDups(x, x.day ? [x.day] : []);
+    const all = this.allQs().sort((a, b) => b.off - a.off);
+    const stOf = x => x.off < 0 ? 'past' : x.off === 0 ? 'live' : x.status === 'draft' ? 'draft' : 'upcoming';
+    const libSrc = s.libSrc || 'all';
+    const srcOk = x => libSrc === 'all' || (libSrc === 'users' ? !!x.community : !x.community);
+    const srcAll = all.filter(srcOk);
+    const libCounts = { all: srcAll.length, past: 0, unpub: 0, upcoming: 0, draft: 0 };
+    srcAll.forEach(x => { const k = stOf(x); if (k === 'live' || k === 'upcoming') libCounts.upcoming++; else libCounts[k]++; if (k === 'upcoming' || k === 'draft') libCounts.unpub++; });
+    const libSrcChips = [['all', 'Anyone', all.length], ['admin', 'Admins', all.filter(x => !x.community).length], ['users', 'Users', all.filter(x => x.community).length]].map(([id, label, count]) => { const on = libSrc === id; return { label, count, border: on ? '#17171A' : '#E4E4E7', bg: on ? '#17171A' : '#fff', color: on ? '#fff' : '#17171A', onClick: () => this.setState({ libSrc: id }) }; });
+    const libTabs = [['all', 'All'], ['past', 'Published'], ['unpub', 'Not published'], ['upcoming', 'Upcoming'], ['draft', 'Drafts']].map(([id, label]) => ({
+      label, count: libCounts[id], onClick: () => this.setState({ libFilter: id }),
+      bg: s.libFilter === id ? '#fff' : 'transparent', color: s.libFilter === id ? '#17171A' : '#6E6E73', shadow: s.libFilter === id ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+    }));
+    const lq = s.libQuery.trim().toLowerCase();
+    const LST = { past: ['Published', '#F2F2F3', '#6E6E73'], live: ['Live today', 'rgba(242,113,28,0.12)', '#C25A14'], upcoming: ['Scheduled', 'rgba(31,169,113,0.12)', '#137A51'], draft: ['Draft', '#F2F2F3', '#6E6E73'] };
+    const libRows = (s.libSort === 'oldest' ? [...all].reverse() : all).filter(x => {
+      const k = stOf(x);
+      if (!srcOk(x)) return false;
+      if ((s.libType || 'all') !== 'all' && x.type !== s.libType) return false;
+      if (s.libFilter === 'unpub') { if (k !== 'upcoming' && k !== 'draft') return false; }
+      else if (s.libFilter !== 'all' && !(s.libFilter === k || (s.libFilter === 'upcoming' && k === 'live'))) return false;
+      if (!lq) return true;
+      return [x.text, x.sentence, x.answer, x.author, ...(x.options || []).map(o => o.text)].join(' ').toLowerCase().includes(lq);
+    }).map((x, i) => {
+      const k = stOf(x), d = day(x.off);
+      return { ...d, typeLabel: TL[x.type], text: x.text + (x.sentence ? ' — ' + x.sentence : ''), author: x.author, isCommunity: !!x.community,
+        statusLabel: LST[k][0], statusBg: LST[k][1], statusColor: LST[k][2], dateColor: k === 'past' ? '#6E6E73' : '#17171A',
+        useCount: this.usageOf(x).length, onHistory: () => this.setState({ hist: x }), onView: () => this.setState({ view_q: x }),
+        authInit: initials(x.author), authColor: colorFor(x.author), borderTop: i ? '1px solid #ECECEE' : 'none', hasStats: !!x.answers, stats: x.answers ? `${x.answers.toLocaleString('en-US')} answers · ${x.correct}% correct` : '',
+        canReuse: k === 'past', canEdit: k !== 'past', onReuse: () => this.setState({ reuse: { x, m: 0, sel: null } }), onEdit: () => this.openEdit(x.off) };
+    });
+    const formDups = this.findDups(f, [f.editing, f.reuseOf].filter(v => v !== null && v !== undefined));
+
+    // SUBMISSIONS
+    const SST = { pending: ['Pending review', '#FFF4EC', '#B4500F'], approved: ['Approved', 'rgba(31,169,113,0.12)', '#137A51'], rejected: ['Rejected', 'rgba(245,51,63,0.1)', '#C21D29'] };
+    const subCounts = { pending: 0, approved: 0, rejected: 0 }; s.subs.forEach(x => subCounts[x.status]++);
+    const subTabs = [['pending', 'Pending'], ['approved', 'Approved'], ['rejected', 'Rejected']].map(([id, label]) => ({
+      label, count: subCounts[id], onClick: () => { const first = this.selectFirst(id); this.setState({ subFilter: id }); if (first) this.pickSub(first); },
+      bg: s.subFilter === id ? '#fff' : 'transparent', color: s.subFilter === id ? '#17171A' : '#6E6E73', shadow: s.subFilter === id ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+    }));
+    const subShown = s.subs.filter(x => x.status === s.subFilter);
+    const cur = subShown.find(x => x.id === s.selSub) || subShown[0];
+    const subList = subShown.map((x, i) => {
+      const on = cur && x.id === cur.id;
+      return { ...x, init: initials(x.name), color: colorFor(x.name), typeLabel: TL[x.type], borderTop: i ? '1px solid #ECECEE' : 'none',
+        bg: on ? '#FFF4EC' : '#fff', accent: on ? OR : 'transparent', onSelect: () => this.pickSub(x.id),
+        hasMeta: x.status !== 'pending' || dupOf(x).length > 0,
+        meta: x.status === 'approved' ? day(x.day).label : x.status === 'rejected' ? x.reason : 'Possible duplicate',
+        metaBg: x.status === 'pending' ? '#FFF4EC' : SST[x.status][1], metaColor: SST[x.status][2] };
+    });
+    let sel = {};
+    if (cur) {
+      const bi = cur.sentence ? cur.sentence.indexOf('___') : -1;
+      sel = { ...cur, init: initials(cur.name), color: colorFor(cur.name), typeLabel: TL[cur.type],
+        statusLabel: SST[cur.status][0], statusBg: SST[cur.status][1], statusColor: SST[cur.status][2],
+        isPending: cur.status === 'pending', isApproved: cur.status === 'approved', isRejected: cur.status === 'rejected',
+        isChoice: cur.type === 'single' || cur.type === 'multi', isFill: cur.type === 'fill', isOrder: cur.type === 'order',
+        options: (cur.options || []).map((o, i) => ({ letter: LETTERS[i], text: o.text, isCorrect: o.correct, border: o.correct ? 'rgba(31,169,113,0.5)' : '#ECECEE', bg: o.correct ? 'rgba(31,169,113,0.06)' : '#fff', letterBg: o.correct ? GR : '#F2F2F3', letterColor: o.correct ? '#fff' : '#17171A' })),
+        before: bi >= 0 ? cur.sentence.slice(0, bi).trim() : '', after: bi >= 0 ? cur.sentence.slice(bi + 3).trim() : '', hasHint: !!cur.hint,
+        tiles: cur.sentence ? shuffle(cur.sentence.split(/\s+/)) : [],
+        explanation: cur.explanation || 'No explanation provided.', explColor: cur.explanation ? '#17171A' : '#8E8E93',
+        dateLabel: cur.day ? day(cur.day).label : '', hasNote: !!cur.note };
+      const d = cur.status === 'pending' ? dupOf(cur) : [];
+      sel.dups = d; sel.hasDups = d.length > 0; sel.noDups = cur.status === 'pending' && !d.length;
+    }
+    const subChips = [];
+    for (let i = 1; i <= 14; i++) {
+      const d = day(i), on = s.subDay === i, has = !!sch[i];
+      subChips.push({ wd: d.wd, day: d.day, bg: on ? OR : '#fff', border: on ? OR : '#ECECEE', color: on ? '#fff' : '#17171A', dot: has ? (on ? '#fff' : '#D4D4D8') : 'transparent', onClick: () => this.setState({ subDay: i }) });
+    }
+    const rj = s.reject;
+    const reasonChips = REASONS.map(r => { const on = rj && rj.reason === r; return { label: r, bg: on ? 'rgba(245,51,63,0.08)' : '#fff', border: on ? RD : '#E4E4E7', color: on ? '#C21D29' : '#17171A', onClick: () => this.setState(st => ({ reject: { ...st.reject, reason: r } })) }; });
+    const noReason = !(rj && rj.reason);
+
+    const vq = s.view_q;
+    let vw = {};
+    if (vq) {
+      const k = stOf(vq), sent = vq.sentence || '', bi = sent.indexOf('___');
+      vw = { typeLabel: TL[vq.type], typeIcon: icon(vq.type, '#C25A14'), statusLabel: LST[k][0], statusBg: LST[k][1], statusColor: LST[k][2], isCommunity: !!vq.community,
+        text: vq.text, hasOptions: !!(vq.options && (vq.type === 'single' || vq.type === 'multi')),
+        options: (vq.options || []).map((o, i) => ({ letter: LETTERS[i], text: o.text, correct: !!o.correct, border: o.correct ? '#1FA971' : '#ECECEE', bg: o.correct ? 'rgba(31,169,113,0.06)' : '#fff', letterBg: o.correct ? '#1FA971' : '#F2F2F3', letterColor: o.correct ? '#fff' : '#6E6E73' })),
+        isFill: vq.type === 'fill', sentBefore: bi >= 0 ? sent.slice(0, bi) : sent + ' ', sentAfter: bi >= 0 ? sent.slice(bi + 3) : '', answer: vq.answer || '', hasHint: !!vq.hint, hint: vq.hint || '',
+        isOrder: vq.type === 'order', words: sent.split(/\s+/).filter(Boolean),
+        hasExpl: !!vq.explanation, explanation: vq.explanation || '', author: vq.author, authInit: initials(vq.author), authColor: colorFor(vq.author),
+        useCount: this.usageOf(vq).length, canEdit: k !== 'past', canReuse: k === 'past',
+        onHistory: () => this.setState({ view_q: null, hist: vq }), onEdit: () => { this.setState({ view_q: null }); this.openEdit(vq.off); }, onReuse: () => this.setState({ view_q: null, reuse: { x: vq, m: 0, sel: null } }) };
+    }
+    const hx = s.hist, HST = { past: ['Shown', '#F2F2F3', '#6E6E73', '#C9C9CE'], live: ['Live today', 'rgba(242,113,28,0.12)', '#C25A14', '#17171A'], upcoming: ['Scheduled', 'rgba(31,169,113,0.12)', '#137A51', OR], draft: ['Draft', '#F2F2F3', '#6E6E73', '#F9C29C'] };
+    let histYears = [], histUses = [];
+    if (hx) {
+      histUses = this.usageOf(hx);
+      const by = {}; histUses.forEach(u => { (by[u.d.getFullYear()] = by[u.d.getFullYear()] || []).push(u); });
+      histYears = Object.keys(by).sort((a, b) => b - a).map(y => ({ year: y, countLabel: `${by[y].length} time${by[y].length === 1 ? '' : 's'}`,
+        items: by[y].map(u => ({ label: `${WD[u.d.getDay()]}, ${MO[u.d.getMonth()]} ${u.d.getDate()}`, status: HST[u.k][0], bg: HST[u.k][1], color: HST[u.k][2], dot: HST[u.k][3] })) }));
+    }
+    const shownN = histUses.filter(u => u.k === 'past' || u.k === 'live').length;
+    const histVals = { hasHist: !!hx, histYears, histEmpty: !!hx && histUses.length === 0, closeHist: () => this.setState({ hist: null }),
+      histText: hx ? hx.text + (hx.type === 'fill' || hx.type === 'order' ? ' — ' + hx.sentence : '') : '',
+      histSummary: hx ? `Shown ${shownN} time${shownN === 1 ? '' : 's'}` + (histUses.length ? ` · first used ${MO[histUses[histUses.length - 1].d.getMonth()]} ${histUses[histUses.length - 1].d.getFullYear()}` : '') : '' };
+    const ru = s.reuse;
+    let reuseCells = [], reuseMonth = '';
+    if (ru) {
+      const ms = new Date(BASE.getFullYear(), BASE.getMonth() + ru.m, 1), nd = new Date(ms.getFullYear(), ms.getMonth() + 1, 0).getDate();
+      reuseMonth = MO[ms.getMonth()] + ' ' + ms.getFullYear();
+      const lead = (ms.getDay() + 6) % 7;
+      for (let k = 0; k < lead; k++) reuseCells.push({ n: '', vis: 'hidden', disabled: true, dot: 'transparent', bg: '#fff', border: 'transparent', borderStyle: 'solid', color: '#fff', cursor: 'default', weight: 600, title: '', onClick: () => {} });
+      for (let dn = 1; dn <= nd; dn++) {
+        const off = Math.round((new Date(ms.getFullYear(), ms.getMonth(), dn) - BASE) / 864e5);
+        const q = off > 0 ? sch[off] : null, past = off <= 0, on = ru.sel === off, free = !past && !q;
+        reuseCells.push({ n: dn, vis: 'visible', disabled: !free,
+          dot: past ? (off === 0 ? '#17171A' : '#C9C9CE') : q ? (q.status === 'draft' ? '#F9C29C' : OR) : 'transparent',
+          bg: on ? OR : free ? '#fff' : past ? '#FAFAFA' : '#F5F5F6', color: on ? '#fff' : past ? '#C9C9CE' : q ? '#8E8E93' : '#17171A',
+          border: on ? OR : free ? '#C9C9CE' : 'transparent', borderStyle: free && !on ? 'dashed' : 'solid', weight: free ? 800 : 600,
+          cursor: free ? 'pointer' : 'not-allowed', title: past ? (off === 0 ? 'Today · live' : 'Past') : q ? (q.status === 'draft' ? 'Draft: ' : 'Scheduled: ') + q.text : 'Empty — click to schedule',
+          onClick: () => free && this.setState(st => ({ reuse: { ...st.reuse, sel: off } })) });
+      }
+    }
+    const ruSel = ru && ru.sel != null ? ru.sel : null;
+    const reuseVals = {
+      hasReuse: !!ru, reuseCells, reuseMonth, reuseWd: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      reuseText: ru ? ru.x.text + (ru.x.type === 'fill' || ru.x.type === 'order' ? ' — ' + ru.x.sentence : '') : '',
+      reusePrev: () => this.setState(st => ({ reuse: { ...st.reuse, m: Math.max(0, st.reuse.m - 1) } })),
+      reuseNext: () => this.setState(st => ({ reuse: { ...st.reuse, m: st.reuse.m + 1 } })),
+      closeReuse: () => this.setState({ reuse: null }),
+      reuseSelLabel: ruSel != null ? 'Schedule for ' + day(ruSel).label : 'Pick an empty day', reuseSelColor: ruSel != null ? '#17171A' : '#8E8E93',
+      reuseNone: ruSel == null, reuseBtnBg: ruSel != null ? OR : '#E4E4E7', reuseBtnColor: ruSel != null ? '#fff' : '#8E8E93',
+      reuseConfirm: () => { if (ruSel == null) return; const c = JSON.parse(JSON.stringify(ru.x)); ['off', 'answers', 'correct'].forEach(k => delete c[k]);
+        this.setState(st => ({ reuse: null, schedule: { ...st.schedule, [ruSel]: { ...c, status: 'scheduled' } } })); this.flash(`Scheduled for ${day(ruSel).label}`); },
+    };
+    const pk = s.pick;
+    let pickRows = [], pickTypes = [], pickPool = [], pickStatus = [], pickSrc = [], pickFull = [];
+    if (pk) {
+      const pq = pk.q.trim().toLowerCase();
+      const st0 = pk.status || 'all', src0 = pk.src || 'all';
+      const full = [
+        ...PAST0.map(x => ({ ...x, key: 'p' + x.off, kind: 'past', user: !!x.community })),
+        ...Object.keys(sch).filter(k => +k > 0 && sch[k].status === 'draft').map(k => ({ ...sch[k], off: +k, key: 'd' + k, kind: 'draft', user: !!sch[k].community })),
+        ...s.subs.filter(x => x.status === 'pending').map(x => ({ ...this.subToQ(x), off: 0, key: 's' + x.id, kind: 'sub', subId: x.id, user: true, subName: x.name, subTime: x.time })),
+      ];
+      const pubOk = x => st0 === 'all' || (st0 === 'pub' ? x.kind === 'past' : x.kind !== 'past');
+      const srcOk2 = x => src0 === 'all' || (src0 === 'users' ? x.user : !x.user);
+      const cnt = f => full.filter(f).length;
+      pickStatus = [['all', 'All', cnt(srcOk2)], ['pub', 'Published', cnt(x => srcOk2(x) && x.kind === 'past')], ['unpub', 'Not published', cnt(x => srcOk2(x) && x.kind !== 'past')]].map(([id, label, count]) => { const on = st0 === id; return { label, count, bg: on ? '#fff' : 'transparent', color: on ? '#17171A' : '#6E6E73', shadow: on ? '0 1px 2px rgba(0,0,0,0.08)' : 'none', onClick: () => this.setState(st => ({ pick: { ...st.pick, status: id } })) }; });
+      pickSrc = [['all', 'Anyone'], ['admin', 'Admins'], ['users', 'Users']].map(([id, label]) => { const on = src0 === id; return { label, bg: on ? '#fff' : 'transparent', color: on ? '#17171A' : '#6E6E73', shadow: on ? '0 1px 2px rgba(0,0,0,0.08)' : 'none', onClick: () => this.setState(st => ({ pick: { ...st.pick, src: id } })) }; });
+      pickFull = full;
+      pickPool = full.filter(x => pubOk(x) && srcOk2(x) && (pk.type === 'all' || x.type === pk.type) && (!pq || [x.text, x.sentence, x.answer, ...(x.options || []).map(o => o.text)].join(' ').toLowerCase().includes(pq)));
+      const so = { oldest: (a, b) => a.off - b.off, recent: (a, b) => b.off - a.off, answers: (a, b) => (b.answers || 0) - (a.answers || 0), hardest: (a, b) => (a.correct ?? 100) - (b.correct ?? 100) }[pk.sort];
+      const rank = x => x.kind === 'past' ? 0 : 1;
+      pickRows = [...pickPool].sort((a, b) => rank(a) - rank(b) || so(a, b)).map(x => { const on = pk.sel === x.key; return {
+        text: x.text + (x.type === 'fill' || x.type === 'order' ? ' — ' + x.sentence : ''), typeLabel: TL[x.type], typeIcon: icon(x.type, '#C25A14'), isUser: x.user,
+        when: x.kind === 'past' ? whenLabel(x.off) : x.kind === 'draft' ? `Draft · on ${day(x.off).label} (will move)` : `Pending review · from ${x.subName}`,
+        stats: x.answers ? `${x.answers.toLocaleString('en-US')} answers · ${x.correct}% correct` : '',
+        border: on ? OR : '#ECECEE', bg: on ? '#FFF8F2' : '#fff', dot: on ? OR : '#C9C9CE', dotFill: on ? OR : 'transparent',
+        onClick: () => this.setState(st => ({ pick: { ...st.pick, sel: x.key } })) }; });
+      pickTypes = [['all', 'All types'], ...Object.entries(TL)].map(([k, l]) => { const on = pk.type === k; return { label: l, border: on ? '#17171A' : '#E4E4E7', bg: on ? '#17171A' : '#fff', color: on ? '#fff' : '#17171A', onClick: () => this.setState(st => ({ pick: { ...st.pick, type: k } })) }; });
+    }
+    const pickSelQ = pk && pk.sel != null ? pickFull.find(x => x.key === pk.sel) : null;
+    const pickClean = x => { const c = JSON.parse(JSON.stringify(x)); ['off', 'answers', 'correct', 'key', 'kind', 'user', 'subId', 'subName', 'subTime'].forEach(k => delete c[k]); return { ...c, status: 'scheduled' }; };
+    return {
+      ...reuseVals, ...histVals, hasView: !!vq, vw, closeView: () => this.setState({ view_q: null }),
+      hasPick: !!pk, pickRows, pickTypes, pickEmpty: !!pk && pickRows.length === 0, pickQuery: pk ? pk.q : '', pickSort: pk ? pk.sort : 'oldest',
+      pickDayLabel: pk ? 'For ' + (pk.off === 1 ? 'tomorrow · ' : '') + day(pk.off).label : '',
+      pickCountLabel: pk ? `${pickPool.length} question${pickPool.length === 1 ? '' : 's'}` : '',
+      onPickQuery: e => { const v = e.target.value; this.setState(st => ({ pick: { ...st.pick, q: v } })); },
+      onPickSort: e => { const v = e.target.value; this.setState(st => ({ pick: { ...st.pick, sort: v } })); },
+      closePick: () => this.setState({ pick: null, dd: null }),
+      pickPanelClick: e => { e.stopPropagation(); if (this.state.dd && !(e.target.closest && e.target.closest('[data-dd]'))) this.setState({ dd: null }); }, pickNone: !pickSelQ,
+      pickBtnBg: pickSelQ ? OR : '#E4E4E7', pickBtnColor: pickSelQ ? '#fff' : '#8E8E93', pickEditColor: pickSelQ ? '#17171A' : '#8E8E93',
+      pickConfirm: () => { if (!pickSelQ) return; const off = pk.off, x = pickSelQ;
+        this.setState(st => { const sc = { ...st.schedule, [off]: pickClean(x) }; if (x.kind === 'draft') delete sc[x.off]; return { pick: null, schedule: sc }; });
+        if (x.kind === 'sub') this.resolveSub(x.subId, { status: 'approved', day: off }); this.flash(`Scheduled for ${day(off).label}`); },
+      pickEdit: () => { if (!pickSelQ) return; const off = pk.off, x = pickSelQ, c = pickClean(x);
+        if (x.kind === 'past') return this.setState({ pick: null, libTarget: off }, () => this.openReuse(x));
+        this.setState({ pick: null, view: 'add', form: { ...blankForm(off), ...c, dayOffset: off, editing: x.kind === 'draft' ? x.off : null, fromSub: x.kind === 'sub' ? x.subId : undefined } }); },
+      pickDDs: pk ? [
+        this.mkDD('p-st', 'Status', 'pub', pk.status || 'all', [{ v: 'all', label: 'All', count: pickStatus[0].count, ic: 'all' }, { v: 'pub', label: 'Published', count: pickStatus[1].count, ic: 'pub' }, { v: 'unpub', label: 'Not published', count: pickStatus[2].count, ic: 'unpub' }], v => this.setState(st => ({ pick: { ...st.pick, status: v } }))),
+        this.mkDD('p-src', 'Added by', 'user', pk.src || 'all', [{ v: 'all', label: 'Anyone', ic: 'anyone' }, { v: 'admin', label: 'Admins', ic: 'admin' }, { v: 'users', label: 'Users', ic: 'user' }], v => this.setState(st => ({ pick: { ...st.pick, src: v } }))),
+        this.mkDD('p-ty', 'Type', 'type', pk.type, [{ v: 'all', label: 'All', ic: 'type' }, { v: 'single', label: 'Single choice', ic: 'single' }, { v: 'multi', label: 'Multiple choice', ic: 'multi' }, { v: 'fill', label: 'Fill in the blank', ic: 'fill' }, { v: 'order', label: 'Reorder words', ic: 'order' }], v => this.setState(st => ({ pick: { ...st.pick, type: v } }))),
+        this.mkDD('p-so', 'Sort', 'sort', pk.sort, [{ v: 'oldest', label: 'Shown longest ago', ic: 'history' }, { v: 'recent', label: 'Shown most recently', ic: 'clock' }], v => this.setState(st => ({ pick: { ...st.pick, sort: v } }))),
+      ] : [],
+      pickStatusVal: pk ? pk.status || 'all' : 'all', pickSrcVal: pk ? pk.src || 'all' : 'all',
+      pickStAll: pickStatus[0] ? `All (${pickStatus[0].count})` : 'All', pickStPub: pickStatus[1] ? `Published (${pickStatus[1].count})` : 'Published', pickStUnpub: pickStatus[2] ? `Not published (${pickStatus[2].count})` : 'Not published',
+      onPickStatus: e => { const v = e.target.value; this.setState(st => ({ pick: { ...st.pick, status: v } })); },
+      onPickSrc: e => { const v = e.target.value; this.setState(st => ({ pick: { ...st.pick, src: v } })); },
+      pickType: pk ? pk.type : 'all', onPickType: e => { const v = e.target.value; this.setState(st => ({ pick: { ...st.pick, type: v } })); },
+      isLib: s.view === 'library', hasLibTarget: s.view === 'library' && s.libTarget != null, libTargetLabel: s.libTarget != null ? (s.libTarget === 1 ? 'tomorrow · ' : '') + day(s.libTarget).label : '', cancelLibTarget: () => this.go('schedule'), navLibBg: nav('library').bg, navLibColor: nav('library').color, goLib: () => this.go('library'),
+      libTabs, libSrcChips, libRows, ddOpen: !!s.dd, closeDD: () => this.setState({ dd: null }),
+      libDDs: [
+        this.mkDD('l-st', 'Status', 'pub', s.libFilter, [{ v: 'all', label: 'All', count: libCounts.all, ic: 'all' }, { v: 'past', label: 'Published', count: libCounts.past, ic: 'pub' }, { v: 'unpub', label: 'Not published', count: libCounts.unpub, ic: 'unpub' }, { v: 'upcoming', label: 'Upcoming', count: libCounts.upcoming, ic: 'upcoming' }, { v: 'draft', label: 'Drafts', count: libCounts.draft, ic: 'draft' }], v => this.setState({ libFilter: v })),
+        this.mkDD('l-src', 'Added by', 'user', libSrc, [{ v: 'all', label: 'Anyone', count: libSrcChips[0].count, ic: 'anyone' }, { v: 'admin', label: 'Admins', count: libSrcChips[1].count, ic: 'admin' }, { v: 'users', label: 'Users', count: libSrcChips[2].count, ic: 'user' }], v => this.setState({ libSrc: v })),
+        this.mkDD('l-ty', 'Type', 'type', s.libType || 'all', [{ v: 'all', label: 'All', ic: 'type' }, { v: 'single', label: 'Single choice', ic: 'single' }, { v: 'multi', label: 'Multiple choice', ic: 'multi' }, { v: 'fill', label: 'Fill in the blank', ic: 'fill' }, { v: 'order', label: 'Reorder words', ic: 'order' }], v => this.setState({ libType: v })),
+        this.mkDD('l-so', 'Sort', 'sort', s.libSort || 'newest', [{ v: 'newest', label: 'Newest date first', ic: 'newest' }, { v: 'oldest', label: 'Oldest date first', ic: 'oldest' }], v => this.setState({ libSort: v })),
+      ],
+      libFilterVal: s.libFilter, libSrcVal: libSrc, libTypeVal: s.libType || 'all', libSortVal: s.libSort || 'newest',
+      libStAll: `All (${libCounts.all})`, libStPast: `Published (${libCounts.past})`, libStUnpub: `Not published (${libCounts.unpub})`, libStUp: `Upcoming (${libCounts.upcoming})`, libStDraft: `Drafts (${libCounts.draft})`,
+      libSrcAll: libSrcChips[0].label + ` (${libSrcChips[0].count})`, libSrcAdmin: libSrcChips[1].label + ` (${libSrcChips[1].count})`, libSrcUsers: libSrcChips[2].label + ` (${libSrcChips[2].count})`,
+      onLibFilter: e => this.setState({ libFilter: e.target.value }), onLibSrc: e => this.setState({ libSrc: e.target.value }),
+      onLibType: e => this.setState({ libType: e.target.value }), onLibSort: e => this.setState({ libSort: e.target.value }), libEmpty: libRows.length === 0, libTotal: all.length, libQuery: s.libQuery, onLibQuery: e => this.setState({ libQuery: e.target.value }),
+      formDups, formHasDups: formDups.length > 0,
+      isSubs: s.view === 'submissions', navSubsBg: nav('submissions').bg, navSubsColor: nav('submissions').color,
+      goSubs: () => this.go('submissions'), hasPending: subCounts.pending > 0, pendingCount: subCounts.pending,
+      subTabs, subList, subsEmpty: subList.length === 0, hasSel: !!cur, sel, subChips,
+      subTaken: !!sch[s.subDay], subDateLabel: day(s.subDay).label + (sch[s.subDay] ? ' · taken' : ' · empty'),
+      approveSub: () => { if (!cur) return; const off = s.subDay; this.setState(st => ({ schedule: { ...st.schedule, [off]: this.subToQ(cur) } })); this.resolveSub(cur.id, { status: 'approved', day: off }); this.flash(`Approved · scheduled for ${day(off).label}`); },
+      editSub: () => { if (!cur) return; this.setState({ view: 'add', form: { ...blankForm(s.subDay), ...JSON.parse(JSON.stringify(this.subToQ(cur))), author: cur.name, dayOffset: s.subDay, editing: null, fromSub: cur.id } }); },
+      askReject: () => this.setState({ reject: { reason: sel.hasDups ? 'Duplicate question' : null, note: '' } }),
+      hasReject: !!rj, reasonChips, rejectNote: rj ? rj.note : '', onRejectNote: e => { const v = e.target.value; this.setState(st => ({ reject: { ...st.reject, note: v } })); },
+      cancelReject: () => this.setState({ reject: null }), noReason, rejectBg: noReason ? '#E4E4E7' : RD, rejectColor: noReason ? '#8E8E93' : '#fff',
+      confirmReject: () => { if (noReason || !cur) return; this.resolveSub(cur.id, { status: 'rejected', reason: rj.reason, note: rj.note.trim() }); this.setState({ reject: null }); this.flash(`Rejected · ${cur.name} notified`); },
+      submitLabel: f.fromSub ? 'Approve & schedule' : 'Schedule',
+      isToday: s.view === 'today', isSchedule: s.view === 'schedule', isAdd: s.view === 'add',
+      navTodayBg: nav('today').bg, navTodayColor: nav('today').color, navSchedBg: nav('schedule').bg, navSchedColor: nav('schedule').color, navAddBg: nav('add').bg, navAddColor: nav('add').color,
+      goToday: () => this.go('today'), goSchedule: () => this.go('schedule'), goAdd: () => this.openAdd(),
+      hasUnreplied: reported > 0, unrepliedCount: reported, hasGaps: n14gap > 0, gapCount: n14gap,
+      editToday: () => this.openEdit(0),
+      nextGapLabel: n14gap ? (() => { for (let i = 1; i <= 14; i++) if (!sch[i]) return (i === 1 ? 'Tomorrow' : day(i).label); })() : 'All filled',
+      nextGapAction: n14gap ? `Add question · ${n14gap} empty in 14 days →` : 'View schedule →',
+      fillNextGap: () => n14gap ? this.openAdd(this.firstGap()) : this.go('schedule'),
+      explCount: s.expl.length, repliedCount: replied, todayOptions, filterTabs, explList, explEmpty: explList.length === 0,
+      showUnreplied: () => this.setState({ filter: 'unreplied' }),
+      replyText: s.replyText, onReplyText: e => this.setState({ replyText: e.target.value }), replyEmpty,
+      sendBg: replyEmpty ? '#E4E4E7' : OR, sendColor: replyEmpty ? '#8E8E93' : '#fff',
+      cancelDelete: () => this.setState({ confirm: null }),
+      stop: ev => ev.stopPropagation(),
+      hasConfirm: !!s.confirm, confirmTitle: s.confirm?.title, confirmName: s.confirm?.name, confirmText: s.confirm?.text, confirmNote: s.confirm?.note,
+      confirmDelete: () => {
+        const c = s.confirm; if (!c) return;
+        if (c.rid) { this.updReplies(c.eid, rs => rs.filter(x => x.rid !== c.rid)); this.flash('Reply deleted'); }
+        else { this.setState(st => ({ expl: st.expl.filter(x => x.id !== c.eid) })); this.flash('Explanation deleted'); }
+        this.setState({ confirm: null });
+      },
+      cancelReply: () => this.setState({ replyingId: null, replyText: '' }),
+      sendReply: () => { if (replyEmpty) return; this.setState(st => ({ expl: st.expl.map(e => e.id === st.replyingId ? { ...e, replies: [...e.replies, { rid: Date.now(), name: 'Linh Tran', admin: true, time: 'Just now', text: st.replyText.trim() }] } : e), replyingId: null, replyText: '' })); this.flash('Reply sent'); },
+      scheduledCount, draftCount, schedGapCount: gapCount, coverage, rows, coverageCols: offs.length, schedTabs, isMonthMode, monthLabel, schedKicker,
+      prevMonth: () => this.setState(st => ({ schedMonth: st.schedMonth - 1 })), nextMonth: () => this.setState(st => ({ schedMonth: st.schedMonth + 1 })),
+      formKicker: f.fromSub ? 'Reviewing submission' : f.reuseOf !== undefined && f.reuseOf !== null ? `Reusing · ${whenLabel(f.reuseOf).toLowerCase()}` : f.editing === null ? 'Add to schedule' : 'Editing', formTitle: f.fromSub ? 'Edit before approving' : f.reuseOf !== undefined && f.reuseOf !== null ? 'Reuse question' : f.editing === null ? 'New question' : (f.dayOffset === 0 ? 'Edit today\'s question' : 'Edit question'),
+      typeCards, fText: f.text, onText: e => this.setF({ text: e.target.value }), textPlaceholder: PH[f.type],
+      isChoiceF: isChoice, isFillF: f.type === 'fill', isOrderF: f.type === 'order',
+      formOptions, canAddOption: f.options.length < 6, addOption: () => this.setF({ options: [...f.options, { text: '', correct: false }] }),
+      optionHelp: f.type === 'single' ? 'Tap the circle to mark the one correct answer' : 'Tick every correct answer',
+      fSentence: f.sentence, onSentence: e => this.setF({ sentence: e.target.value }),
+      fAnswer: f.answer, onAnswer: e => this.setF({ answer: e.target.value }), fHint: f.hint, onHint: e => this.setF({ hint: e.target.value }),
+      blankMissing: !!f.sentence.trim() && blankIdx < 0,
+      wordCountLabel: words.length ? `${words.length} words` : 'At least 3 words',
+      fExpl: f.explanation, onExpl: e => this.setF({ explanation: e.target.value }),
+      fAuthor: f.author, onAuthor: e => this.setF({ author: e.target.value }),
+      dateChips, takenWarning: taken, selectedDateLabel: f.dayOffset === 0 ? 'Today · live now' : day(f.dayOffset).label,
+      cancelForm: () => this.go(f.fromSub ? 'submissions' : f.reuseOf !== undefined && f.reuseOf !== null ? 'library' : f.editing === 0 ? 'today' : 'schedule'),
+      cannotSubmit: !ok, submitBg: ok ? OR : '#E4E4E7', submitColor: ok ? '#fff' : '#8E8E93',
+      cannotDraft: !f.text.trim(), draftColor: f.text.trim() ? '#17171A' : '#8E8E93',
+      saveDraft: () => f.text.trim() && this.save('draft'), saveScheduled: () => ok && this.save('scheduled'),
+      showPreview: preview, pvTypeLabel: TL[f.type], pvAuthor: author, pvInit: initials(author), pvColor: colorFor(author),
+      pvText: f.text.trim() || 'Your question appears here', pvTextColor: f.text.trim() ? '#17171A' : '#8E8E93',
+      pvOptions: f.options.map((o, i) => ({ text: o.text.trim() || `Option ${LETTERS[i]}`, color: o.text.trim() ? '#17171A' : '#8E8E93', radius: f.type === 'single' ? '50%' : '6px' })),
+      pvBefore: blankIdx >= 0 ? f.sentence.slice(0, blankIdx).trim() : (f.sentence || 'Sentence with a'), pvAfter: blankIdx >= 0 ? f.sentence.slice(blankIdx + 3).trim() : '',
+      pvHasHint: !!f.hint.trim(),
+      pvTiles: words.length ? shuffle(words) : ['words', 'appear', 'here'],
+      hasToast: !!s.toast, toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>
