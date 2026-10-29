@@ -26,13 +26,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   let status: AuthStatus
   if (session === undefined || (userId && meQuery.isPending)) status = 'loading'
-  else if (!userId || meQuery.isError) status = 'signed-out'
+  else if (!userId) status = 'signed-out'
+  else if (meQuery.isError) status = 'error'
   else status = meQuery.data?.role === 'admin' ? 'admin' : 'not-admin'
 
   const value: AuthState = {
     status,
     me: meQuery.data ?? null,
+    error: meQuery.error,
+    retry: () => void meQuery.refetch(),
     async signIn(email, password) {
+      // A failed get_me is cached per user (staleTime: Infinity): drop it so
+      // signing in again asks the server again.
+      queryClient.removeQueries({ queryKey: ['me'] })
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
     },
