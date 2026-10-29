@@ -26,7 +26,8 @@ Firebase project riêng **`iverbs-admin`** (tách khỏi project `iverbs-400af` 
 **GitHub Actions** (cách chính): Actions → **Deploy** → *Run workflow*, chọn branch `release/vX.Y.Z`, gõ lại `vX.Y.Z`.
 - Chỉ chạy từ `release/vX.Y.Z`; version không cũ hơn tag `prod-vX.Y.Z` mới nhất và branch phải chứa commit của release đó.
 - lint → test → build (`--mode production`) → deploy `hosting:admin` → gắn tag `prod-vX.Y.Z`.
-- Cài đặt một lần (Settings → Environments → `production`): secret `FIREBASE_SERVICE_ACCOUNT` (JSON key của service account `id-github-actions-deploy@iverbs-admin.iam.gserviceaccount.com`, role *Firebase Hosting Admin*), variable `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (project production).
+- Đăng nhập Google bằng **Workload Identity Federation** (không có key JSON — org policy chặn tạo key): pool `github`, provider `iverb-admin-web` (chỉ nhận repo này + environment `production`), service account `github-actions-deploy@iverbs-admin.iam.gserviceaccount.com` (role *Firebase Hosting Admin*).
+- Cài đặt một lần (Settings → Environments → `production`): variable `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (project production).
 
 Site mặc định có sẵn khi bật Hosting trên Firebase Console, không cần tạo thêm.
 
