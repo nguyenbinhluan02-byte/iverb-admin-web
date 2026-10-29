@@ -48,7 +48,7 @@ export function LoginPage() {
             Q
           </span>
           <span className="flex flex-col leading-[1.2]">
-            <span className="text-[15px] font-extrabold">Quiz Admin</span>
+            <span className="text-[15px] font-extrabold">IVerbs Admin</span>
             <span className="text-xs text-muted">English daily quiz</span>
           </span>
         </div>
