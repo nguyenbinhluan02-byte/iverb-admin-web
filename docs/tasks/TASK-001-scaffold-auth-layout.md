@@ -1,6 +1,6 @@
 # TASK-001: Scaffold, đăng nhập email + password, layout
 
-- **Status:** in-progress
+- **Status:** done
 - **Created:** 2026-10-29
 - **Branch:** feat/scaffold
 - **BE:** `iverb-supabase` TASK-015 (`private.require_admin`), done
@@ -25,7 +25,7 @@ Dựng project web admin theo stack đã chốt, đăng nhập admin, khung layo
 - [x] BE: `private.require_admin()` (TASK-015).
 - [x] `yarn build`, `yarn lint`, `yarn test` pass.
 - [x] Test tay: vào `/today` khi chưa đăng nhập → `/login`; sai mật khẩu → "Wrong email or password." (gọi Supabase Dev thật).
-- [ ] Test tay đăng nhập bằng tài khoản admin trên Dev + user thường (chờ có tài khoản admin).
+- [x] Đăng nhập bằng tài khoản admin trên Dev (user tạo, đăng nhập thành công 2026-10-29 05:18 UTC).
 
 ## File dự kiến thay đổi
 - Toàn bộ project (mới).
