@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { RequireAdmin } from '@/auth/RequireAdmin'
 import { AppLayout } from '@/components/AppLayout'
 import { LibraryPage } from '@/features/library/LibraryPage'
+import { QuestionFormPage } from '@/features/question-form/QuestionFormPage'
 import { ComingSoon } from '@/pages/ComingSoon'
 import { LoginPage } from '@/pages/LoginPage'
 
@@ -20,14 +21,8 @@ export function App() {
             element={<ComingSoon kicker="Next 14 days" title="Schedule" task="TASK-004" />}
           />
           <Route path="/library" element={<LibraryPage />} />
-          <Route
-            path="/questions/new"
-            element={<ComingSoon kicker="Add to schedule" title="New question" task="TASK-003" />}
-          />
-          <Route
-            path="/questions/:id/edit"
-            element={<ComingSoon kicker="Editing" title="Edit question" task="TASK-003" />}
-          />
+          <Route path="/questions/new" element={<QuestionFormPage />} />
+          <Route path="/questions/:id/edit" element={<QuestionFormPage />} />
           <Route
             path="/submissions"
             element={<ComingSoon kicker="From app users" title="Submissions" task="TASK-006" />}
