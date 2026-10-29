@@ -16,6 +16,20 @@ export type Database = {
     Functions: {
       admin_list_questions: { Args: never; Returns: Json }
       admin_question_history: { Args: { p_question_id: number }; Returns: Json }
+      admin_save_question: {
+        Args: {
+          p_answer_key: Json
+          p_author_name: string
+          p_content: Json
+          p_date: string
+          p_explanation: string
+          p_id: number
+          p_prompt: string
+          p_publish: boolean
+          p_type: string
+        }
+        Returns: Json
+      }
       claim_legacy_gift: {
         Args: { p_grant?: boolean; p_transactions: Json; p_user_id: string }
         Returns: Json

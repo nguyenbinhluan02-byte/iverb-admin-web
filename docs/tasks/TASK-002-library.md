@@ -1,6 +1,6 @@
 # TASK-002: Library, View, History
 
-- **Status:** in-progress
+- **Status:** done
 - **Created:** 2026-10-29
 - **Branch:** feat/library
 - **BE:** `iverb-supabase` TASK-016 (`admin_list_questions`, `admin_question_history`), done
@@ -26,7 +26,7 @@ Màn Library theo design: tìm kiếm, lọc, xem chi tiết câu hỏi, lịch 
 - [x] `Badge`, `FilterDropdown`, `Modal`, `TypeIcon`.
 - [x] Library page, View, History + test render.
 - [x] `yarn build`, `yarn lint`, `yarn test` (17 test).
-- [ ] So giao diện với design trên trình duyệt khi đã đăng nhập admin.
+- [ ] So giao diện với design trên trình duyệt — user tự kiểm tra sau (quyết định 2026-10-29).
 
 ## File dự kiến thay đổi
 - `src/features/library/*`, `src/components/{Badge,badgeStyles,FilterDropdown,Modal,TypeIcon,typeIcons}.*`

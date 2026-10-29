@@ -1,25 +1,8 @@
 import type { Question } from '@/services/questions'
+import { makeQuestion } from '@/test/fixtures'
 import { countFilters, DEFAULT_FILTERS, filterQuestions, type StatusFilter } from './filter'
 
-const q = (id: number, over: Partial<Question>): Question => ({
-  id,
-  type: 'single',
-  prompt: `Question ${id}`,
-  content: {
-    options: [
-      { id: 'a', text: 'went' },
-      { id: 'b', text: 'gone' },
-    ],
-  },
-  answer_key: { correct: ['a'] },
-  status: 'published',
-  date: '2026-10-01',
-  author: { id: 'u', name: 'Linh Tran', role: 'admin' },
-  usage_count: 1,
-  created_at: '',
-  updated_at: '',
-  ...over,
-})
+const q = (id: number, over: Partial<Question>) => makeQuestion({ id, ...over })
 
 const all = [
   q(1, { status: 'scheduled' }),

@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import type { Json } from './database.types'
 
 export type QType = 'single' | 'multi' | 'fill' | 'order'
 export type QuestionStatus = 'draft' | 'unscheduled' | 'published' | 'live' | 'scheduled'
@@ -30,9 +31,14 @@ export interface Question {
   prompt: string
   content: QuestionContent
   answer_key: AnswerKey | null
+  explanation: string | null
   status: QuestionStatus
   date: string | null // YYYY-MM-DD (UTC day)
-  author: { id: string; name: string | null; role: 'admin' | 'user' } | null
+  /** name = "Shown as author" override or the profile name */
+  author: { id: string | null; name: string | null; role: 'admin' | 'user' } | null
+  author_name: string | null
+  /** Users answered it: type / content / answer key are locked. */
+  has_answers: boolean
   usage_count: number
   created_at: string
   updated_at: string
@@ -69,5 +75,39 @@ export function useQuestionHistory(id: number | null) {
       if (error) throw error
       return (data as unknown as { uses: QuestionUse[] }).uses
     },
+  })
+}
+
+export interface SaveQuestionInput {
+  id: number | null
+  type: QType
+  prompt: string
+  content: QuestionContent
+  answer_key: AnswerKey | null
+  explanation: string
+  author_name: string
+  date: string | null
+  publish: boolean
+}
+
+export function useSaveQuestion() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: SaveQuestionInput) => {
+      const { data, error } = await supabase.rpc('admin_save_question', {
+        p_id: input.id as number,
+        p_type: input.type,
+        p_prompt: input.prompt,
+        p_content: input.content as Json,
+        p_answer_key: input.answer_key as Json,
+        p_explanation: input.explanation,
+        p_author_name: input.author_name,
+        p_date: input.date as string,
+        p_publish: input.publish,
+      })
+      if (error) throw error
+      return data as unknown as Question
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: questionKeys.all }),
   })
 }
