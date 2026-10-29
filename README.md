@@ -21,21 +21,18 @@ where id = (select id from auth.users where email = '<email>');
 ```
 
 ## Deploy (production → Firebase Hosting)
-Site `iverbs-admin` trong Firebase project `iverbs-400af` (cùng project với app). Chỉ có môi trường prod.
+Site `iverbs-admin` (https://iverbs-admin.web.app) trong Firebase project `iverbs-400af`. Chỉ có môi trường production.
 
-Lần đầu:
-```bash
-npx -y firebase-tools@14 login                                   # tài khoản có quyền iverbs-400af
-npx -y firebase-tools@14 hosting:sites:create iverbs-admin --project iverbs-400af
-```
+**GitHub Actions** (cách chính): Actions → **Deploy** → *Run workflow*, chọn branch `release/vX.Y.Z`, gõ lại `vX.Y.Z`.
+- Chỉ chạy từ `release/vX.Y.Z`; version không cũ hơn tag `prod-vX.Y.Z` mới nhất và branch phải chứa commit của release đó.
+- lint → test → build (`--mode production`) → deploy `hosting:admin` → gắn tag `prod-vX.Y.Z`.
+- Cài đặt một lần (Settings → Environments → `production`): secret `FIREBASE_SERVICE_ACCOUNT` (JSON key của service account có role *Firebase Hosting Admin*), variable `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (project production).
 
-Mỗi lần deploy:
-```bash
-# .env.production (không commit): URL + anon key của Supabase production
-yarn deploy        # test → build --mode production → firebase deploy --only hosting:admin
-```
+Lần đầu cần tạo site (một lần): `npx -y firebase-tools@14 hosting:sites:create iverbs-admin --project iverbs-400af`.
 
-Trước khi deploy bản có RPC mới: `supabase db push` lên **production** ở repo `iverb-supabase` trước.
+**Chạy tay** (dự phòng): tạo `.env.production` (không commit) rồi `yarn deploy` (cần `firebase login`).
+
+Trước khi deploy bản dùng RPC mới: deploy backend (`iverb-supabase`, workflow Deploy) lên production trước.
 Không bao giờ đặt `service_role` key vào biến `VITE_*` (bị đóng gói vào JS công khai).
 
 ## Tài liệu

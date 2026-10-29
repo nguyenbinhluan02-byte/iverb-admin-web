@@ -11,3 +11,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-005](./TASK-005-today.md) | Today (bản đơn giản) | TASK-019 | done |
 | TASK-006 | Submissions | | hoãn (2026-10-29) |
 | [TASK-007](./TASK-007-firebase-hosting.md) | Deploy production lên Firebase Hosting | | in-progress |
+| [TASK-008](./TASK-008-deploy-workflow.md) | GitHub Actions deploy production lên Firebase Hosting | | in-progress |
