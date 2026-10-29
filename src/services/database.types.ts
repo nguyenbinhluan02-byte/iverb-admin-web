@@ -14,8 +14,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_get_today: { Args: never; Returns: Json }
+      admin_list_explanations: {
+        Args: { p_limit?: number; p_question_id: number }
+        Returns: Json
+      }
       admin_list_questions: { Args: never; Returns: Json }
       admin_question_history: { Args: { p_question_id: number }; Returns: Json }
+      admin_remove_explanation: { Args: { p_answer_id: number }; Returns: Json }
       admin_save_question: {
         Args: {
           p_answer_key: Json

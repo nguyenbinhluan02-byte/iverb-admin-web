@@ -4,6 +4,7 @@ import { AppLayout } from '@/components/AppLayout'
 import { LibraryPage } from '@/features/library/LibraryPage'
 import { QuestionFormPage } from '@/features/question-form/QuestionFormPage'
 import { SchedulePage } from '@/features/schedule/SchedulePage'
+import { TodayPage } from '@/features/today/TodayPage'
 import { ComingSoon } from '@/pages/ComingSoon'
 import { LoginPage } from '@/pages/LoginPage'
 
@@ -13,10 +14,7 @@ export function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route element={<RequireAdmin />}>
         <Route element={<AppLayout />}>
-          <Route
-            path="/today"
-            element={<ComingSoon kicker="Live now" title="Today" task="TASK-005" />}
-          />
+          <Route path="/today" element={<TodayPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/questions/new" element={<QuestionFormPage />} />
