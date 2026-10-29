@@ -25,34 +25,28 @@ const questions = [
   makeQuestion({ id: 1, prompt: 'Past of "go"?', status: 'published', usage_count: 3 }),
 ]
 
-// Filtering happens on the server: the page only passes params and shows pages.
-const search = vi.fn((params: SearchParams) => params)
-const fetchNextPage = vi.fn()
-let hasNextPage = false
+// Filtering and paging happen on the server: the page passes params + page number.
+const requests = vi.fn((params: SearchParams, page: number) => [params, page])
+let total = 42
 
 vi.mock('@/services/questions', () => ({
-  useQuestionSearch: (params: SearchParams) => {
-    search(params)
+  LIBRARY_PAGE_SIZE: 8,
+  useQuestionPage: (params: SearchParams, page: number) => {
+    requests(params, page)
     return {
       data: {
-        pages: [
-          {
-            items: questions,
-            next_cursor: null,
-            total: 7,
-            counts: {
-              status: { all: 7, published: 3, unpublished: 4, upcoming: 2, draft: 1 },
-              sources: { all: 9, admin: 6, user: 3 },
-            },
-          },
-        ],
+        items: questions,
+        next_cursor: null,
+        total,
+        counts: {
+          status: { all: 42, published: 3, unpublished: 4, upcoming: 2, draft: 1 },
+          sources: { all: 50, admin: 6, user: 3 },
+        },
       },
       isPending: false,
       isError: false,
       isSuccess: true,
-      hasNextPage,
-      isFetchingNextPage: false,
-      fetchNextPage,
+      isPlaceholderData: false,
     }
   },
   useQuestionHistory: () => ({
@@ -71,52 +65,73 @@ const renderPage = (path = '/library') =>
       <LibraryPage />
     </MemoryRouter>,
   )
+const lastPage = () => requests.mock.lastCall?.[1]
 
 beforeEach(() => {
-  search.mockClear()
-  fetchNextPage.mockClear()
-  hasNextPage = false
+  requests.mockClear()
+  total = 42
 })
 
 describe('LibraryPage', () => {
   it('lists the page with badges, actions and server counts', () => {
     renderPage()
-    expect(screen.getByText('9 questions')).toBeInTheDocument()
+    expect(screen.getByText('50 questions')).toBeInTheDocument()
     expect(screen.getByText('Put the words in order. — She has been')).toBeInTheDocument()
     expect(screen.getByText('User submitted')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Reuse/ })).toBeEnabled()
-    expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument()
   })
 
-  it('sends filters from the URL and the search box to the server', async () => {
+  it('numbered pagination: range, pages with gaps, prev / next', async () => {
     const user = userEvent.setup()
-    renderPage('/library?status=published&type=fill')
-    expect(search).toHaveBeenLastCalledWith(
-      expect.objectContaining({ status: 'published', type: 'fill', source: 'all', query: '' }),
-    )
+    renderPage('/library?page=3')
+    const nav = screen.getByRole('navigation', { name: 'Pagination' })
+    expect(within(nav).getByText('Showing 17–24 of 42')).toBeInTheDocument()
+    // 6 pages: 1 2 [3] 4 … 6
+    expect(
+      within(nav)
+        .getAllByRole('button')
+        .map((b) => b.textContent),
+    ).toEqual(['', '1', '2', '3', '4', '6', ''])
+    expect(within(nav).getByText('…')).toBeInTheDocument()
+    expect(within(nav).getByRole('button', { name: '3' })).toHaveAttribute('aria-current', 'page')
 
-    await user.type(screen.getByPlaceholderText(/Search by word/), 'went')
-    await waitFor(() =>
-      expect(search).toHaveBeenLastCalledWith(expect.objectContaining({ query: 'went' })),
-    )
-    // Debounced: no request per key press.
-    expect(search).not.toHaveBeenCalledWith(expect.objectContaining({ query: 'w' }))
+    await user.click(within(nav).getByRole('button', { name: '6' }))
+    expect(lastPage()).toBe(6)
+    await user.click(within(nav).getByRole('button', { name: 'Previous page' }))
+    expect(lastPage()).toBe(5)
+  })
+
+  it('changing a filter or the search goes back to page 1', async () => {
+    const user = userEvent.setup()
+    renderPage('/library?page=4&type=fill')
+    expect(requests).toHaveBeenLastCalledWith(expect.objectContaining({ type: 'fill' }), 4)
 
     await user.click(screen.getByRole('button', { name: /Added by/ }))
-    const menu = screen.getByRole('dialog')
-    expect(within(menu).getByText('3')).toBeInTheDocument() // users count from the server
-    await user.click(within(menu).getByRole('button', { name: /Users/ }))
-    expect(search).toHaveBeenLastCalledWith(expect.objectContaining({ source: 'user' }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Users/ }))
+    expect(requests).toHaveBeenLastCalledWith(
+      expect.objectContaining({ source: 'user', type: 'fill' }),
+      1,
+    )
+
+    await user.click(screen.getByRole('button', { name: '2' }))
+    await user.type(screen.getByPlaceholderText(/Search by word/), 'went')
+    await waitFor(() =>
+      expect(requests).toHaveBeenLastCalledWith(expect.objectContaining({ query: 'went' }), 1),
+    )
+    // Debounced: no request per key press.
+    expect(requests).not.toHaveBeenCalledWith(expect.objectContaining({ query: 'w' }), 1)
   })
 
-  it('loads the next page', async () => {
-    hasNextPage = true
-    const user = userEvent.setup()
+  it('clamps the page when results shrink, hides the pager when empty', async () => {
+    total = 10
+    const { unmount } = renderPage('/library?page=5')
+    await waitFor(() => expect(lastPage()).toBe(2))
+    unmount()
+
+    total = 0
     renderPage()
-    expect(screen.getByText('2 of 7')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Load more' }))
-    expect(fetchNextPage).toHaveBeenCalled()
+    expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument()
   })
 
   it('opens View, then History', async () => {

@@ -10,7 +10,7 @@ Yêu cầu 2026-10-29: Library có phân trang và bộ lọc chạy ở backend
 
 ## Phạm vi
 **In scope**
-- Library: `useQuestionSearch` (infinite query, 30 câu / trang) gửi query / status / source / type / sort lên server; số đếm dropdown và "N questions" lấy từ server; ô tìm kiếm debounce 300 ms; nút **Load more** ("x of total").
+- Library (đã thay bằng phân trang đánh số ở TASK-010): `useQuestionSearch` (infinite query, 30 câu / trang) gửi query / status / source / type / sort lên server; số đếm dropdown và "N questions" lấy từ server; ô tìm kiếm debounce 300 ms; nút **Load more** ("x of total").
 - Choose from library: cùng RPC với `pickable: true`, có Load more; số câu hiện `total` từ server.
 - Today → User explanations: `admin_explanations_page` (20 / trang) + Load more.
 - Component `LoadMore`, hook `useDebounced`.

@@ -48,6 +48,7 @@ export type Database = {
         Args: {
           p_cursor?: Json
           p_limit?: number
+          p_offset?: number
           p_pickable?: boolean
           p_query?: string
           p_sort?: string
