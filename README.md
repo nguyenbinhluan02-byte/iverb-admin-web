@@ -21,14 +21,14 @@ where id = (select id from auth.users where email = '<email>');
 ```
 
 ## Deploy (production → Firebase Hosting)
-Site `iverbs-admin` (https://iverbs-admin.web.app) trong Firebase project `iverbs-400af`. Chỉ có môi trường production.
+Firebase project riêng **`iverbs-admin`** (tách khỏi project `iverbs-400af` của app), site mặc định https://iverbs-admin.web.app. Chỉ có môi trường production.
 
 **GitHub Actions** (cách chính): Actions → **Deploy** → *Run workflow*, chọn branch `release/vX.Y.Z`, gõ lại `vX.Y.Z`.
 - Chỉ chạy từ `release/vX.Y.Z`; version không cũ hơn tag `prod-vX.Y.Z` mới nhất và branch phải chứa commit của release đó.
 - lint → test → build (`--mode production`) → deploy `hosting:admin` → gắn tag `prod-vX.Y.Z`.
-- Cài đặt một lần (Settings → Environments → `production`): secret `FIREBASE_SERVICE_ACCOUNT` (JSON key của service account có role *Firebase Hosting Admin*), variable `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (project production).
+- Cài đặt một lần (Settings → Environments → `production`): secret `FIREBASE_SERVICE_ACCOUNT` (JSON key của service account `id-github-actions-deploy@iverbs-admin.iam.gserviceaccount.com`, role *Firebase Hosting Admin*), variable `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (project production).
 
-Lần đầu cần tạo site (một lần): `npx -y firebase-tools@14 hosting:sites:create iverbs-admin --project iverbs-400af`.
+Site mặc định có sẵn khi bật Hosting trên Firebase Console, không cần tạo thêm.
 
 **Chạy tay** (dự phòng): tạo `.env.production` (không commit) rồi `yarn deploy` (cần `firebase login`).
 
