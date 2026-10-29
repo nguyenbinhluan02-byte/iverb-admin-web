@@ -14,3 +14,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-008](./TASK-008-deploy-workflow.md) | GitHub Actions deploy production lên Firebase Hosting | | in-progress |
 | [TASK-009](./TASK-009-server-paging.md) | Lọc + phân trang ở server (Library, Choose from library, explanations) | TASK-021 | done |
 | [TASK-010](./TASK-010-library-pagination.md) | Library phân trang theo số trang (design mới) | TASK-022 | done |
+| [TASK-011](./TASK-011-dropdown-in-modal.md) | Fix: dropdown lọc không mở được trong Choose from library | | done |

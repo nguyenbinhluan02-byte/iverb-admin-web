@@ -95,6 +95,12 @@ describe('SchedulePage', () => {
         .getAllByRole('radio')
         .map((r) => r.textContent),
     ).toEqual([expect.stringContaining('Shown before'), expect.stringContaining('Loose draft')])
+    // Filters open above the modal and keep it open.
+    await user.click(within(dialog).getByRole('button', { name: /Status/ }))
+    await user.click(screen.getByRole('button', { name: /^Published/ }))
+    expect(search).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'published' }))
+    expect(screen.getByRole('heading', { name: 'Choose from library' })).toBeInTheDocument()
+
     const schedule = within(dialog).getByRole('button', { name: 'Schedule' })
     expect(schedule).toBeDisabled()
 
