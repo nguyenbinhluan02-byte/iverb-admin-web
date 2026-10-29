@@ -4,9 +4,11 @@
 #   version must not be older than the current production release (tag
 #   prod-vX.Y.Z of this repo) and the branch must contain that release.
 #
+# Google auth: Workload Identity Federation (no JSON key; key creation is
+# disabled by the org policy). Only this repo's `production` environment can
+# impersonate the deploy service account — see README → Deploy.
+#
 # Setup (Settings → Environments → `production`):
-#   secret   FIREBASE_SERVICE_ACCOUNT  JSON key of a service account with the
-#                                      "Firebase Hosting Admin" role on iverbs-admin
 #   variable VITE_SUPABASE_URL         https://<prod ref>.supabase.co
 #   variable VITE_SUPABASE_ANON_KEY    anon (public) key of the production project
 # Never put a service_role key in a VITE_* variable: it ends up in public JS.
@@ -26,6 +28,7 @@ concurrency:
 
 permissions:
   contents: write # prod-vX.Y.Z tag
+  id-token: write # OIDC token for Workload Identity Federation
 
 jobs:
   check:
@@ -76,13 +79,14 @@ jobs:
       - run: yarn test
       - run: yarn build:prod
 
-      - name: Deploy to Firebase Hosting (project iverbs-admin)
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Google auth (Workload Identity Federation)
+        uses: google-github-actions/auth@v2
         with:
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          projectId: iverbs-admin
-          target: admin
-          channelId: live
+          workload_identity_provider: projects/991861378993/locations/global/workloadIdentityPools/github/providers/iverb-admin-web
+          service_account: github-actions-deploy@iverbs-admin.iam.gserviceaccount.com
+
+      - name: Deploy to Firebase Hosting (project iverbs-admin)
+        run: npx -y firebase-tools@14 deploy --only hosting:admin --project iverbs-admin --non-interactive
 
       - name: Tag production release
         env:
