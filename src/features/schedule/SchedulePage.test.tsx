@@ -75,7 +75,8 @@ describe('SchedulePage', () => {
     expect(
       within(screen.getByTestId(`day-${day2}`)).getByText(/users will see an empty day/),
     ).toBeInTheDocument()
-    expect(screen.getByText('13').parentElement).toHaveTextContent('13 empty')
+    // Exact legend text: a day cell can also show "13" (the 13th of a month).
+    expect(screen.getByText((_, el) => el?.textContent === '13 empty')).toBeInTheDocument()
   })
 
   it('schedules a library question on an empty day', async () => {
