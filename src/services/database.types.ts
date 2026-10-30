@@ -15,8 +15,17 @@ export type Database = {
     }
     Functions: {
       admin_delete_reply: { Args: { p_reply_id: number }; Returns: Json }
+      admin_dismiss_reports: {
+        Args: { p_target_id: number; p_target_type: string }
+        Returns: Json
+      }
       admin_explanations_page: {
-        Args: { p_cursor?: Json; p_limit?: number; p_question_id: number }
+        Args: {
+          p_cursor?: Json
+          p_filter?: string
+          p_limit?: number
+          p_question_id: number
+        }
         Returns: Json
       }
       admin_get_today: { Args: never; Returns: Json }
@@ -72,6 +81,7 @@ export type Database = {
         Returns: Json
       }
       delete_account: { Args: never; Returns: Json }
+      delete_reply: { Args: { p_reply_id: number }; Returns: Json }
       get_answer_replies: {
         Args: { p_answer_id: number; p_cursor?: Json; p_limit?: number }
         Returns: Json
@@ -84,6 +94,15 @@ export type Database = {
       get_daily_question: { Args: { p_day?: string }; Returns: Json }
       get_me: { Args: never; Returns: Json }
       mark_legacy_gift_seen: { Args: never; Returns: Json }
+      report_content: {
+        Args: {
+          p_note?: string
+          p_reason: string
+          p_target_id: number
+          p_target_type: string
+        }
+        Returns: Json
+      }
       submit_answer: {
         Args: {
           p_explanation?: string

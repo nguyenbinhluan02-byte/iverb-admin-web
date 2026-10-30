@@ -20,3 +20,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-014](./TASK-014-today-replies.md) | Today: xem / xoá reply dưới user explanation | TASK-027 | done |
 | [TASK-015](./TASK-015-schedule-test-date.md) | Fix: test Schedule lỗi theo ngày chạy (chặn deploy) | | done |
 | [TASK-016](./TASK-016-avatar-photos.md) | Hiện ảnh đại diện thật (fallback chữ cái) | TASK-028 | done |
+| [TASK-017](./TASK-017-today-reports.md) | Today: xử lý report explanation / reply (Dismiss / Delete, filter Reported) | TASK-029 | done |
