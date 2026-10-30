@@ -19,3 +19,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-013](./TASK-013-login-me-error.md) | Fix: đăng nhập im lặng khi `get_me` lỗi, không gọi lại sau khi sửa server | | done |
 | [TASK-014](./TASK-014-today-replies.md) | Today: xem / xoá reply dưới user explanation | TASK-027 | done |
 | [TASK-015](./TASK-015-schedule-test-date.md) | Fix: test Schedule lỗi theo ngày chạy (chặn deploy) | | done |
+| [TASK-016](./TASK-016-avatar-photos.md) | Hiện ảnh đại diện thật (fallback chữ cái) | TASK-028 | done |
