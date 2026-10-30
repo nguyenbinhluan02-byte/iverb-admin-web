@@ -66,7 +66,7 @@ export function Sidebar() {
       </nav>
 
       <div className="mt-auto flex items-center gap-2.5 border-t border-line px-2 py-2.5">
-        <Avatar name={me?.name} size={32} />
+        <Avatar name={me?.name} src={me?.avatar_url} size={32} />
         <span className="flex min-w-0 flex-1 flex-col leading-[1.25]">
           <span className="truncate text-[13px] font-bold">{me?.name ?? me?.email}</span>
           <span className="text-xs text-muted">Content admin</span>

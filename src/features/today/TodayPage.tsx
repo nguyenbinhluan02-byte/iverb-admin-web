@@ -158,7 +158,7 @@ function QuestionCard({ question: q, stats }: { question: Question; stats: Today
       <div className="flex items-center justify-between gap-2.5">
         <TypeBadge type={q.type} withIcon />
         <span className="flex items-center gap-1.5 text-xs text-muted">
-          By <Avatar name={authorName(q)} size={22} />
+          By <Avatar name={authorName(q)} src={q.author?.avatar_url} size={22} />
           <b className="text-ink">{authorName(q)}</b>
         </span>
       </div>
@@ -327,7 +327,7 @@ function ExplanationItem({
   const [open, setOpen] = useState(false)
   return (
     <div className="flex gap-3 border-t border-line py-4">
-      <Avatar name={e.user.name} size={36} />
+      <Avatar name={e.user.name} src={e.user.avatar_url} size={36} />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <b className="text-sm">{e.user.name ?? 'User'}</b>
@@ -395,7 +395,7 @@ function Replies({
       )}
       {items?.map((r) => (
         <div key={r.id} className="flex gap-2.5">
-          <Avatar name={r.user.name} size={28} />
+          <Avatar name={r.user.name} src={r.user.avatar_url} size={28} />
           <div className="flex min-w-0 flex-1 flex-col gap-1.5 rounded-xl bg-page px-3 py-2.5">
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <b className="text-[13px]">{r.user.name ?? 'User'}</b>

@@ -210,7 +210,7 @@ function DayRow({
           </div>
           <span className="truncate text-[15px] leading-[1.4] font-bold">{displayText(q)}</span>
           <span className="flex items-center gap-1.5 text-xs text-muted">
-            <Avatar name={authorName(q)} size={18} />
+            <Avatar name={authorName(q)} src={q.author?.avatar_url} size={18} />
             <span>
               By <b className="text-ink">{authorName(q)}</b>
             </span>
