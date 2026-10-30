@@ -1,4 +1,5 @@
 import {
+  Bell,
   BookOpen,
   CalendarDays,
   CirclePlus,
@@ -21,6 +22,7 @@ const NAV: { to: string; label: string; icon: LucideIcon }[] = [
   { to: '/library', label: 'Library', icon: BookOpen },
   { to: '/questions/new', label: 'New question', icon: CirclePlus },
   { to: '/submissions', label: 'Submissions', icon: Inbox },
+  { to: '/notifications', label: 'Notifications', icon: Bell },
 ]
 
 // Filled orange badges (needs attention); the rest are grey.

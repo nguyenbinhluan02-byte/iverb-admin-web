@@ -33,6 +33,7 @@ export type Database = {
         Args: { p_limit?: number; p_question_id: number }
         Returns: Json
       }
+      admin_list_pushes: { Args: { p_limit?: number }; Returns: Json }
       admin_list_questions: { Args: never; Returns: Json }
       admin_question_history: { Args: { p_question_id: number }; Returns: Json }
       admin_remove_explanation: { Args: { p_answer_id: number }; Returns: Json }
@@ -72,6 +73,15 @@ export type Database = {
         }
         Returns: Json
       }
+      claim_daily_push: {
+        Args: {
+          p_body: string
+          p_local_date: string
+          p_title: string
+          p_topic: string
+        }
+        Returns: number
+      }
       claim_legacy_gift: {
         Args: { p_grant?: boolean; p_transactions: Json; p_user_id: string }
         Returns: Json
@@ -82,6 +92,10 @@ export type Database = {
       }
       delete_account: { Args: never; Returns: Json }
       delete_reply: { Args: { p_reply_id: number }; Returns: Json }
+      finish_push: {
+        Args: { p_error?: string; p_id: number }
+        Returns: undefined
+      }
       get_answer_replies: {
         Args: { p_answer_id: number; p_cursor?: Json; p_limit?: number }
         Returns: Json
@@ -93,6 +107,10 @@ export type Database = {
       }
       get_daily_question: { Args: { p_day?: string }; Returns: Json }
       get_me: { Args: never; Returns: Json }
+      log_admin_push: {
+        Args: { p_body: string; p_title: string; p_user: string }
+        Returns: number
+      }
       mark_legacy_gift_seen: { Args: never; Returns: Json }
       report_content: {
         Args: {
