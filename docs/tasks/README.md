@@ -21,3 +21,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-015](./TASK-015-schedule-test-date.md) | Fix: test Schedule lỗi theo ngày chạy (chặn deploy) | | done |
 | [TASK-016](./TASK-016-avatar-photos.md) | Hiện ảnh đại diện thật (fallback chữ cái) | TASK-028 | done |
 | [TASK-017](./TASK-017-today-reports.md) | Today: xử lý report explanation / reply (Dismiss / Delete, filter Reported) | TASK-029 | done |
+| [TASK-018](./TASK-018-notifications.md) | Notifications: soạn + gửi push tới mọi user, lịch sử | TASK-032 | done |
