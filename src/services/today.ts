@@ -14,7 +14,19 @@ export interface Today {
   question: Question | null
   stats: TodayStats
   explanations_count: number
+  /** Explanations with reports on them or on one of their replies (TASK-029). */
+  reported_count: number
 }
+
+export type ReportReason = 'spam' | 'misleading' | 'offensive' | 'harassment' | 'other'
+
+/** Most frequent reason wins (api report_summary). */
+export interface Reports {
+  count: number
+  top_reason: ReportReason | null
+}
+
+export type ModerationStatus = 'visible' | 'hidden' | 'approved'
 
 export interface Explanation {
   id: number
@@ -25,7 +37,10 @@ export interface Explanation {
   likes_count: number
   reports_count: number
   replies_count: number
-  moderation_status: 'visible' | 'hidden' | 'approved'
+  reports: Reports
+  reported_replies_count: number
+  /** hidden = auto-hidden from app users after enough reports. */
+  moderation_status: ModerationStatus
   created_at: string
 }
 
@@ -33,12 +48,17 @@ export interface Reply {
   id: number
   user: { name: string | null; avatar_url: string | null }
   text: string
+  moderation_status: ModerationStatus
+  reports: Reports
   created_at: string
 }
 
+export type ExplanationFilter = 'all' | 'reported'
+
 export const todayKeys = {
   today: ['today'] as const,
-  explanations: (questionId: number) => ['today', 'explanations', questionId] as const,
+  explanations: (questionId: number, filter: ExplanationFilter) =>
+    ['today', 'explanations', questionId, filter] as const,
   replies: (answerId: number) => ['today', 'replies', answerId] as const,
 }
 
@@ -56,10 +76,10 @@ export function useToday() {
 
 const EXPLANATIONS_PAGE_SIZE = 20
 
-/** Newest first, cursor paged (api.admin_explanations_page). */
-export function useExplanations(questionId: number | null) {
+/** Newest first, cursor paged, filtered on the server (api.admin_explanations_page). */
+export function useExplanations(questionId: number | null, filter: ExplanationFilter = 'all') {
   return useInfiniteQuery({
-    queryKey: todayKeys.explanations(questionId ?? 0),
+    queryKey: todayKeys.explanations(questionId ?? 0, filter),
     enabled: questionId != null,
     initialPageParam: null as Json | null,
     queryFn: async ({ pageParam }) => {
@@ -67,6 +87,7 @@ export function useExplanations(questionId: number | null) {
         p_question_id: questionId!,
         p_limit: EXPLANATIONS_PAGE_SIZE,
         p_cursor: pageParam ?? undefined,
+        p_filter: filter,
       })
       if (error) throw error
       return data as unknown as { items: Explanation[]; next_cursor: Json | null }
@@ -116,11 +137,22 @@ export function useDeleteReply() {
       const { error } = await supabase.rpc('admin_delete_reply', { p_reply_id: replyId })
       if (error) throw error
     },
-    onSuccess: (_data, { answerId }) =>
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: todayKeys.replies(answerId) }),
-        // replies_count on the explanation
-        queryClient.invalidateQueries({ queryKey: ['today', 'explanations'] }),
-      ]),
+    // Everything under 'today': replies, replies_count / reported_replies_count, reported_count.
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: todayKeys.today }),
+  })
+}
+
+/** Clears the reports of a post and shows it again (api.admin_dismiss_reports). */
+export function useDismissReports() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ type, id }: { type: 'answer' | 'reply'; id: number }) => {
+      const { error } = await supabase.rpc('admin_dismiss_reports', {
+        p_target_type: type,
+        p_target_id: id,
+      })
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: todayKeys.today }),
   })
 }
