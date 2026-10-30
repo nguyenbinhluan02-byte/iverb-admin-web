@@ -15,6 +15,8 @@ const question = makeQuestion({
 })
 let today: Today
 const remove = vi.fn(async () => {})
+const deleteReply = vi.fn(async () => {})
+const repliesEnabled = vi.fn()
 
 vi.mock('@/services/today', () => ({
   useToday: () => ({ data: today, isPending: false, isError: false }),
@@ -33,6 +35,7 @@ vi.mock('@/services/today', () => ({
               explanation: 'I thought gone.',
               likes_count: 4,
               reports_count: 0,
+              replies_count: 2,
               moderation_status: 'visible',
               created_at: new Date().toISOString(),
             },
@@ -44,6 +47,31 @@ vi.mock('@/services/today', () => ({
     isError: false,
   }),
   useRemoveExplanation: () => ({ mutateAsync: remove, isPending: false }),
+  useReplies: (answerId: number, enabled: boolean) => {
+    repliesEnabled(answerId, enabled)
+    return {
+      hasNextPage: true,
+      isFetchingNextPage: false,
+      data: {
+        pages: [
+          {
+            next_cursor: { id: 21 },
+            items: [
+              {
+                id: 21,
+                user: { name: 'Chi Vo', avatar_url: null },
+                text: 'Same here, went is the past.',
+                created_at: new Date().toISOString(),
+              },
+            ],
+          },
+        ],
+      },
+      isPending: false,
+      isError: false,
+    }
+  },
+  useDeleteReply: () => ({ mutateAsync: deleteReply, isPending: false }),
 }))
 vi.mock('@/services/questions', () => ({
   useQuestions: () => ({ data: [question], isPending: false }),
@@ -58,6 +86,8 @@ const renderPage = () =>
 
 beforeEach(() => {
   remove.mockClear()
+  deleteReply.mockClear()
+  repliesEnabled.mockClear()
   today = {
     date: todayUTC(),
     question,
@@ -86,6 +116,27 @@ describe('TodayPage', () => {
     const dialog = screen.getByRole('dialog')
     await user.click(within(dialog).getByRole('button', { name: 'Delete' }))
     expect(remove).toHaveBeenCalledWith(11)
+  })
+
+  it('shows replies on demand and deletes one after confirming', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    expect(screen.queryByText('Same here, went is the past.')).not.toBeInTheDocument()
+    expect(repliesEnabled).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: 'View 2 replies' }))
+    expect(repliesEnabled).toHaveBeenCalledWith(11, true)
+    expect(screen.getByText('Same here, went is the past.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Load more replies (1 left)' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Hide replies' })).toBeInTheDocument()
+
+    const reply = screen.getByText('Same here, went is the past.').parentElement!
+    await user.click(within(reply).getByRole('button', { name: 'Delete' }))
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText('Delete this reply?')).toBeInTheDocument()
+    await user.click(within(dialog).getByRole('button', { name: 'Delete' }))
+    expect(deleteReply).toHaveBeenCalledWith({ replyId: 21, answerId: 11 })
+    expect(remove).not.toHaveBeenCalled()
   })
 
   it('no question today', () => {
