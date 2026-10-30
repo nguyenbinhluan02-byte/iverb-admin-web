@@ -1,7 +1,7 @@
 import { formatDistanceStrict } from 'date-fns'
 import { LETTERS } from '@/lib/question'
 import type { Question } from '@/services/questions'
-import type { Explanation, TodayStats } from '@/services/today'
+import type { Explanation, ReportReason, Reports, TodayStats } from '@/services/today'
 
 /** Time left until the next UTC midnight, e.g. "9h 12m". */
 export function closesIn(now = new Date()): string {
@@ -54,4 +54,19 @@ export function pickLabel(e: Explanation, q: Question): string {
 
 export function timeAgo(iso: string, now = new Date()): string {
   return `${formatDistanceStrict(new Date(iso), now)} ago`
+}
+
+/** Same wording as the report sheet in the app. */
+export const REPORT_REASONS: Record<ReportReason, string> = {
+  spam: 'Spam or advertising',
+  misleading: 'Wrong or misleading answer',
+  offensive: 'Offensive or abusive language',
+  harassment: 'Harassment or bullying',
+  other: 'Something else',
+}
+
+/** "Reported 3 times · Spam or advertising". */
+export function reportLabel({ count, top_reason }: Reports): string {
+  const label = `Reported ${count} ${count > 1 ? 'times' : 'time'}`
+  return top_reason ? `${label} · ${REPORT_REASONS[top_reason]}` : label
 }

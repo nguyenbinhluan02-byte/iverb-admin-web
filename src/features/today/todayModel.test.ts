@@ -1,6 +1,6 @@
 import { makeQuestion } from '@/test/fixtures'
 import type { Explanation } from '@/services/today'
-import { closesIn, correctRate, optionBars, pickLabel, timeAgo } from './todayModel'
+import { closesIn, correctRate, optionBars, pickLabel, reportLabel, timeAgo } from './todayModel'
 
 const stats = { answers_count: 8, correct_count: 5, option_votes: { a: 5, b: 3 } }
 const explanation = (over: Partial<Explanation>): Explanation => ({
@@ -12,6 +12,8 @@ const explanation = (over: Partial<Explanation>): Explanation => ({
   likes_count: 0,
   reports_count: 0,
   replies_count: 0,
+  reports: { count: 0, top_reason: null },
+  reported_replies_count: 0,
   moderation_status: 'visible',
   created_at: '2026-10-29T10:00:00Z',
   ...over,
@@ -49,5 +51,14 @@ describe('today model', () => {
 
   it('time ago', () => {
     expect(timeAgo('2026-10-29T10:00:00Z', new Date('2026-10-29T10:05:00Z'))).toBe('5 minutes ago')
+  })
+})
+
+describe('reportLabel', () => {
+  it('count and top reason', () => {
+    expect(reportLabel({ count: 3, top_reason: 'spam' })).toBe(
+      'Reported 3 times · Spam or advertising',
+    )
+    expect(reportLabel({ count: 1, top_reason: null })).toBe('Reported 1 time')
   })
 })
