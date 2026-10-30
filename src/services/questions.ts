@@ -41,7 +41,13 @@ export interface Question {
   status: QuestionStatus
   date: string | null // YYYY-MM-DD (UTC day)
   /** name = "Shown as author" override or the profile name */
-  author: { id: string | null; name: string | null; role: 'admin' | 'user' } | null
+  author: {
+    id: string | null
+    name: string | null
+    role: 'admin' | 'user'
+    /** null when author_name overrides the name (iverb-supabase TASK-028) */
+    avatar_url?: string | null
+  } | null
   author_name: string | null
   /** Users answered it: type / content / answer key are locked. */
   has_answers: boolean

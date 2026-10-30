@@ -48,7 +48,7 @@ export function QuestionViewDialog({
               </div>
             )}
             <div className="flex items-center gap-2 text-[13px] text-muted">
-              <Avatar name={authorName(q)} size={24} />
+              <Avatar name={authorName(q)} src={q.author?.avatar_url} size={24} />
               <span>
                 By <b className="text-ink">{authorName(q)}</b>
               </span>
