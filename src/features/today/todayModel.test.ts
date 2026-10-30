@@ -11,6 +11,7 @@ const explanation = (over: Partial<Explanation>): Explanation => ({
   explanation: 'x',
   likes_count: 0,
   reports_count: 0,
+  replies_count: 0,
   moderation_status: 'visible',
   created_at: '2026-10-29T10:00:00Z',
   ...over,

@@ -15,8 +15,33 @@ const questions = [
 ]
 const mutateAsync = vi.fn()
 
+const search = vi.fn()
+
 vi.mock('@/services/questions', () => ({
   useQuestions: () => ({ data: questions, isPending: false, isError: false }),
+  // The picker asks the server for pickable questions (shown first).
+  useQuestionSearch: (params: unknown) => {
+    search(params)
+    return {
+      data: {
+        pages: [
+          {
+            items: [questions[0], questions[3]],
+            next_cursor: null,
+            total: 2,
+            counts: {
+              status: { all: 2, published: 1, unpublished: 1, upcoming: 0, draft: 1 },
+              sources: { all: 2, admin: 2, user: 0 },
+            },
+          },
+        ],
+      },
+      isPending: false,
+      isError: false,
+      isSuccess: true,
+      hasNextPage: false,
+    }
+  },
   useScheduleQuestion: () => ({ mutateAsync, isPending: false }),
   useQuestionHistory: () => ({ data: [], isPending: false, isError: false }),
 }))
@@ -61,12 +86,21 @@ describe('SchedulePage', () => {
     )
 
     const dialog = screen.getByRole('dialog')
-    // Published first; live and scheduled questions are not offered.
+    expect(search).toHaveBeenLastCalledWith(
+      expect.objectContaining({ pickable: true, sort: 'oldest', status: 'all' }),
+    )
+    expect(within(dialog).getByText('2 questions')).toBeInTheDocument()
     expect(
       within(dialog)
         .getAllByRole('radio')
         .map((r) => r.textContent),
     ).toEqual([expect.stringContaining('Shown before'), expect.stringContaining('Loose draft')])
+    // Filters open above the modal and keep it open.
+    await user.click(within(dialog).getByRole('button', { name: /Status/ }))
+    await user.click(screen.getByRole('button', { name: /^Published/ }))
+    expect(search).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'published' }))
+    expect(screen.getByRole('heading', { name: 'Choose from library' })).toBeInTheDocument()
+
     const schedule = within(dialog).getByRole('button', { name: 'Schedule' })
     expect(schedule).toBeDisabled()
 

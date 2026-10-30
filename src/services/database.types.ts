@@ -14,6 +14,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_delete_reply: { Args: { p_reply_id: number }; Returns: Json }
+      admin_explanations_page: {
+        Args: { p_cursor?: Json; p_limit?: number; p_question_id: number }
+        Returns: Json
+      }
       admin_get_today: { Args: never; Returns: Json }
       admin_list_explanations: {
         Args: { p_limit?: number; p_question_id: number }
@@ -22,6 +27,10 @@ export type Database = {
       admin_list_questions: { Args: never; Returns: Json }
       admin_question_history: { Args: { p_question_id: number }; Returns: Json }
       admin_remove_explanation: { Args: { p_answer_id: number }; Returns: Json }
+      admin_replies_page: {
+        Args: { p_answer_id: number; p_cursor?: Json; p_limit?: number }
+        Returns: Json
+      }
       admin_save_question: {
         Args: {
           p_answer_key: Json
@@ -40,11 +49,33 @@ export type Database = {
         Args: { p_date: string; p_question_id: number }
         Returns: Json
       }
+      admin_search_questions: {
+        Args: {
+          p_cursor?: Json
+          p_limit?: number
+          p_offset?: number
+          p_pickable?: boolean
+          p_query?: string
+          p_sort?: string
+          p_source?: string
+          p_status?: string
+          p_type?: string
+        }
+        Returns: Json
+      }
       claim_legacy_gift: {
         Args: { p_grant?: boolean; p_transactions: Json; p_user_id: string }
         Returns: Json
       }
+      create_reply: {
+        Args: { p_answer_id: number; p_text: string }
+        Returns: Json
+      }
       delete_account: { Args: never; Returns: Json }
+      get_answer_replies: {
+        Args: { p_answer_id: number; p_cursor?: Json; p_limit?: number }
+        Returns: Json
+      }
       get_app_config: { Args: never; Returns: Json }
       get_community_answers: {
         Args: { p_cursor?: Json; p_limit?: number; p_question_id: number }

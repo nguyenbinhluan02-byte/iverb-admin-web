@@ -1,10 +1,11 @@
 import { format, parseISO } from 'date-fns'
-import { ArrowBigUp, Trash2 } from 'lucide-react'
+import { ArrowBigUp, MessageCircle, Trash2 } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { Avatar } from '@/components/Avatar'
 import { TypeBadge } from '@/components/Badge'
+import { LoadMore } from '@/components/LoadMore'
 import { Modal, ModalTitle } from '@/components/Modal'
 import { QuestionBody } from '@/features/library/QuestionBody'
 import { emptyDays } from '@/features/schedule/scheduleModel'
@@ -13,17 +14,21 @@ import { errorMessage } from '@/lib/errors'
 import { authorName, dayLabel, displayText } from '@/lib/question'
 import { useQuestions, type Question } from '@/services/questions'
 import {
+  useDeleteReply,
   useExplanations,
   useRemoveExplanation,
+  useReplies,
   useToday,
   type Explanation,
+  type Reply,
   type TodayStats,
 } from '@/services/today'
 import { closesIn, correctRate, optionBars, pickLabel, timeAgo } from './todayModel'
 
 const number = (n: number) => n.toLocaleString('en-US')
 
-// Design: Today. Simplified (2026-10-29): no 7-day comparison, no replies / reports.
+// Design: Today. Simplified (2026-10-29): no 7-day comparison, no reports.
+// Replies (TASK-014): read + delete only, admins do not reply.
 export function TodayPage() {
   const navigate = useNavigate()
   const { data: today, isPending, isError, error } = useToday()
@@ -204,16 +209,30 @@ function QuestionCard({ question: q, stats }: { question: Question; stats: Today
   )
 }
 
+type Confirm =
+  { kind: 'explanation'; item: Explanation } | { kind: 'reply'; item: Reply; answerId: number }
+
 function Explanations({ question, count }: { question: Question; count: number }) {
-  const { data: items, isPending, isError, error } = useExplanations(question.id)
+  const explanations = useExplanations(question.id)
+  const { isPending, isError, error } = explanations
+  const items = explanations.data?.pages.flatMap((p) => p.items)
   const remove = useRemoveExplanation()
-  const [confirming, setConfirming] = useState<Explanation | null>(null)
+  const deleteReply = useDeleteReply()
+  const [confirming, setConfirming] = useState<Confirm | null>(null)
 
   const confirmDelete = async () => {
     if (!confirming) return
     try {
-      await remove.mutateAsync(confirming.id)
-      toast.success('Explanation deleted')
+      if (confirming.kind === 'explanation') {
+        await remove.mutateAsync(confirming.item.id)
+        toast.success('Explanation deleted')
+      } else {
+        await deleteReply.mutateAsync({
+          replyId: confirming.item.id,
+          answerId: confirming.answerId,
+        })
+        toast.success('Reply deleted')
+      }
       setConfirming(null)
     } catch (e) {
       toast.error(errorMessage(e))
@@ -231,52 +250,44 @@ function Explanations({ question, count }: { question: Question; count: number }
         {isError && <Empty>{errorMessage(error)}</Empty>}
         {items?.length === 0 && <Empty>No explanations yet.</Empty>}
         {items?.map((e) => (
-          <div key={e.id} className="flex gap-3 border-t border-line py-4">
-            <Avatar name={e.user.name} size={36} />
-            <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <b className="text-sm">{e.user.name ?? 'User'}</b>
-                <span
-                  className={`rounded-full px-2 py-[3px] text-[11px] font-extrabold ${
-                    e.is_correct
-                      ? 'bg-[rgba(31,169,113,.12)] text-green-text'
-                      : 'bg-[rgba(245,51,63,.1)] text-red-text'
-                  }`}
-                >
-                  {pickLabel(e, question)}
-                </span>
-                <span className="ml-auto text-xs text-muted">{timeAgo(e.created_at)}</span>
-              </div>
-              <p className="text-sm leading-normal text-pretty">{e.explanation}</p>
-              <div className="flex items-center gap-3.5 text-xs font-bold text-muted">
-                <span className="flex items-center gap-[5px]" title="Votes">
-                  <ArrowBigUp size={14} strokeWidth={2.2} />
-                  {number(e.likes_count)}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setConfirming(e)}
-                  className="ml-auto flex items-center gap-[5px] font-bold text-muted hover:text-red-text"
-                >
-                  <Trash2 size={13} strokeWidth={2.2} />
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
+          <ExplanationItem
+            key={e.id}
+            item={e}
+            question={question}
+            onDelete={() => setConfirming({ kind: 'explanation', item: e })}
+            onDeleteReply={(r) => setConfirming({ kind: 'reply', item: r, answerId: e.id })}
+          />
         ))}
+        {explanations.hasNextPage && (
+          <LoadMore
+            shown={items?.length ?? 0}
+            total={count}
+            loading={explanations.isFetchingNextPage}
+            onClick={() => explanations.fetchNextPage()}
+          />
+        )}
       </div>
 
       <Modal open={!!confirming} onClose={() => setConfirming(null)} maxWidth={420}>
         {confirming && (
           <div className="flex flex-col gap-4 p-6">
-            <ModalTitle className="text-lg font-extrabold">Delete this explanation?</ModalTitle>
+            <ModalTitle className="text-lg font-extrabold">
+              {confirming.kind === 'explanation'
+                ? 'Delete this explanation?'
+                : 'Delete this reply?'}
+            </ModalTitle>
             <div className="flex flex-col gap-1 rounded-xl bg-hover px-3.5 py-3">
-              <b className="text-[13px]">{confirming.user.name ?? 'User'}</b>
-              <span className="line-clamp-3 text-sm leading-normal">{confirming.explanation}</span>
+              <b className="text-[13px]">{confirming.item.user.name ?? 'User'}</b>
+              <span className="line-clamp-3 text-sm leading-normal">
+                {confirming.kind === 'explanation'
+                  ? confirming.item.explanation
+                  : confirming.item.text}
+              </span>
             </div>
             <span className="text-[13px] leading-normal text-muted">
-              It disappears from the app. The user's answer and today's stats stay.
+              {confirming.kind === 'explanation'
+                ? "It disappears from the app. The user's answer and today's stats stay."
+                : "It will be removed from the app. This can't be undone."}
             </span>
             <div className="flex justify-end gap-2.5">
               <button
@@ -288,7 +299,7 @@ function Explanations({ question, count }: { question: Question; count: number }
               </button>
               <button
                 type="button"
-                disabled={remove.isPending}
+                disabled={remove.isPending || deleteReply.isPending}
                 onClick={confirmDelete}
                 className="rounded-[10px] bg-red px-[18px] py-2.5 text-sm font-extrabold text-white disabled:opacity-60"
               >
@@ -298,6 +309,121 @@ function Explanations({ question, count }: { question: Question; count: number }
           </div>
         )}
       </Modal>
+    </div>
+  )
+}
+
+function ExplanationItem({
+  item: e,
+  question,
+  onDelete,
+  onDeleteReply,
+}: {
+  item: Explanation
+  question: Question
+  onDelete: () => void
+  onDeleteReply: (reply: Reply) => void
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="flex gap-3 border-t border-line py-4">
+      <Avatar name={e.user.name} size={36} />
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <b className="text-sm">{e.user.name ?? 'User'}</b>
+          <span
+            className={`rounded-full px-2 py-[3px] text-[11px] font-extrabold ${
+              e.is_correct
+                ? 'bg-[rgba(31,169,113,.12)] text-green-text'
+                : 'bg-[rgba(245,51,63,.1)] text-red-text'
+            }`}
+          >
+            {pickLabel(e, question)}
+          </span>
+          <span className="ml-auto text-xs text-muted">{timeAgo(e.created_at)}</span>
+        </div>
+        <p className="text-sm leading-normal text-pretty">{e.explanation}</p>
+        <div className="flex items-center gap-3.5 text-xs font-bold text-muted">
+          <span className="flex items-center gap-[5px]" title="Votes">
+            <ArrowBigUp size={14} strokeWidth={2.2} />
+            {number(e.likes_count)}
+          </span>
+          {e.replies_count > 0 && (
+            <button
+              type="button"
+              aria-expanded={open}
+              onClick={() => setOpen((o) => !o)}
+              className="flex items-center gap-[5px] font-extrabold text-brand"
+            >
+              <MessageCircle size={13} strokeWidth={2.2} />
+              {open
+                ? 'Hide replies'
+                : `View ${number(e.replies_count)} ${e.replies_count > 1 ? 'replies' : 'reply'}`}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onDelete}
+            className="ml-auto flex items-center gap-[5px] font-bold text-muted hover:text-red-text"
+          >
+            <Trash2 size={13} strokeWidth={2.2} />
+            Delete
+          </button>
+        </div>
+        {open && <Replies answerId={e.id} total={e.replies_count} onDelete={onDeleteReply} />}
+      </div>
+    </div>
+  )
+}
+
+function Replies({
+  answerId,
+  total,
+  onDelete,
+}: {
+  answerId: number
+  total: number
+  onDelete: (reply: Reply) => void
+}) {
+  const replies = useReplies(answerId, true)
+  const items = replies.data?.pages.flatMap((p) => p.items)
+  return (
+    <div className="flex flex-col gap-2.5 pl-1">
+      {replies.isPending && <span className="text-xs text-muted">Loading replies…</span>}
+      {replies.isError && (
+        <span className="text-xs text-red-text">{errorMessage(replies.error)}</span>
+      )}
+      {items?.map((r) => (
+        <div key={r.id} className="flex gap-2.5">
+          <Avatar name={r.user.name} size={28} />
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5 rounded-xl bg-page px-3 py-2.5">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <b className="text-[13px]">{r.user.name ?? 'User'}</b>
+              <span className="text-muted">{timeAgo(r.created_at)}</span>
+              <button
+                type="button"
+                onClick={() => onDelete(r)}
+                className="ml-auto text-xs font-extrabold text-red-text"
+              >
+                Delete
+              </button>
+            </div>
+            <span className="text-sm leading-normal text-pretty">{r.text}</span>
+          </div>
+        </div>
+      ))}
+      {replies.hasNextPage && (
+        <button
+          type="button"
+          disabled={replies.isFetchingNextPage}
+          onClick={() => replies.fetchNextPage()}
+          className="self-start pl-[38px] text-xs font-extrabold text-brand disabled:text-subtle"
+        >
+          {replies.isFetchingNextPage
+            ? 'Loading…'
+            : `Load more replies (${number(total - (items?.length ?? 0))} left)`}
+        </button>
+      )}
     </div>
   )
 }

@@ -1,4 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import type { Json } from './database.types'
 
@@ -52,6 +58,8 @@ export interface QuestionUse {
 
 export const questionKeys = {
   all: ['questions'] as const,
+  search: (params: SearchParams) => ['questions', 'search', params] as const,
+  page: (params: SearchParams, page: number) => ['questions', 'page', params, page] as const,
   history: (id: number) => ['questions', id, 'history'] as const,
 }
 
@@ -63,6 +71,79 @@ export function useQuestions() {
       if (error) throw error
       return data as unknown as Question[]
     },
+  })
+}
+
+export type SearchStatus = 'all' | 'published' | 'unpublished' | 'upcoming' | 'draft'
+export type SearchSource = 'all' | 'admin' | 'user'
+
+export interface SearchParams {
+  query: string
+  status: SearchStatus
+  source: SearchSource
+  type: 'all' | QType
+  sort: 'newest' | 'oldest'
+  /** Only questions that can go on an empty day (Choose from library). */
+  pickable?: boolean
+}
+
+export interface SearchCounts {
+  status: Record<SearchStatus, number>
+  sources: Record<SearchSource, number>
+}
+
+interface SearchPage {
+  items: Question[]
+  next_cursor: Json | null
+  total: number
+  counts: SearchCounts
+}
+
+const SEARCH_PAGE_SIZE = 30
+export const LIBRARY_PAGE_SIZE = 8
+
+const searchArgs = (params: SearchParams) => ({
+  p_query: params.query.trim() || undefined,
+  p_status: params.status,
+  p_source: params.source,
+  p_type: params.type === 'all' ? undefined : params.type,
+  p_sort: params.sort,
+  p_pickable: params.pickable ?? false,
+})
+
+/** One numbered page of the library (1-based), api.admin_search_questions + p_offset. */
+export function useQuestionPage(params: SearchParams, page: number) {
+  return useQuery({
+    queryKey: questionKeys.page(params, page),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('admin_search_questions', {
+        ...searchArgs(params),
+        p_limit: LIBRARY_PAGE_SIZE,
+        p_offset: (page - 1) * LIBRARY_PAGE_SIZE,
+      })
+      if (error) throw error
+      return data as unknown as SearchPage
+    },
+    placeholderData: keepPreviousData,
+  })
+}
+
+/** Server-side filtered questions, cursor paged for Load more (Choose from library). */
+export function useQuestionSearch(params: SearchParams) {
+  return useInfiniteQuery({
+    queryKey: questionKeys.search(params),
+    initialPageParam: null as Json | null,
+    queryFn: async ({ pageParam }) => {
+      const { data, error } = await supabase.rpc('admin_search_questions', {
+        ...searchArgs(params),
+        p_limit: SEARCH_PAGE_SIZE,
+        p_cursor: pageParam ?? undefined,
+      })
+      if (error) throw error
+      return data as unknown as SearchPage
+    },
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+    placeholderData: keepPreviousData,
   })
 }
 

@@ -17,7 +17,7 @@ const fieldClass =
   'h-11 w-full rounded-xl border border-line-strong bg-card px-3.5 text-[15px] font-semibold'
 
 export function LoginPage() {
-  const { status, signIn, signOut } = useAuth()
+  const { status, error: meError, retry, signIn, signOut } = useAuth()
   const location = useLocation()
   const [error, setError] = useState<string | null>(null)
   const {
@@ -48,13 +48,26 @@ export function LoginPage() {
             Q
           </span>
           <span className="flex flex-col leading-[1.2]">
-            <span className="text-[15px] font-extrabold">Quiz Admin</span>
+            <span className="text-[15px] font-extrabold">IVerbs Admin</span>
             <span className="text-xs text-muted">English daily quiz</span>
           </span>
         </div>
         <h1 className="mt-7 text-xl font-extrabold">Sign in</h1>
 
-        {status === 'not-admin' ? (
+        {status === 'error' ? (
+          <div className="mt-4 flex flex-col gap-4">
+            <p
+              role="alert"
+              className="rounded-xl bg-[rgba(245,51,63,.1)] px-3.5 py-3 text-sm font-semibold text-red-text"
+            >
+              Signed in, but your profile could not be loaded: {errorMessage(meError)}
+            </p>
+            <Button onClick={retry}>Try again</Button>
+            <Button variant="secondary" onClick={signOut}>
+              Use another account
+            </Button>
+          </div>
+        ) : status === 'not-admin' ? (
           <div className="mt-4 flex flex-col gap-4">
             <p className="rounded-xl bg-[rgba(245,51,63,.1)] px-3.5 py-3 text-sm font-semibold text-red-text">
               {errorMessage(new Error('not_admin'))}

@@ -14,7 +14,7 @@ import {
   Type,
   User,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Avatar } from '@/components/Avatar'
 import { StatusBadge, TypeBadge, UserSubmittedBadge } from '@/components/Badge'
@@ -23,11 +23,17 @@ import { PageHeader } from '@/components/PageHeader'
 import { errorMessage } from '@/lib/errors'
 import { authorName, displayText, isUserSubmitted } from '@/lib/question'
 import { ReuseDialog } from '@/features/schedule/ReuseDialog'
-import { useQuestions, type Question } from '@/services/questions'
+import { useDebounced } from '@/lib/useDebounced'
+import { pageCount } from '@/lib/pagination'
 import {
-  countFilters,
+  LIBRARY_PAGE_SIZE,
+  useQuestionPage,
+  type Question,
+  type SearchCounts,
+} from '@/services/questions'
+import { Pagination } from '@/components/Pagination'
+import {
   DEFAULT_FILTERS,
-  filterQuestions,
   type LibraryFilters,
   type SortOrder,
   type SourceFilter,
@@ -38,10 +44,16 @@ import { GREEN_TINT, ORANGE_TINT, sourceOptions, typeOptions } from './filterOpt
 import { HistoryDialog } from './HistoryDialog'
 import { QuestionViewDialog } from './QuestionViewDialog'
 
+const EMPTY_COUNTS: SearchCounts = {
+  status: { all: 0, published: 0, unpublished: 0, upcoming: 0, draft: 0 },
+  sources: { all: 0, admin: 0, user: 0 },
+}
+
 const rowButton = 'flex items-center gap-1.5 rounded-[9px] px-3 py-2 text-[13px] whitespace-nowrap'
 
-// Filters live in the URL so a filtered list can be shared / reloaded.
-function useLibraryFilters(): [LibraryFilters, (patch: Partial<LibraryFilters>) => void] {
+// Filters and the page live in the URL so a list can be shared / reloaded.
+// Changing a filter goes back to page 1 (design).
+function useLibraryFilters() {
   const [params, setParams] = useSearchParams()
   const filters: LibraryFilters = {
     query: params.get('q') ?? DEFAULT_FILTERS.query,
@@ -50,33 +62,45 @@ function useLibraryFilters(): [LibraryFilters, (patch: Partial<LibraryFilters>) 
     type: (params.get('type') as TypeFilter) ?? DEFAULT_FILTERS.type,
     sort: (params.get('sort') as SortOrder) ?? DEFAULT_FILTERS.sort,
   }
-  const update = (patch: Partial<LibraryFilters>) => {
-    const next = { ...filters, ...patch }
+  const page = Math.max(1, Number(params.get('page')) || 1)
+
+  const write = (next: LibraryFilters, nextPage: number) => {
     const entries: [string, string, string][] = [
       ['q', next.query, DEFAULT_FILTERS.query],
       ['status', next.status, DEFAULT_FILTERS.status],
       ['by', next.source, DEFAULT_FILTERS.source],
       ['type', next.type, DEFAULT_FILTERS.type],
       ['sort', next.sort, DEFAULT_FILTERS.sort],
+      ['page', String(nextPage), '1'],
     ]
     setParams(Object.fromEntries(entries.filter(([, v, d]) => v !== d).map(([k, v]) => [k, v])), {
       replace: true,
     })
   }
-  return [filters, update]
+  const setFilters = (patch: Partial<LibraryFilters>) => write({ ...filters, ...patch }, 1)
+  const setPage = (next: number) => write(filters, next)
+  return { filters, setFilters, page, setPage }
 }
 
 export function LibraryPage() {
   const navigate = useNavigate()
-  const { data: questions, isPending, isError, error } = useQuestions()
-  const [filters, setFilters] = useLibraryFilters()
+  const { filters, setFilters, page, setPage } = useLibraryFilters()
   const [viewing, setViewing] = useState<Question | null>(null)
   const [history, setHistory] = useState<Question | null>(null)
   const [reusing, setReusing] = useState<Question | null>(null)
 
-  const all = useMemo(() => questions ?? [], [questions])
-  const rows = useMemo(() => filterQuestions(all, filters), [all, filters])
-  const counts = useMemo(() => countFilters(all, filters.source), [all, filters.source])
+  // Typing in the search box should not fire a request per key press.
+  const query = useDebounced(filters.query)
+  const result = useQuestionPage({ ...filters, query }, page)
+  const rows = result.data?.items ?? []
+  const total = result.data?.total ?? 0
+  const counts = result.data?.counts ?? EMPTY_COUNTS
+
+  // Results shrank (e.g. after a delete elsewhere): clamp to the last page.
+  const pages = pageCount(total, LIBRARY_PAGE_SIZE)
+  useEffect(() => {
+    if (result.isSuccess && !result.isPlaceholderData && page > pages) setPage(pages)
+  })
 
   const edit = (q: Question) => navigate(`/questions/${q.id}/edit`, { state: { from: '/library' } })
 
@@ -111,7 +135,7 @@ export function LibraryPage() {
 
   return (
     <div className="mx-auto flex max-w-[1040px] flex-col gap-5">
-      <PageHeader kicker={`${all.length} questions`} title="Library" />
+      <PageHeader kicker={`${counts.sources.all} questions`} title="Library" />
 
       <div className="flex items-center gap-2.5 rounded-xl border border-line bg-card px-3.5">
         <Search size={18} strokeWidth={2.2} className="shrink-0 text-muted" />
@@ -155,9 +179,11 @@ export function LibraryPage() {
       </div>
 
       <div className="overflow-hidden rounded-[18px] border border-line bg-card">
-        {isPending && <Message>Loading questions…</Message>}
-        {isError && <Message>{errorMessage(error)}</Message>}
-        {questions && rows.length === 0 && <Message>No questions match your search.</Message>}
+        {result.isPending && <Message>Loading questions…</Message>}
+        {result.isError && <Message>{errorMessage(result.error)}</Message>}
+        {result.isSuccess && rows.length === 0 && (
+          <Message>No questions match your search.</Message>
+        )}
         {rows.map((q, i) => (
           <div
             key={q.id}
@@ -224,6 +250,8 @@ export function LibraryPage() {
           </div>
         ))}
       </div>
+
+      <Pagination page={page} size={LIBRARY_PAGE_SIZE} total={total} onChange={setPage} />
 
       <QuestionViewDialog
         question={viewing}

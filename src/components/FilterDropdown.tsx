@@ -45,10 +45,11 @@ export function FilterDropdown<T extends string>({
         </button>
       </Popover.Trigger>
       <Popover.Portal>
+        {/* Above the modal overlay (z-50): the dropdowns are also used inside Choose from library. */}
         <Popover.Content
           align="start"
           sideOffset={6}
-          className="z-40 flex min-w-[230px] flex-col gap-0.5 rounded-xl border border-line bg-card p-1.5 shadow-menu"
+          className="z-[60] flex min-w-[230px] flex-col gap-0.5 rounded-xl border border-line bg-card p-1.5 shadow-menu"
         >
           {options.map((o) => {
             const on = o.value === value

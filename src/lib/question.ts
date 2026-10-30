@@ -48,20 +48,6 @@ export function authorName(q: Question): string {
   return q.author?.name ?? 'Unknown'
 }
 
-export function searchText(q: Question): string {
-  return [
-    q.prompt,
-    sentenceOf(q),
-    ...(q.answer_key?.accepted ?? []),
-    q.content.hint,
-    authorName(q),
-    ...(q.content.options ?? []).map((o) => o.text),
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
-}
-
 /** "Mon, Oct 12" */
 export function dayLabel(date: string): string {
   return format(parseISO(date), 'EEE, MMM d')
