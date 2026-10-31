@@ -1,7 +1,7 @@
 import { Avatar } from '@/components/Avatar'
 import { StatusBadge, TypeBadge, UserSubmittedBadge } from '@/components/Badge'
 import { Modal, ModalClose, ModalTitle } from '@/components/Modal'
-import { authorName, isUserSubmitted } from '@/lib/question'
+import { authorName, isListening, isUserSubmitted } from '@/lib/question'
 import type { Question } from '@/services/questions'
 import { QuestionBody } from './QuestionBody'
 
@@ -27,7 +27,7 @@ export function QuestionViewDialog({
         <>
           <div className="flex items-start gap-3 border-b border-line px-[22px] pt-5 pb-3.5">
             <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
-              <TypeBadge type={q.type} withIcon />
+              <TypeBadge type={q.type} listening={isListening(q)} withIcon />
               <StatusBadge status={q.status} />
               {isUserSubmitted(q) && <UserSubmittedBadge />}
             </div>

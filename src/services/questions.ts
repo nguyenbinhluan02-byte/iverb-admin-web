@@ -8,7 +8,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import type { Json } from './database.types'
 
-export type QType = 'single' | 'multi' | 'fill' | 'order'
+export type QType = 'single' | 'multi' | 'fill' | 'order' | 'dictation'
 export type QuestionStatus = 'draft' | 'unscheduled' | 'published' | 'live' | 'scheduled'
 export type UseStatus = 'shown' | 'live' | 'scheduled' | 'draft'
 
@@ -23,12 +23,27 @@ export interface QuestionContent {
   after?: string
   hint?: string
   tiles?: Item[] // order (shuffled)
+  /** Listening (iverb-supabase TASK-034 / 035): public file in `question-audio` */
+  audio_url?: string
+  audio_meta?: AudioMeta
+}
+
+export type Voice = 'us-f' | 'us-m' | 'uk-f' | 'uk-m'
+
+export interface AudioMeta {
+  source: 'tts' | 'file'
+  voice?: Voice // tts
+  file_name?: string // file
+  file_size?: number // bytes
+  duration_sec?: number | null
 }
 
 export interface AnswerKey {
   correct?: string[] // single / multi: option ids
   accepted?: string[] // fill
   order?: string[] // order: tile ids
+  transcript?: string // listening single / multi / fill: what the audio says
+  sentence?: string // dictation: the sentence users write (= the transcript)
 }
 
 export interface Question {
@@ -87,7 +102,8 @@ export interface SearchParams {
   query: string
   status: SearchStatus
   source: SearchSource
-  type: 'all' | QType
+  /** `listen` = any question with audio */
+  type: 'all' | 'listen' | QType
   sort: 'newest' | 'oldest'
   /** Only questions that can go on an empty day (Choose from library). */
   pickable?: boolean

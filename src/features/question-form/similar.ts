@@ -1,4 +1,4 @@
-import { dayLabel, displayText, sentenceOf, TYPE_LABELS } from '@/lib/question'
+import { dayLabel, displayText, isListening, sentenceOf, typeLabel } from '@/lib/question'
 import type { Question } from '@/services/questions'
 import type { FormValues } from './formModel'
 
@@ -28,7 +28,7 @@ export function similarity(a: Set<string>, b: Set<string>): number {
 }
 
 const formTokens = (v: FormValues) =>
-  tokens([v.prompt, v.sentence, v.answer, v.hint, ...v.options.map((o) => o.text)])
+  tokens([v.prompt, v.sentence, v.answer, v.hint, v.transcript, ...v.options.map((o) => o.text)])
 
 const questionTokens = (q: Question) =>
   tokens([
@@ -36,6 +36,7 @@ const questionTokens = (q: Question) =>
     sentenceOf(q),
     ...(q.answer_key?.accepted ?? []),
     q.content.hint,
+    q.answer_key?.transcript,
     ...(q.content.options ?? []).map((o) => o.text),
   ])
 
@@ -69,7 +70,7 @@ export function findSimilar(
       question: q,
       text: displayText(q),
       when: whenLabel(q),
-      typeLabel: TYPE_LABELS[q.type],
+      typeLabel: typeLabel(q.type, isListening(q)),
       pct: Math.round(score * 100),
     }))
 }

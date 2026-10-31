@@ -1,4 +1,4 @@
-import { Shield, Type, User, Users } from 'lucide-react'
+import { Headphones, Shield, Type, User, Users } from 'lucide-react'
 import type { FilterOption } from '@/components/FilterDropdown'
 import { TYPE_ICONS } from '@/components/typeIcons'
 import { TYPE_LABELS } from '@/lib/question'
@@ -40,5 +40,7 @@ export function typeOptions(): FilterOption<TypeFilter>[] {
       icon: TYPE_ICONS[t],
       ...TYPE_TINT,
     })),
+    // design: any question with audio
+    { value: 'listen', label: 'All listening', icon: Headphones, ...TYPE_TINT },
   ]
 }

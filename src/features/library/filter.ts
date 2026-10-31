@@ -3,7 +3,7 @@ import type { QType, SearchSource, SearchStatus } from '@/services/questions'
 // Filtering / counting happens on the server (api.admin_search_questions).
 export type StatusFilter = SearchStatus
 export type SourceFilter = SearchSource
-export type TypeFilter = 'all' | QType
+export type TypeFilter = 'all' | 'listen' | QType
 export type SortOrder = 'newest' | 'oldest'
 
 export interface LibraryFilters {

@@ -49,6 +49,8 @@ export function pickLabel(e: Explanation, q: Question): string {
     return `Picked ${letters.join(', ')}`
   }
   if (q.type === 'fill') return `Typed "${e.response.text ?? ''}"`
+  // Same chip as the app: not the whole sentence.
+  if (q.type === 'dictation') return e.is_correct ? 'All words right' : 'Missed words'
   return e.is_correct ? 'Correct order' : 'Wrong order'
 }
 

@@ -11,7 +11,7 @@ import { HistoryDialog } from '@/features/library/HistoryDialog'
 import { QuestionViewDialog } from '@/features/library/QuestionViewDialog'
 import { nextDays, todayUTC } from '@/lib/dates'
 import { errorMessage } from '@/lib/errors'
-import { authorName, displayText, isUserSubmitted } from '@/lib/question'
+import { authorName, displayText, isListening, isUserSubmitted } from '@/lib/question'
 import { useQuestions, type Question } from '@/services/questions'
 import { PickFromLibraryDialog } from './PickFromLibraryDialog'
 import { ReuseDialog } from './ReuseDialog'
@@ -204,7 +204,7 @@ function DayRow({
       {q ? (
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <TypeBadge type={q.type} withIcon />
+            <TypeBadge type={q.type} listening={isListening(q)} withIcon />
             <StatusBadge status={q.status} />
             {isUserSubmitted(q) && <UserSubmittedBadge />}
           </div>

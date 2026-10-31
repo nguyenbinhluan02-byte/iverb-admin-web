@@ -3,6 +3,7 @@ import {
   CircleDot,
   Copy,
   Lock,
+  NotebookPen,
   PenLine,
   Plus,
   Shuffle,
@@ -10,7 +11,7 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
@@ -20,8 +21,16 @@ import { PageHeader } from '@/components/PageHeader'
 import { nextDays, todayUTC } from '@/lib/dates'
 import { errorMessage } from '@/lib/errors'
 import { dayLabel, LETTERS, TYPE_LABELS } from '@/lib/question'
-import { useQuestions, useSaveQuestion, type Question, type QType } from '@/services/questions'
+import { generateSpeech, uploadAudio } from '@/services/audio'
+import {
+  useQuestions,
+  useSaveQuestion,
+  type AudioMeta,
+  type Question,
+  type QType,
+} from '@/services/questions'
 import { AppPreview } from './AppPreview'
+import { ListeningCard } from './ListeningCard'
 import {
   BLANK,
   buildPayload,
@@ -29,9 +38,12 @@ import {
   canSaveDraft,
   emptyForm,
   fromQuestion,
+  hasListening,
   MAX_OPTIONS,
   MIN_OPTIONS,
   switchType,
+  ttsKey,
+  ttsUpToDate,
   words,
   type FormValues,
 } from './formModel'
@@ -42,6 +54,7 @@ const TYPE_CARDS: { type: QType; desc: string; icon: LucideIcon }[] = [
   { type: 'multi', desc: 'Several correct options', icon: SquareCheck },
   { type: 'fill', desc: 'Type the missing word', icon: PenLine },
   { type: 'order', desc: 'Build the sentence', icon: Shuffle },
+  { type: 'dictation', desc: 'Write what you hear', icon: NotebookPen },
 ]
 
 const PLACEHOLDERS: Record<QType, string> = {
@@ -49,6 +62,7 @@ const PLACEHOLDERS: Record<QType, string> = {
   multi: 'e.g. Which of these verbs are irregular?',
   fill: 'e.g. Complete the sentence with the correct verb form.',
   order: 'e.g. Put the words in the correct order.',
+  dictation: 'e.g. Listen and write the sentence you hear.',
 }
 
 const field =
@@ -140,6 +154,15 @@ function QuestionForm({
         : emptyForm(defaultDate(), me?.name ?? ''),
   })
   const options = useFieldArray({ control, name: 'options' })
+  const set = <K extends keyof FormValues>(key: K, value: FormValues[K]) =>
+    setValue(key, value as never, { shouldDirty: true })
+  // voice|transcript of the saved / previewed TTS file (no new TTS call when unchanged).
+  const [generatedFor, setGeneratedFor] = useState<string | null>(() => {
+    const v = getValues()
+    return v.audioMeta?.source === 'tts' && v.audioUrl ? ttsKey(v.voice, v.transcript) : null
+  })
+  const [preparing, setPreparing] = useState(false)
+  const busy = preparing || save.isPending
   // Small form: re-render on every change keeps preview / duplicates / validity simple.
   const values = useWatch({ control }) as FormValues
 
@@ -156,10 +179,44 @@ function QuestionForm({
     values.type === 'fill' && !!values.sentence.trim() && !values.sentence.includes(BLANK)
   const wordCount = words(values.sentence).length
 
+  // The audio file to save: TTS made (or reused) for the transcript, or the
+  // picked file uploaded. Null when there is nothing to attach yet (draft).
+  const resolveAudio = async (v: FormValues): Promise<{ url: string; meta: AudioMeta } | null> => {
+    if (!hasListening(v)) return null
+    if (v.audioSource === 'tts') {
+      if (!v.transcript.trim()) return null
+      if (ttsUpToDate(v, generatedFor) && v.audioMeta) return { url: v.audioUrl, meta: v.audioMeta }
+      const r = await generateSpeech(v.transcript.trim(), v.voice)
+      const meta: AudioMeta = { source: 'tts', voice: v.voice, duration_sec: r.duration_sec }
+      set('audioUrl', r.audio_url)
+      set('audioMeta', meta)
+      setGeneratedFor(ttsKey(v.voice, v.transcript))
+      return { url: r.audio_url, meta }
+    }
+    if (v.picked) {
+      const r = await uploadAudio(v.picked.file)
+      const meta: AudioMeta = {
+        source: 'file',
+        file_name: r.file_name,
+        file_size: r.file_size,
+        duration_sec: v.picked.durationSec,
+      }
+      set('audioUrl', r.audio_url)
+      set('audioMeta', meta)
+      set('picked', null)
+      return { url: r.audio_url, meta }
+    }
+    return v.audioUrl && v.audioMeta?.source === 'file'
+      ? { url: v.audioUrl, meta: v.audioMeta }
+      : null
+  }
+
   const submit = async (publish: boolean) => {
     const v = getValues()
-    const { content, answer_key } = buildPayload(v, editing)
     try {
+      setPreparing(true)
+      const audio = await resolveAudio(v).finally(() => setPreparing(false))
+      const { content, answer_key } = buildPayload(v, editing, audio)
       const saved = await save.mutateAsync({
         id: editing?.id ?? null,
         type: v.type,
@@ -249,6 +306,15 @@ function QuestionForm({
               {...register('prompt')}
             />
           </label>
+
+          <ListeningCard
+            values={values}
+            register={register}
+            set={set}
+            locked={locked}
+            generatedFor={generatedFor}
+            onGenerated={setGeneratedFor}
+          />
 
           {(values.type === 'single' || values.type === 'multi') && (
             <div className="flex flex-col gap-2.5">
@@ -478,7 +544,7 @@ function QuestionForm({
               <Button
                 variant="secondary"
                 type="button"
-                disabled={!draftable || save.isPending}
+                disabled={!draftable || busy}
                 onClick={() => submit(false)}
               >
                 Save draft
@@ -486,7 +552,7 @@ function QuestionForm({
             )}
             <Button
               type="button"
-              disabled={!publishable || save.isPending}
+              disabled={!publishable || busy}
               onClick={() => submit(true)}
               className="px-[22px]"
             >
