@@ -1,6 +1,12 @@
+import { Headphones, Play } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
-import { LETTERS, TYPE_LABELS } from '@/lib/question'
-import { BLANK, words, type FormValues } from './formModel'
+import { LETTERS, typeLabel } from '@/lib/question'
+import { BLANK, hasListening, words, type FormValues } from './formModel'
+
+// Player mock: same static waveform shape as the app, 24 bars.
+const BARS = Array.from({ length: 24 }, (_, i) =>
+  Math.round(6 + Math.abs(Math.sin(i * 1.7 + 0.4) * Math.cos(i * 0.55)) * 20),
+)
 
 // Same fixed shuffle as the design prototype, so the preview does not jump on every key press.
 const previewShuffle = (ws: string[]) =>
@@ -15,6 +21,7 @@ export function AppPreview({ values }: { values: FormValues }) {
   const prompt = values.prompt.trim()
   const blank = values.sentence.indexOf(BLANK)
   const ws = words(values.sentence)
+  const listening = hasListening(values)
 
   return (
     <div className="sticky top-6 flex min-w-[300px] flex-[0_1_360px] flex-col gap-2.5">
@@ -24,7 +31,8 @@ export function AppPreview({ values }: { values: FormValues }) {
       <div className="flex flex-col gap-4 rounded-[28px] border border-line bg-card p-[22px] shadow-preview">
         <div className="flex items-center justify-between gap-2.5">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(242,113,28,.1)] px-2.5 py-[5px] text-xs font-bold text-brand-deep">
-            {TYPE_LABELS[values.type]}
+            {listening && <Headphones size={13} strokeWidth={2.4} />}
+            {typeLabel(values.type, listening)}
           </span>
           <span className="flex min-w-0 items-center gap-1.5">
             <Avatar name={author} size={26} />
@@ -40,6 +48,32 @@ export function AppPreview({ values }: { values: FormValues }) {
         >
           {prompt || 'Your question appears here'}
         </h2>
+
+        {listening && (
+          <div className="flex items-center gap-3 rounded-[14px] bg-page p-3">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand text-white">
+              <Play size={18} fill="currentColor" strokeWidth={0} className="ml-0.5" />
+            </span>
+            <span className="flex h-7 min-w-0 flex-1 items-center gap-[3px]">
+              {BARS.map((h, i) => (
+                <span
+                  key={i}
+                  className="min-w-0.5 flex-1 rounded-sm bg-[#D4D4D8]"
+                  style={{ height: h }}
+                />
+              ))}
+            </span>
+          </div>
+        )}
+
+        {values.type === 'dictation' && (
+          <div className="flex flex-col gap-2">
+            <div className="min-h-[76px] rounded-xl border-[1.5px] border-line px-3.5 py-3 text-sm text-subtle">
+              Type the sentence you hear
+            </div>
+            <span className="text-xs text-muted">Capitals and punctuation don't matter</span>
+          </div>
+        )}
 
         {(values.type === 'single' || values.type === 'multi') && (
           <div className="flex flex-col gap-2.5">

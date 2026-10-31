@@ -122,7 +122,7 @@ describe('buildPayload', () => {
 
   it('order: tiles shuffled, key in sentence order', () => {
     const v = { ...base, type: 'order' as const, prompt: 'O', sentence: 'She has been' }
-    const { content, answer_key } = buildPayload(v, null, fixed)
+    const { content, answer_key } = buildPayload(v, null, null, fixed)
     expect(answer_key).toEqual({ order: ['t1', 't2', 't3'] })
     expect(content.tiles?.map((t) => t.text)).not.toEqual(['She', 'has', 'been'])
     expect(content.tiles?.map((t) => t.text).sort()).toEqual(['She', 'been', 'has'])
@@ -196,5 +196,92 @@ describe('shuffleTiles', () => {
   it('never returns the original order for 2+ items', () => {
     const items = [{ n: 1 }, { n: 2 }]
     for (let i = 0; i < 20; i++) expect(shuffleTiles(items)).not.toEqual(items)
+  })
+})
+
+describe('listening', () => {
+  const tts = {
+    url: 'https://x.dev/a.mp3',
+    meta: { source: 'tts' as const, voice: 'uk-f' as const, duration_sec: 3.1 },
+  }
+
+  it('dictation turns listening on; reorder ignores it', () => {
+    expect(switchType(base, 'dictation')).toEqual({ type: 'dictation', listening: true })
+    const v = {
+      ...base,
+      type: 'order' as const,
+      prompt: 'O',
+      sentence: 'She has been',
+      listening: true,
+      transcript: 'x',
+    }
+    const { content, answer_key } = buildPayload(v, null, tts, fixed)
+    expect(content.audio_url).toBeUndefined()
+    expect(answer_key).not.toHaveProperty('transcript')
+  })
+
+  it('listening choice needs a transcript, upload needs a file', () => {
+    const on = choice({ listening: true })
+    expect(canPublish(on)).toBe(false)
+    expect(canPublish({ ...on, transcript: 'I went home.' })).toBe(true)
+    expect(canPublish({ ...on, transcript: 'I went home.', audioSource: 'file' })).toBe(false)
+    expect(
+      canPublish({
+        ...on,
+        transcript: 'I went home.',
+        audioSource: 'file',
+        audioUrl: 'https://x.dev/b.m4a',
+        audioMeta: { source: 'file', file_name: 'b.m4a' },
+      }),
+    ).toBe(true)
+  })
+
+  it('listening choice: audio in content, transcript in key', () => {
+    const v = choice({ listening: true, transcript: ' I went home. ' })
+    expect(buildPayload(v, null, tts)).toEqual({
+      content: {
+        options: [
+          { id: 'a', text: 'went' },
+          { id: 'b', text: 'gone' },
+        ],
+        audio_url: tts.url,
+        audio_meta: tts.meta,
+      },
+      answer_key: { correct: ['a'], transcript: 'I went home.' },
+    })
+  })
+
+  it('dictation: 3 words, sentence is the key', () => {
+    const v = {
+      ...base,
+      ...switchType(base, 'dictation'),
+      prompt: 'Write it.',
+      transcript: 'Go home',
+    }
+    expect(canPublish(v)).toBe(false)
+    expect(canSaveDraft(v)).toBe(true)
+    const ok = { ...v, transcript: 'We went home.' }
+    expect(canPublish(ok)).toBe(true)
+    expect(buildPayload(ok, null, tts)).toEqual({
+      content: { audio_url: tts.url, audio_meta: tts.meta },
+      answer_key: { sentence: 'We went home.' },
+    })
+  })
+
+  it('reads a saved listening question back', () => {
+    const q = makeQuestion({
+      id: 9,
+      type: 'dictation',
+      content: { audio_url: tts.url, audio_meta: tts.meta },
+      answer_key: { sentence: 'We went home.' },
+    })
+    expect(fromQuestion(q, null)).toMatchObject({
+      type: 'dictation',
+      listening: true,
+      audioSource: 'tts',
+      voice: 'uk-f',
+      transcript: 'We went home.',
+      audioUrl: tts.url,
+    })
   })
 })

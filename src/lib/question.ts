@@ -6,6 +6,27 @@ export const TYPE_LABELS: Record<QType, string> = {
   multi: 'Multiple choice',
   fill: 'Fill in the blank',
   order: 'Reorder words',
+  dictation: 'Dictation',
+}
+
+// Design: "Listening · {short type}" for questions with audio.
+const LISTENING_LABELS: Record<QType, string> = {
+  single: 'Choice',
+  multi: 'Multiple choice',
+  fill: 'Fill in',
+  order: 'Reorder words',
+  dictation: 'Dictation',
+}
+
+/** Has audio (dictation always does). */
+export function isListening(q: Pick<Question, 'type' | 'content'>): boolean {
+  return q.type === 'dictation' || !!q.content.audio_url
+}
+
+export function typeLabel(type: QType, listening = false): string {
+  return listening || type === 'dictation'
+    ? `Listening · ${LISTENING_LABELS[type]}`
+    : TYPE_LABELS[type]
 }
 
 export const LETTERS = 'ABCDEF'
@@ -17,10 +38,14 @@ const tidy = (s: string) =>
     .replace(/\s+([.,!?;:])/g, '$1')
     .trim()
 
-/** Fill: sentence with `___`; order: the correct sentence. Null for choice questions. */
+/**
+ * Fill: sentence with `___`; order: the correct sentence; dictation: the
+ * sentence to write. Null for choice questions.
+ */
 export function sentenceOf(q: Pick<Question, 'type' | 'content' | 'answer_key'>): string | null {
   if (q.type === 'fill') return tidy(`${q.content.before ?? ''} ___ ${q.content.after ?? ''}`)
   if (q.type === 'order') return tidy(orderedWords(q).join(' '))
+  if (q.type === 'dictation') return q.answer_key?.sentence ?? null
   return null
 }
 

@@ -8,7 +8,7 @@ import { TypeIcon } from '@/components/TypeIcon'
 import { GREEN_TINT, sourceOptions, typeOptions } from '@/features/library/filterOptions'
 import { todayUTC } from '@/lib/dates'
 import { errorMessage } from '@/lib/errors'
-import { dayLabel, displayText, isUserSubmitted, TYPE_LABELS } from '@/lib/question'
+import { dayLabel, displayText, isListening, isUserSubmitted, typeLabel } from '@/lib/question'
 import { LoadMore } from '@/components/LoadMore'
 import { useDebounced } from '@/lib/useDebounced'
 import { useQuestionSearch, useScheduleQuestion, type Question } from '@/services/questions'
@@ -173,8 +173,8 @@ function Picker({ date, onClose }: { date: string; onClose: () => void }) {
                 </span>
                 <span className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-xs font-semibold text-muted">
                   <span className="flex items-center gap-[5px] rounded-md bg-[rgba(242,113,28,.1)] px-2 py-0.5 font-bold text-brand-deep">
-                    <TypeIcon type={q.type} size={12} />
-                    {TYPE_LABELS[q.type]}
+                    <TypeIcon type={q.type} listening={isListening(q)} size={12} />
+                    {typeLabel(q.type, isListening(q))}
                   </span>
                   {isUserSubmitted(q) && (
                     <span className="rounded-md bg-[rgba(91,108,240,.12)] px-2 py-0.5 font-bold text-blue-text">
