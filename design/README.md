@@ -10,6 +10,75 @@ Desktop web admin for the "Irregular verbs / Daily Quiz" mobile app. Content adm
 
 The companion mobile app handoff is in `../design_handoff_quiz_app/`.
 
+## Latest changes (Oct 31, 2026 · Listening questions) — implement these first
+Everything else in this README still applies. The mobile side is documented in `../design_handoff_quiz_app/README.md` → "Latest changes (Oct 31 · Listening)".
+
+### 1. New type: Dictation + "Listening" option on existing types
+- **Question type cards** now has 5 cards (auto-fit grid, min 140px): Single choice · Multiple choice · Fill in the blank · Reorder words · **Dictation** ("Write what you hear", icon: text lines + pen).
+- Listening is a **flag on a question**, not a separate type:
+  - Single / Multiple / Fill → Listening is optional (toggle).
+  - Dictation → Listening is always on (badge "Always on", no toggle).
+  - Reorder → not available (card at 55% opacity, text "Not available for Reorder words", no toggle).
+- Switching to Dictation turns listening on. Switching to Reorder turns it off on save.
+
+### 2. Listening card (form, directly below the "Question" field)
+- Container: padding 16, radius 14, border 1.5px. **Off**: `#ECECEE` border on white. **On**: `#FBDCC6` border on `#FFF8F2`.
+- Header: 30px icon tile (headphones; on = orange bg + white icon, off = `#F2F2F3`) + "Listening" 14/800 + description 12 `#6E6E73`:
+  - off: "Turn on to add audio to this question"
+  - on: "Users hear the audio before answering"
+  - dictation: "Users listen, then type the whole sentence"
+- **Toggle**: 44×26, radius 999, track `#D4D4D8` → orange when on, white 20px knob with shadow.
+- Body when on (border-top `1px #FBDCC6`, padding-top 14, gap 16):
+  1. **Audio source**: segmented control (`#F2F2F3` track, active = white + shadow): **Text-to-speech** | **Upload audio**.
+  2. **TTS → Voice** chips (radius 999, 1.5px border; active = orange border + `#FFF4EC`): US · Female, US · Male, UK · Female, UK · Male.
+     **Upload →** dashed drop area (radius 12; border `#D4D4D8`, green `#1FA971` once a file is chosen): music icon tile 38px, title "Choose an audio file" or the file name, sub "MP3, M4A or WAV · up to 5 MB · max 30 s" or "{size} · tap to replace", and a "Browse" / "Replace" pill. The whole area opens the file picker (`accept="audio/*"`).
+  3. **Transcript** textarea (2 rows). Label and help text per type:
+     - Choice / Fill: "Transcript — exactly what is said; shown after users answer". For Fill, the placeholder pre-fills the sentence with the answer in the blank.
+     - Dictation: "Sentence users must write — graded word by word, capitals and punctuation ignored".
+  4. **Play preview** button (dark `#17171A`, white 13/800, radius 10; disabled grey when the TTS transcript is empty). It becomes "Stop" while playing, or "Play file" for uploads. Next to it, a 12px `#6E6E73` meta line: "~4 s · UK · Female" (+ " · 9 words" for dictation), or the file name.
+- Dictation hides the Options / Sentence sections. The transcript **is** the answer.
+
+### 3. Validation
+- Listening on → transcript required. If source = Upload, a file is also required.
+- Dictation → at least 3 words in the transcript.
+- All other existing rules are unchanged.
+
+### 4. App preview (right column)
+- When listening is on, a player mock appears under the question: `#F2F2F3` card, radius 14, orange 44px play circle, 24 grey waveform bars (28px tall).
+- Dictation: an empty input "Type the sentence you hear" + caption "Capitals and punctuation don't matter".
+- The type chip shows "Listening · Choice / Multiple choice / Fill in / Dictation".
+
+### 5. Everywhere a type is shown
+- Schedule rows, library rows, library picker, duplicate warnings and the View modal use the label **"Listening · {type}"** and a **headphones** icon when the question has audio (or is dictation).
+- **Type filter** (Library + Choose from library) adds **Dictation** and **All listening** (= any question with audio).
+- **View question modal**: a new block before the options (`#F2F2F3`, radius 12). It has a 38px orange play button + kicker ("Transcript · UK · Female" / "Audio file · name.mp3" / "Sentence to write" for dictation) + the transcript at 15/600.
+
+### 6. Data model additions
+```ts
+type QuestionType = 'single' | 'multi' | 'fill' | 'order' | 'dictation';
+Question {
+  ...existing
+  audio?: {
+    transcript: string;          // required when audio is set
+    source: 'tts' | 'file';
+    voice?: 'us-f' | 'us-m' | 'uk-f' | 'uk-m';   // tts
+    fileUrl?: string; fileName?: string; fileSize?: string; // file
+    durationSec?: number;        // fill in server-side
+  };
+  answer?: string;               // dictation: = audio.transcript
+}
+```
+- **Backend**: for `source:'tts'`, generate the audio server-side on save (voice + transcript) and store `fileUrl`, so the app always plays a file. Regenerate when the transcript or voice changes.
+- **Upload**: `POST /audio` (multipart) → `{ fileUrl, durationSec }`. Reject over 5 MB or over 30 s.
+- `GET /questions?type=listen` = any question with `audio`. `type=dictation` = dictation only.
+
+### 7. Prototype notes
+- Preview playback uses the browser's text-to-speech. Uploaded files play only within the current session.
+- Sample listening questions in the schedule: day +5 (Choice, TTS UK female), +9 (Dictation, TTS US male), +12 (Fill, uploaded file, draft).
+- Not done yet: **Submissions** don't support listening, because users can't submit audio questions.
+
+---
+
 ## About the Design Files
 `Quiz Admin.dc.html` is a **design reference built in HTML** – a working prototype showing intended look and behavior, not production code. Recreate it in the target codebase's environment (React/Vue/etc.) with its own patterns, component library, routing and data layer. If no environment exists yet, a React + TypeScript SPA (e.g. Vite + React Router + TanStack Query) is a good fit.
 

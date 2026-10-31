@@ -21,7 +21,7 @@ import { StatusBadge, TypeBadge, UserSubmittedBadge } from '@/components/Badge'
 import { FilterDropdown, type FilterOption } from '@/components/FilterDropdown'
 import { PageHeader } from '@/components/PageHeader'
 import { errorMessage } from '@/lib/errors'
-import { authorName, displayText, isUserSubmitted } from '@/lib/question'
+import { authorName, displayText, isListening, isUserSubmitted } from '@/lib/question'
 import { ReuseDialog } from '@/features/schedule/ReuseDialog'
 import { useDebounced } from '@/lib/useDebounced'
 import { pageCount } from '@/lib/pagination'
@@ -193,7 +193,7 @@ export function LibraryPage() {
           >
             <div className="flex min-w-0 flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <TypeBadge type={q.type} />
+                <TypeBadge type={q.type} listening={isListening(q)} />
                 <StatusBadge status={q.status} />
                 {isUserSubmitted(q) && <UserSubmittedBadge />}
               </div>

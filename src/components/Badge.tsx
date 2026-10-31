@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { TYPE_LABELS } from '@/lib/question'
+import { typeLabel } from '@/lib/question'
 import type { QType, QuestionStatus } from '@/services/questions'
 import { TONES, type Tone } from './badgeStyles'
 import { TypeIcon } from './TypeIcon'
@@ -14,11 +14,19 @@ export function Badge({ tone, children }: { tone: Tone; children: ReactNode }) {
   )
 }
 
-export function TypeBadge({ type, withIcon }: { type: QType; withIcon?: boolean }) {
+export function TypeBadge({
+  type,
+  listening,
+  withIcon,
+}: {
+  type: QType
+  listening?: boolean
+  withIcon?: boolean
+}) {
   return (
     <Badge tone="brand">
-      {withIcon && <TypeIcon type={type} size={12} />}
-      {TYPE_LABELS[type]}
+      {withIcon && <TypeIcon type={type} listening={listening} size={12} />}
+      {typeLabel(type, listening)}
     </Badge>
   )
 }

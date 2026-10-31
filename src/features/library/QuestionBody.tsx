@@ -1,9 +1,80 @@
-import { Check } from 'lucide-react'
-import { LETTERS, orderedWords } from '@/lib/question'
-import type { Question } from '@/services/questions'
+import { Check, Pause, Play } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { isListening, LETTERS, orderedWords } from '@/lib/question'
+import type { Question, Voice } from '@/services/questions'
 
-/** Correct answer per type (View modal, Today for fill / order). */
+const VOICE_LABELS: Record<Voice, string> = {
+  'us-f': 'US · Female',
+  'us-m': 'US · Male',
+  'uk-f': 'UK · Female',
+  'uk-m': 'UK · Male',
+}
+
+/** Correct answer per type (View modal, Today for fill / order), audio first. */
 export function QuestionBody({ question: q }: { question: Question }) {
+  if (!isListening(q)) return <Answer question={q} />
+  return (
+    <div className="flex flex-col gap-4">
+      <AudioBlock question={q} />
+      {q.type !== 'dictation' && <Answer question={q} />}
+    </div>
+  )
+}
+
+// Design: View modal block before the options.
+function AudioBlock({ question: q }: { question: Question }) {
+  const meta = q.content.audio_meta
+  const audio = useRef<HTMLAudioElement | null>(null)
+  const [playing, setPlaying] = useState(false)
+  useEffect(() => () => audio.current?.pause(), [])
+
+  const toggle = () => {
+    if (playing) {
+      audio.current?.pause()
+      return setPlaying(false)
+    }
+    if (!q.content.audio_url) return
+    audio.current ??= new Audio(q.content.audio_url)
+    audio.current.currentTime = 0
+    audio.current.onended = () => setPlaying(false)
+    setPlaying(true)
+    audio.current.play().catch(() => setPlaying(false))
+  }
+
+  const kicker =
+    q.type === 'dictation'
+      ? 'Sentence to write'
+      : meta?.source === 'tts' && meta.voice
+        ? `Transcript · ${VOICE_LABELS[meta.voice]}`
+        : `Audio file${meta?.file_name ? ` · ${meta.file_name}` : ''}`
+  const text = q.type === 'dictation' ? q.answer_key?.sentence : q.answer_key?.transcript
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl bg-page p-3.5">
+      <button
+        type="button"
+        onClick={toggle}
+        disabled={!q.content.audio_url}
+        title={playing ? 'Stop' : 'Play audio'}
+        className="flex size-[38px] shrink-0 items-center justify-center rounded-full bg-brand text-white disabled:opacity-50"
+      >
+        {playing ? (
+          <Pause size={15} fill="currentColor" strokeWidth={0} />
+        ) : (
+          <Play size={15} fill="currentColor" strokeWidth={0} className="ml-0.5" />
+        )}
+      </button>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-xs font-extrabold tracking-[.06em] text-muted uppercase">
+          {kicker}
+        </span>
+        <span className="text-[15px] font-semibold text-pretty">{text || '—'}</span>
+      </span>
+    </div>
+  )
+}
+
+function Answer({ question: q }: { question: Question }) {
   if (q.type === 'single' || q.type === 'multi') {
     const correct = new Set(q.answer_key?.correct ?? [])
     return (

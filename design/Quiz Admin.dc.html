@@ -595,6 +595,7 @@
                       <sc-if value="{{ t.isSingle }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"></circle></svg></sc-if>
                       <sc-if value="{{ t.isMulti }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"></rect><path d="m8 12 3 3 5-6"></path></svg></sc-if>
                       <sc-if value="{{ t.isFill }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg></sc-if>
+                      <sc-if value="{{ t.isDict }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M4 11h7M4 16h5"></path><path d="m13 20 7-7-2.5-2.5-7 7V20z"></path></svg></sc-if>
                       <sc-if value="{{ t.isOrder }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="m15 15 6 6"></path><path d="M4 4l5 5"></path></svg></sc-if>
                     </span>
                     <span style="font-size:14px;font-weight:800">{{ t.label }}</span>
@@ -608,6 +609,61 @@
               <span style="font-size:13px;font-weight:800">Question</span>
               <textarea value="{{ fText }}" onChange="{{ onText }}" rows="2" placeholder="{{ textPlaceholder }}" style="width:100%;resize:vertical;padding:12px 14px;border-radius:11px;border:1px solid #E4E4E7;font-size:15px;line-height:1.45;color:#17171A"></textarea>
             </label>
+
+            <div style="display:flex;flex-direction:column;gap:16px;padding:16px;border-radius:14px;border:1.5px solid {{ lsBorder }};background:{{ lsBg }};opacity:{{ lsOpacity }}">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:{{ lsIconBg }};color:{{ lsIconColor }};flex:0 0 auto"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"></path></svg></span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <span style="font-size:14px;font-weight:800">Listening</span>
+                  <span style="font-size:12px;color:#6E6E73">{{ lsDesc }}</span>
+                </span>
+                <sc-if value="{{ lsCanToggle }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ toggleListen }}" title="Listening question" style="width:44px;height:26px;border-radius:999px;border:none;padding:3px;background:{{ lsTrack }};cursor:pointer;display:flex;justify-content:{{ lsKnob }};flex:0 0 auto;transition:background 0.2s"><span style="width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.25)"></span></button>
+                </sc-if>
+                <sc-if value="{{ lsRequired }}"><span style="padding:3px 9px;border-radius:999px;background:rgba(242,113,28,0.12);color:#C25A14;font-size:11px;font-weight:800;white-space:nowrap">Always on</span></sc-if>
+              </div>
+              <sc-if value="{{ lsOn }}">
+                <div style="display:flex;flex-direction:column;gap:16px;padding-top:14px;border-top:1px solid #FBDCC6">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font-size:13px;font-weight:800">Audio source</span>
+                    <div style="display:inline-flex;align-self:flex-start;padding:3px;border-radius:10px;background:#F2F2F3;gap:2px">
+                      <sc-for list="{{ srcTabs }}" as="t" hint-placeholder-count="2"><button onClick="{{ t.onClick }}" style="padding:7px 14px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:{{ t.bg }};color:{{ t.color }};box-shadow:{{ t.shadow }};white-space:nowrap">{{ t.label }}</button></sc-for>
+                    </div>
+                  </div>
+                  <sc-if value="{{ srcFile }}">
+                    <label style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;border:1.5px dashed {{ dropBorder }};background:#fff;cursor:pointer">
+                      <input type="file" accept="audio/*" onChange="{{ onAudioFile }}" style="display:none"></input>
+                      <span style="width:38px;height:38px;border-radius:10px;background:#F2F2F3;color:#17171A;display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></span>
+                      <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                        <span style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ fileTitle }}</span>
+                        <span style="font-size:12px;color:#6E6E73">{{ fileSub }}</span>
+                      </span>
+                      <span style="padding:8px 12px;border-radius:9px;border:1px solid #E4E4E7;font-size:13px;font-weight:700;white-space:nowrap;flex:0 0 auto">{{ fileBtn }}</span>
+                    </label>
+                  </sc-if>
+                  <sc-if value="{{ srcTts }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <span style="font-size:13px;font-weight:800">Voice</span>
+                      <div style="display:flex;flex-wrap:wrap;gap:8px">
+                        <sc-for list="{{ voiceChips }}" as="v" hint-placeholder-count="4"><button onClick="{{ v.onClick }}" style="padding:8px 12px;border-radius:999px;border:1.5px solid {{ v.border }};background:{{ v.bg }};color:#17171A;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">{{ v.label }}</button></sc-for>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <label style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font-size:13px;font-weight:800">{{ trLabel }} <span style="font-weight:600;color:#6E6E73">— {{ trHelp }}</span></span>
+                    <textarea value="{{ fTranscript }}" onChange="{{ onTranscript }}" rows="2" placeholder="{{ trPlaceholder }}" style="width:100%;resize:vertical;padding:12px 14px;border-radius:11px;border:1px solid #E4E4E7;font-size:15px;line-height:1.45;color:#17171A;background:#fff"></textarea>
+                  </label>
+                  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                    <button onClick="{{ playPreview }}" disabled="{{ cannotPlay }}" style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;border:none;background:{{ playBg }};color:{{ playColor }};font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap">
+                      <sc-if value="{{ pvNotPlaying }}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"></path></svg></sc-if>
+                      <sc-if value="{{ pvIsPlaying }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg></sc-if>
+                      {{ playLabel }}
+                    </button>
+                    <span style="font-size:12px;color:#6E6E73">{{ audioMeta }}</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
 
             <sc-if value="{{ isChoiceF }}" hint-placeholder-val="{{ true }}">
               <div style="display:flex;flex-direction:column;gap:10px">
@@ -737,6 +793,20 @@
                   </span>
                 </div>
                 <h2 style="font-size:16px;line-height:1.4;font-weight:700;margin:0;text-wrap:pretty;color:{{ pvTextColor }}">{{ pvText }}</h2>
+                <sc-if value="{{ lsOn }}">
+                  <div style="padding:12px;border-radius:14px;background:#F2F2F3;display:flex;align-items:center;gap:12px">
+                    <span style="width:44px;height:44px;border-radius:50%;background:#F2711C;color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-left:2px"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"></path></svg></span>
+                    <div style="flex:1;min-width:0;display:flex;align-items:center;gap:3px;height:28px">
+                      <sc-for list="{{ pvBars }}" as="b" hint-placeholder-count="24"><span style="flex:1;min-width:2px;border-radius:2px;background:#D4D4D8;height:{{ b }}"></span></sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ isDictF }}">
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <div style="min-height:66px;padding:12px 14px;border-radius:12px;border:1.5px solid #ECECEE;font-size:14px;color:#8E8E93">Type the sentence you hear</div>
+                    <span style="font-size:12px;color:#8E8E93">Capitals and punctuation don't matter</span>
+                  </div>
+                </sc-if>
                 <sc-if value="{{ isChoiceF }}" hint-placeholder-val="{{ true }}">
                   <div style="display:flex;flex-direction:column;gap:10px">
                     <sc-for list="{{ pvOptions }}" as="p" hint-placeholder-count="4">
@@ -810,6 +880,15 @@
         </div>
         <div style="flex:1;min-height:0;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:16px">
           <div style="font-size:18px;font-weight:800;line-height:1.4;text-wrap:pretty">{{ vw.text }}</div>
+          <sc-if value="{{ vw.hasAudio }}">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:#F2F2F3">
+              <button onClick="{{ vw.onPlay }}" title="Play audio" style="width:38px;height:38px;border-radius:50%;border:none;background:#F2711C;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="margin-left:2px"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"></path></svg></button>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <span style="font-size:11px;font-weight:800;color:#6E6E73;letter-spacing:0.06em;text-transform:uppercase">{{ vw.audioKind }}</span>
+                <span style="font-size:15px;font-weight:600;line-height:1.45">{{ vw.transcript }}</span>
+              </span>
+            </div>
+          </sc-if>
           <sc-if value="{{ vw.hasOptions }}">
             <div style="display:flex;flex-direction:column;gap:8px">
               <sc-for list="{{ vw.options }}" as="o" hint-placeholder-count="4">
@@ -1050,14 +1129,21 @@ const OR = '#F2711C', GR = '#1FA971', RD = '#F5333F';
 const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const BASE = new Date(2026, 9, 27);
-const TL = { single: 'Single choice', multi: 'Multiple choice', fill: 'Fill in the blank', order: 'Reorder words' };
-const TD = { single: 'One correct option', multi: 'Several correct options', fill: 'Type the missing word', order: 'Build the sentence' };
-const PH = { single: 'e.g. What is the past simple of "catch"?', multi: 'e.g. Which of these verbs are irregular?', fill: 'e.g. Complete the sentence with the correct verb form.', order: 'e.g. Put the words in the correct order.' };
+const TL = { single: 'Single choice', multi: 'Multiple choice', fill: 'Fill in the blank', order: 'Reorder words', dictation: 'Dictation' };
+const LSH = { single: 'Choice', multi: 'Multiple choice', fill: 'Fill in', dictation: 'Dictation' };
+const isListenQ = q => !!(q && (q.audio || q.type === 'dictation'));
+const tlOf = q => isListenQ(q) ? 'Listening · ' + LSH[q.type] : TL[q.type];
+const icKey = q => isListenQ(q) ? 'listen' : q.type;
+const typeMatch = (x, t) => t === 'listen' ? isListenQ(x) : x.type === t;
+const VOICES = [['us-f', 'US · Female'], ['us-m', 'US · Male'], ['uk-f', 'UK · Female'], ['uk-m', 'UK · Male']];
+const fromQ = q => q && q.audio ? { listen: true, transcript: q.audio.transcript || '', audioSrc: q.audio.source || 'tts', voice: q.audio.voice || 'us-f', fileName: q.audio.fileName || '', fileSize: q.audio.fileSize || '' } : {};
+const TD = { single: 'One correct option', multi: 'Several correct options', fill: 'Type the missing word', order: 'Build the sentence', dictation: 'Write what you hear' };
+const PH = { dictation: 'e.g. Listen and write the sentence you hear.', single: 'e.g. What is the past simple of "catch"?', multi: 'e.g. Which of these verbs are irregular?', fill: 'e.g. Complete the sentence with the correct verb form.', order: 'e.g. Put the words in the correct order.' };
 const COLORS = ['#F2711C','#1FA971','#5B6CF0','#D64F9A','#0E9FB5','#8A5CF6','#C98A00','#4B5563'];
 const day = off => { const d = new Date(BASE); d.setDate(d.getDate() + off); return { wd: WD[d.getDay()], day: d.getDate(), mo: MO[d.getMonth()], label: `${WD[d.getDay()]}, ${MO[d.getMonth()]} ${d.getDate()}` }; };
 const initials = n => (n || '').split(' ').filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || '?';
 const colorFor = n => { let h = 0; for (const c of (n || '')) h = (h * 31 + c.charCodeAt(0)) % 997; return COLORS[h % COLORS.length]; };
-const flags = t => ({ isSingle: t === 'single', isMulti: t === 'multi', isFill: t === 'fill', isOrder: t === 'order' });
+const flags = t => ({ isSingle: t === 'single', isMulti: t === 'multi', isFill: t === 'fill', isOrder: t === 'order', isDict: t === 'dictation' });
 const shuffle = ws => ws.map((w, i) => ({ w, k: (w.length * 7 + i * 13) % 11 })).sort((a, b) => a.k - b.k).map(x => x.w);
 const opts = (arr, correct) => arr.map((t, i) => ({ text: t, correct: correct.includes(i) }));
 
@@ -1071,6 +1157,9 @@ const SCHEDULE0 = {
   8: { type: 'multi', text: 'Which sentences are in the past perfect?', options: opts(['She had left.','She has left.','They had eaten.','They eat.'], [0, 2]), author: 'Minh Anh', status: 'scheduled', explanation: 'Past perfect = had + V3.' },
   10: { type: 'order', text: 'Put the words in the correct order.', sentence: 'We bought a new car last year', author: 'Sarah Kim', status: 'scheduled', explanation: 'buy – bought – bought.' },
   11: { type: 'single', text: 'Choose the past participle of "begin".', options: opts(['began','begun','beginned','begined'], [1]), author: 'Linh Tran', status: 'draft', explanation: '' },
+  5: { type: 'single', text: 'Listen and answer: Why is Sarah late?', options: opts(['She missed the bus','Her train was cancelled','She woke up late','The café was closed'], [1]), audio: { transcript: "Hi, it's Sarah. I'm running a bit late because my train was cancelled, so I'll meet you at the café at seven instead of six thirty.", source: 'tts', voice: 'uk-f' }, author: 'Minh Anh', status: 'scheduled', explanation: 'Sarah says "my train was cancelled".' },
+  9: { type: 'dictation', text: 'Listen and write the sentence you hear.', answer: 'We went to the beach with our friends last weekend.', sentence: '', audio: { transcript: 'We went to the beach with our friends last weekend.', source: 'tts', voice: 'us-m' }, author: 'Linh Tran', status: 'scheduled', explanation: '"Went" is the past simple of "go".' },
+  12: { type: 'fill', text: 'Listen and fill in the missing word.', sentence: 'I have ___ in this city since I was ten years old.', answer: 'lived', hint: '', audio: { transcript: 'I have lived in this city since I was ten years old.', source: 'file', fileName: 'lived-since-ten.mp3', fileSize: '0.2 MB' }, author: 'Sarah Kim', status: 'draft', explanation: 'Present perfect with "since": have + past participle.' },
   14: { type: 'fill', text: 'Fill in the past simple form.', sentence: 'He ___ his keys on the table.', answer: 'left', hint: 'leave', author: 'Linh Tran', status: 'draft', explanation: '' },
 };
 
@@ -1117,7 +1206,7 @@ const simScore = (a, b) => { const A = toks(a), B = toks(b); if (A.size < 2 || B
 const whenLabel = off => off < 0 ? `Shown ${day(off).label}` : off === 0 ? 'Live today' : `Scheduled ${day(off).label}`;
 const REASONS = ['Wrong answer', 'Duplicate question', 'Unclear wording', 'Too easy / too hard', 'Not appropriate'];
 
-const blankForm = off => ({ type: 'single', text: '', options: opts(['', '', '', ''], []), sentence: '', answer: '', hint: '', explanation: '', author: 'Linh Tran', dayOffset: off, editing: null });
+const blankForm = off => ({ type: 'single', text: '', options: opts(['', '', '', ''], []), sentence: '', answer: '', hint: '', explanation: '', author: 'Linh Tran', dayOffset: off, editing: null, listen: false, transcript: '', audioSrc: 'tts', voice: 'us-f', fileName: '', fileSize: '' });
 
 const REPLIES0 = {
   1: [{ rid: 101, name: 'Linh Tran', admin: true, time: '5 min ago', text: 'Exactly right — has/have + V3 is the present perfect.' }, { rid: 102, name: 'Bao Le', time: '3 min ago', text: 'Thanks, the "has + V3" rule makes it click for me.' }],
@@ -1141,6 +1230,8 @@ const ICP = {
   multi: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/>',
   fill: '<path d="M4 7V5h16v2M12 5v12M9 19h6"/>',
   order: '<path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/>',
+  listen: '<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/>',
+  dictation: '<path d="M4 6h10M4 11h7M4 16h5"/><path d="m13 20 7-7-2.5-2.5-7 7V20z"/>',
   sort: '<path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/>',
   newest: '<path d="M12 5v14M6 13l6 6 6-6"/>',
   oldest: '<path d="M12 19V5M6 11l6-6 6 6"/>',
@@ -1148,8 +1239,8 @@ const ICP = {
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
 };
 const icon = (k, c) => '"data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c}" color="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICP[k]}</svg>`) + '"';
-const ICC = { all: '#6E6E73', pub: '#137A51', unpub: '#6E6E73', upcoming: '#C25A14', draft: '#6E6E73', anyone: '#6E6E73', admin: '#17171A', user: '#3F4FC9', type: '#6E6E73', single: '#C25A14', multi: '#C25A14', fill: '#C25A14', order: '#C25A14', newest: '#6E6E73', oldest: '#6E6E73', history: '#6E6E73', clock: '#6E6E73' };
-const ICB = { pub: 'rgba(31,169,113,0.12)', upcoming: 'rgba(242,113,28,0.12)', user: 'rgba(91,108,240,0.12)', single: 'rgba(242,113,28,0.1)', multi: 'rgba(242,113,28,0.1)', fill: 'rgba(242,113,28,0.1)', order: 'rgba(242,113,28,0.1)' };
+const ICC = { all: '#6E6E73', pub: '#137A51', unpub: '#6E6E73', upcoming: '#C25A14', draft: '#6E6E73', anyone: '#6E6E73', admin: '#17171A', user: '#3F4FC9', type: '#6E6E73', single: '#C25A14', multi: '#C25A14', fill: '#C25A14', order: '#C25A14', listen: '#C25A14', dictation: '#C25A14', newest: '#6E6E73', oldest: '#6E6E73', history: '#6E6E73', clock: '#6E6E73' };
+const ICB = { pub: 'rgba(31,169,113,0.12)', upcoming: 'rgba(242,113,28,0.12)', user: 'rgba(91,108,240,0.12)', single: 'rgba(242,113,28,0.1)', multi: 'rgba(242,113,28,0.1)', fill: 'rgba(242,113,28,0.1)', order: 'rgba(242,113,28,0.1)', listen: 'rgba(242,113,28,0.1)', dictation: 'rgba(242,113,28,0.1)' };
 
 const qKey = q => (q.text + '|' + (q.sentence || '') + '|' + (q.options || []).map(o => o.text).join(',')).toLowerCase();
 const hashStr = t => { let n = 7; for (const c of t) n = (n * 31 + c.charCodeAt(0)) % 100003; return n; };
@@ -1176,12 +1267,12 @@ class Component extends DCLogic {
   openAdd = off => this.setState({ view: 'add', form: blankForm(off ?? this.firstGap()) });
   openEdit = off => {
     const q = off === 0 ? TODAY_Q : this.state.schedule[off];
-    this.setState({ view: 'add', form: { ...blankForm(off), ...JSON.parse(JSON.stringify(q)), dayOffset: off, editing: off } });
+    this.setState({ view: 'add', form: { ...blankForm(off), ...JSON.parse(JSON.stringify(q)), ...fromQ(q), dayOffset: off, editing: off } });
   };
   allQs = () => [...PAST0, { ...TODAY_Q, off: 0, answers: 1284, correct: 62 }, ...Object.keys(this.state.schedule).map(k => ({ ...this.state.schedule[k], off: +k }))];
   findDups = (q, exclude = []) => this.allQs().filter(x => !exclude.includes(x.off)).map(x => ({ x, s: simScore(q, x) })).filter(m => m.s >= 0.6).sort((a, b) => b.s - a.s).slice(0, 3)
-    .map(({ x, s }) => ({ text: x.text + (x.type === 'fill' || x.type === 'order' ? ' — ' + x.sentence : ''), when: whenLabel(x.off), typeLabel: TL[x.type], pct: Math.round(s * 100) }));
-  openReuse = x => { const off = this.state.libTarget ?? this.firstGap(); const c = JSON.parse(JSON.stringify(x)); this.setState({ view: 'add', form: { ...blankForm(off), ...c, options: c.options || opts(['', '', '', ''], []), sentence: c.sentence || '', answer: c.answer || '', hint: c.hint || '', dayOffset: off, editing: null, reuseOf: x.off } }); };
+    .map(({ x, s }) => ({ text: x.text + (x.type === 'fill' || x.type === 'order' ? ' — ' + x.sentence : ''), when: whenLabel(x.off), typeLabel: tlOf(x), pct: Math.round(s * 100) }));
+  openReuse = x => { const off = this.state.libTarget ?? this.firstGap(); const c = JSON.parse(JSON.stringify(x)); this.setState({ view: 'add', form: { ...blankForm(off), ...c, ...fromQ(c), options: c.options || opts(['', '', '', ''], []), sentence: c.sentence || '', answer: c.answer || '', hint: c.hint || '', dayOffset: off, editing: null, reuseOf: x.off } }); };
   selectFirst = filter => { const x = this.state.subs.find(s => s.status === filter); return x ? x.id : null; };
   pickSub = id => { const sub = this.state.subs.find(s => s.id === id); this.setState({ selSub: id, subDay: sub && sub.day ? sub.day : this.firstGap() }); };
   subToQ = sub => { const q = { type: sub.type, text: sub.text, author: sub.name, status: 'scheduled', explanation: sub.explanation, community: true }; if (sub.options) q.options = sub.options; else { q.sentence = sub.sentence; q.answer = sub.answer || ''; q.hint = sub.hint || ''; } return q; };
@@ -1193,10 +1284,21 @@ class Component extends DCLogic {
   });
   setF = patch => this.setState(s => ({ form: { ...s.form, ...patch } }));
   flash = msg => { this.setState({ toast: msg }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2400); };
-  componentWillUnmount() { clearTimeout(this._t); }
+  componentWillUnmount() { clearTimeout(this._t); this.stopPv(); }
+  stopPv = () => { try { window.speechSynthesis && speechSynthesis.cancel(); } catch (e) {} if (this._aud) { this._aud.pause(); this._aud = null; } if (this.state.pvPlaying) this.setState({ pvPlaying: false }); };
+  speak = (text, voice) => { if (!window.speechSynthesis || !text) return false; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = (voice || '').startsWith('uk') ? 'en-GB' : 'en-US';
+    const vs = speechSynthesis.getVoices().filter(v => v.lang === u.lang); if (vs.length) u.voice = vs[(voice || '').endsWith('m') ? Math.min(1, vs.length - 1) : 0];
+    u.onend = () => this.setState({ pvPlaying: false }); speechSynthesis.speak(u); return true; };
+  playPreview = () => { const f = this.state.form; if (this.state.pvPlaying) return this.stopPv();
+    if (f.audioSrc === 'file') { if (!this._audioUrl) { this.flash('Demo only — choose an audio file to play it'); return; } const a = new Audio(this._audioUrl); this._aud = a; a.onended = () => this.setState({ pvPlaying: false }); a.play(); this.setState({ pvPlaying: true }); return; }
+    if (this.speak(f.transcript.trim(), f.voice)) this.setState({ pvPlaying: true }); };
+  onAudioFile = e => { const file = e.target.files && e.target.files[0]; if (!file) return; this.stopPv(); if (this._audioUrl) URL.revokeObjectURL(this._audioUrl); this._audioUrl = URL.createObjectURL(file); this.setF({ fileName: file.name, fileSize: (file.size / 1048576).toFixed(1) + ' MB' }); };
 
+  lsOnOf = f => f.type === 'dictation' || (!!f.listen && f.type !== 'order');
   valid(f) {
     if (!f.text.trim()) return false;
+    if (this.lsOnOf(f) && (!f.transcript.trim() || (f.audioSrc === 'file' && !f.fileName))) return false;
+    if (f.type === 'dictation') return f.transcript.trim().split(/\s+/).length >= 3;
     if (f.type === 'single' || f.type === 'multi') {
       const filled = f.options.filter(o => o.text.trim());
       const nc = filled.filter(o => o.correct).length;
@@ -1211,6 +1313,8 @@ class Component extends DCLogic {
     const q = { type: f.type, text: f.text.trim(), author: f.author.trim() || 'Admin', status, explanation: f.explanation };
     if (f.type === 'single' || f.type === 'multi') q.options = f.options.filter(o => o.text.trim());
     else { q.sentence = f.sentence.trim(); q.answer = f.answer.trim(); q.hint = f.hint.trim(); }
+    if (this.lsOnOf(f)) q.audio = { transcript: f.transcript.trim(), source: f.audioSrc, voice: f.voice, fileName: f.audioSrc === 'file' ? f.fileName : '', fileSize: f.audioSrc === 'file' ? f.fileSize : '' };
+    if (f.type === 'dictation') { q.answer = f.transcript.trim(); q.sentence = ''; q.hint = ''; }
     if (f.fromSub) q.community = true;
     if (f.dayOffset === 0) { this.setState({ view: 'today' }); this.flash('Today\'s question updated'); return; }
     this.setState(s => {
@@ -1286,7 +1390,7 @@ class Component extends DCLogic {
         rowBg: live ? '#FFF8F2' : '#fff', rowOpacity: past ? 0.6 : 1,
         showEdit: !!q && !past, showAdd: !q && !past, isPastRow: past, pastNote: q && q.answers ? q.answers.toLocaleString('en-US') + ' answers' : '',
         emptyText: past ? 'No question was shown this day.' : 'No question scheduled — users will see an empty day.',
-        typeLabel: q ? TL[q.type] : '', text: q ? q.text : '', author: q ? q.author : '', authInit: q ? initials(q.author) : '', authColor: q ? colorFor(q.author) : '#C9C9CE',
+        typeLabel: q ? tlOf(q) : '', text: q ? q.text : '', author: q ? q.author : '', authInit: q ? initials(q.author) : '', authColor: q ? colorFor(q.author) : '#C9C9CE',
         statusLabel: st[0], statusBg: st[1], statusColor: st[2], isCommunity: !!(q && q.community),
         onEdit: () => this.openEdit(i), onAdd: () => this.openAdd(i),
         onView: () => q && this.setState({ view_q: { ...q, off: i } }),
@@ -1303,7 +1407,7 @@ class Component extends DCLogic {
 
     // FORM
     const isChoice = f.type === 'single' || f.type === 'multi';
-    const typeCards = ['single', 'multi', 'fill', 'order'].map(t => {
+    const typeCards = ['single', 'multi', 'fill', 'order', 'dictation'].map(t => {
       const on = f.type === t;
       return {
         ...flags(t), label: TL[t], desc: TD[t],
@@ -1311,7 +1415,7 @@ class Component extends DCLogic {
         onClick: () => {
           let options = f.options;
           if (t === 'single') { let seen = false; options = options.map(o => { const c = o.correct && !seen; if (c) seen = true; return { ...o, correct: c }; }); }
-          this.setF({ type: t, options });
+          this.setF({ type: t, options, ...(t === 'dictation' ? { listen: true } : {}) });
         },
       };
     });
@@ -1334,6 +1438,28 @@ class Component extends DCLogic {
     const blankIdx = f.sentence.indexOf('___');
     const author = f.author.trim() || 'Admin';
     const preview = this.props.showPreview ?? true;
+    const lsOnF = this.lsOnOf(f), isOrd = f.type === 'order', isDictT = f.type === 'dictation';
+    const trWords = f.transcript.trim() ? f.transcript.trim().split(/\s+/).length : 0;
+    const fillGuess = f.type === 'fill' && f.sentence.trim() ? f.sentence.replace('___', f.answer.trim() || '___') : '';
+    const lsVals = {
+      lsOn: lsOnF, lsCanToggle: !isDictT, lsRequired: isDictT, lsOpacity: isOrd ? 0.55 : 1,
+      lsBorder: lsOnF ? '#FBDCC6' : '#ECECEE', lsBg: lsOnF ? '#FFF8F2' : '#fff', lsIconBg: lsOnF ? OR : '#F2F2F3', lsIconColor: lsOnF ? '#fff' : '#17171A',
+      lsTrack: lsOnF ? OR : '#D4D4D8', lsKnob: lsOnF ? 'flex-end' : 'flex-start',
+      lsDesc: isOrd ? 'Not available for Reorder words' : isDictT ? 'Users listen, then type the whole sentence' : lsOnF ? 'Users hear the audio before answering' : 'Turn on to add audio to this question',
+      toggleListen: () => { if (isOrd) return; this.stopPv(); this.setF({ listen: !f.listen }); },
+      srcTabs: [['tts', 'Text-to-speech'], ['file', 'Upload audio']].map(([v, l]) => { const on = f.audioSrc === v; return { label: l, bg: on ? '#fff' : 'transparent', color: on ? '#17171A' : '#6E6E73', shadow: on ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', onClick: () => { this.stopPv(); this.setF({ audioSrc: v }); } }; }),
+      srcTts: f.audioSrc === 'tts', srcFile: f.audioSrc === 'file', onAudioFile: this.onAudioFile,
+      dropBorder: f.fileName ? '#1FA971' : '#D4D4D8', fileTitle: f.fileName || 'Choose an audio file', fileSub: f.fileName ? f.fileSize + ' · tap to replace' : 'MP3, M4A or WAV · up to 5 MB · max 30 s', fileBtn: f.fileName ? 'Replace' : 'Browse',
+      voiceChips: VOICES.map(([v, l]) => { const on = f.voice === v; return { label: l, border: on ? OR : '#E4E4E7', bg: on ? '#FFF4EC' : '#fff', onClick: () => this.setF({ voice: v }) }; }),
+      trLabel: isDictT ? 'Sentence users must write' : 'Transcript', trHelp: isDictT ? 'graded word by word, capitals and punctuation ignored' : 'exactly what is said; shown after users answer',
+      trPlaceholder: isDictT ? 'e.g. We went to the beach with our friends last weekend.' : fillGuess || "e.g. Hi, it's Sarah. I'm running late because my train was cancelled.",
+      fTranscript: f.transcript, onTranscript: e => this.setF({ transcript: e.target.value }),
+      playPreview: this.playPreview, cannotPlay: f.audioSrc === 'tts' && !f.transcript.trim(), pvIsPlaying: !!s.pvPlaying, pvNotPlaying: !s.pvPlaying,
+      playLabel: s.pvPlaying ? 'Stop' : f.audioSrc === 'file' ? 'Play file' : 'Play preview',
+      playBg: (f.audioSrc === 'tts' && !f.transcript.trim()) ? '#E4E4E7' : '#17171A', playColor: (f.audioSrc === 'tts' && !f.transcript.trim()) ? '#8E8E93' : '#fff',
+      audioMeta: f.audioSrc === 'tts' ? (trWords ? `~${Math.max(2, Math.round(trWords * 0.4))} s · ${VOICES.find(v => v[0] === f.voice)[1]}` + (isDictT ? ` · ${trWords} words` : '') : 'Type the transcript to generate audio') : (f.fileName ? f.fileName : 'No file chosen yet'),
+      isDictF: isDictT, pvBars: [...Array(24)].map((_, i) => Math.round(6 + Math.abs(Math.sin(i * 1.7 + 0.4) * Math.cos(i * 0.55)) * 20) + 'px'),
+    };
 
     // LIBRARY
     const dupOf = x => this.findDups(x, x.day ? [x.day] : []);
@@ -1354,14 +1480,14 @@ class Component extends DCLogic {
     const libAllRows = (s.libSort === 'oldest' ? [...all].reverse() : all).filter(x => {
       const k = stOf(x);
       if (!srcOk(x)) return false;
-      if ((s.libType || 'all') !== 'all' && x.type !== s.libType) return false;
+      if ((s.libType || 'all') !== 'all' && !typeMatch(x, s.libType)) return false;
       if (s.libFilter === 'unpub') { if (k !== 'upcoming' && k !== 'draft') return false; }
       else if (s.libFilter !== 'all' && !(s.libFilter === k || (s.libFilter === 'upcoming' && k === 'live'))) return false;
       if (!lq) return true;
       return [x.text, x.sentence, x.answer, x.author, ...(x.options || []).map(o => o.text)].join(' ').toLowerCase().includes(lq);
     }).map((x, i) => {
       const k = stOf(x), d = day(x.off);
-      return { ...d, typeLabel: TL[x.type], text: x.text + (x.sentence ? ' — ' + x.sentence : ''), author: x.author, isCommunity: !!x.community,
+      return { ...d, typeLabel: tlOf(x), text: x.text + (x.sentence ? ' — ' + x.sentence : ''), author: x.author, isCommunity: !!x.community,
         statusLabel: LST[k][0], statusBg: LST[k][1], statusColor: LST[k][2], dateColor: k === 'past' ? '#6E6E73' : '#17171A',
         useCount: this.usageOf(x).length, onHistory: () => this.setState({ hist: x }), onView: () => this.setState({ view_q: x }),
         authInit: initials(x.author), authColor: colorFor(x.author), borderTop: i ? '1px solid #ECECEE' : 'none', hasStats: !!x.answers, stats: x.answers ? `${x.answers.toLocaleString('en-US')} answers · ${x.correct}% correct` : '',
@@ -1387,7 +1513,7 @@ class Component extends DCLogic {
     const cur = subShown.find(x => x.id === s.selSub) || subShown[0];
     const subList = subShown.map((x, i) => {
       const on = cur && x.id === cur.id;
-      return { ...x, init: initials(x.name), color: colorFor(x.name), typeLabel: TL[x.type], borderTop: i ? '1px solid #ECECEE' : 'none',
+      return { ...x, init: initials(x.name), color: colorFor(x.name), typeLabel: tlOf(x), borderTop: i ? '1px solid #ECECEE' : 'none',
         bg: on ? '#FFF4EC' : '#fff', accent: on ? OR : 'transparent', onSelect: () => this.pickSub(x.id),
         hasMeta: x.status !== 'pending' || dupOf(x).length > 0,
         meta: x.status === 'approved' ? day(x.day).label : x.status === 'rejected' ? x.reason : 'Possible duplicate',
@@ -1396,7 +1522,7 @@ class Component extends DCLogic {
     let sel = {};
     if (cur) {
       const bi = cur.sentence ? cur.sentence.indexOf('___') : -1;
-      sel = { ...cur, init: initials(cur.name), color: colorFor(cur.name), typeLabel: TL[cur.type],
+      sel = { ...cur, init: initials(cur.name), color: colorFor(cur.name), typeLabel: tlOf(cur),
         statusLabel: SST[cur.status][0], statusBg: SST[cur.status][1], statusColor: SST[cur.status][2],
         isPending: cur.status === 'pending', isApproved: cur.status === 'approved', isRejected: cur.status === 'rejected',
         isChoice: cur.type === 'single' || cur.type === 'multi', isFill: cur.type === 'fill', isOrder: cur.type === 'order',
@@ -1421,7 +1547,10 @@ class Component extends DCLogic {
     let vw = {};
     if (vq) {
       const k = stOf(vq), sent = vq.sentence || '', bi = sent.indexOf('___');
-      vw = { typeLabel: TL[vq.type], typeIcon: icon(vq.type, '#C25A14'), statusLabel: LST[k][0], statusBg: LST[k][1], statusColor: LST[k][2], isCommunity: !!vq.community,
+      vw = { hasAudio: isListenQ(vq) && !!(vq.audio || vq.answer), transcript: vq.audio ? vq.audio.transcript : vq.answer,
+        audioKind: vq.type === 'dictation' ? 'Sentence to write' : vq.audio && vq.audio.source === 'file' ? 'Audio file · ' + vq.audio.fileName : 'Transcript · ' + ((VOICES.find(v => vq.audio && v[0] === vq.audio.voice) || VOICES[0])[1]),
+        onPlay: () => this.speak(vq.audio ? vq.audio.transcript : vq.answer, vq.audio && vq.audio.voice),
+        typeLabel: tlOf(vq), typeIcon: icon(icKey(vq), '#C25A14'), statusLabel: LST[k][0], statusBg: LST[k][1], statusColor: LST[k][2], isCommunity: !!vq.community,
         text: vq.text, hasOptions: !!(vq.options && (vq.type === 'single' || vq.type === 'multi')),
         options: (vq.options || []).map((o, i) => ({ letter: LETTERS[i], text: o.text, correct: !!o.correct, border: o.correct ? '#1FA971' : '#ECECEE', bg: o.correct ? 'rgba(31,169,113,0.06)' : '#fff', letterBg: o.correct ? '#1FA971' : '#F2F2F3', letterColor: o.correct ? '#fff' : '#6E6E73' })),
         isFill: vq.type === 'fill', sentBefore: bi >= 0 ? sent.slice(0, bi) : sent + ' ', sentAfter: bi >= 0 ? sent.slice(bi + 3) : '', answer: vq.answer || '', hasHint: !!vq.hint, hint: vq.hint || '',
@@ -1488,11 +1617,11 @@ class Component extends DCLogic {
       pickStatus = [['all', 'All', cnt(srcOk2)], ['pub', 'Published', cnt(x => srcOk2(x) && x.kind === 'past')], ['unpub', 'Not published', cnt(x => srcOk2(x) && x.kind !== 'past')]].map(([id, label, count]) => { const on = st0 === id; return { label, count, bg: on ? '#fff' : 'transparent', color: on ? '#17171A' : '#6E6E73', shadow: on ? '0 1px 2px rgba(0,0,0,0.08)' : 'none', onClick: () => this.setState(st => ({ pick: { ...st.pick, status: id } })) }; });
       pickSrc = [['all', 'Anyone'], ['admin', 'Admins'], ['users', 'Users']].map(([id, label]) => { const on = src0 === id; return { label, bg: on ? '#fff' : 'transparent', color: on ? '#17171A' : '#6E6E73', shadow: on ? '0 1px 2px rgba(0,0,0,0.08)' : 'none', onClick: () => this.setState(st => ({ pick: { ...st.pick, src: id } })) }; });
       pickFull = full;
-      pickPool = full.filter(x => pubOk(x) && srcOk2(x) && (pk.type === 'all' || x.type === pk.type) && (!pq || [x.text, x.sentence, x.answer, ...(x.options || []).map(o => o.text)].join(' ').toLowerCase().includes(pq)));
+      pickPool = full.filter(x => pubOk(x) && srcOk2(x) && (pk.type === 'all' || typeMatch(x, pk.type)) && (!pq || [x.text, x.sentence, x.answer, ...(x.options || []).map(o => o.text)].join(' ').toLowerCase().includes(pq)));
       const so = { oldest: (a, b) => a.off - b.off, recent: (a, b) => b.off - a.off, answers: (a, b) => (b.answers || 0) - (a.answers || 0), hardest: (a, b) => (a.correct ?? 100) - (b.correct ?? 100) }[pk.sort];
       const rank = x => x.kind === 'past' ? 0 : 1;
       pickRows = [...pickPool].sort((a, b) => rank(a) - rank(b) || so(a, b)).map(x => { const on = pk.sel === x.key; return {
-        text: x.text + (x.type === 'fill' || x.type === 'order' ? ' — ' + x.sentence : ''), typeLabel: TL[x.type], typeIcon: icon(x.type, '#C25A14'), isUser: x.user,
+        text: x.text + (x.type === 'fill' || x.type === 'order' ? ' — ' + x.sentence : ''), typeLabel: tlOf(x), typeIcon: icon(icKey(x), '#C25A14'), isUser: x.user,
         when: x.kind === 'past' ? whenLabel(x.off) : x.kind === 'draft' ? `Draft · on ${day(x.off).label} (will move)` : `Pending review · from ${x.subName}`,
         stats: x.answers ? `${x.answers.toLocaleString('en-US')} answers · ${x.correct}% correct` : '',
         border: on ? OR : '#ECECEE', bg: on ? '#FFF8F2' : '#fff', dot: on ? OR : '#C9C9CE', dotFill: on ? OR : 'transparent',
@@ -1520,7 +1649,7 @@ class Component extends DCLogic {
       pickDDs: pk ? [
         this.mkDD('p-st', 'Status', 'pub', pk.status || 'all', [{ v: 'all', label: 'All', count: pickStatus[0].count, ic: 'all' }, { v: 'pub', label: 'Published', count: pickStatus[1].count, ic: 'pub' }, { v: 'unpub', label: 'Not published', count: pickStatus[2].count, ic: 'unpub' }], v => this.setState(st => ({ pick: { ...st.pick, status: v } }))),
         this.mkDD('p-src', 'Added by', 'user', pk.src || 'all', [{ v: 'all', label: 'Anyone', ic: 'anyone' }, { v: 'admin', label: 'Admins', ic: 'admin' }, { v: 'users', label: 'Users', ic: 'user' }], v => this.setState(st => ({ pick: { ...st.pick, src: v } }))),
-        this.mkDD('p-ty', 'Type', 'type', pk.type, [{ v: 'all', label: 'All', ic: 'type' }, { v: 'single', label: 'Single choice', ic: 'single' }, { v: 'multi', label: 'Multiple choice', ic: 'multi' }, { v: 'fill', label: 'Fill in the blank', ic: 'fill' }, { v: 'order', label: 'Reorder words', ic: 'order' }], v => this.setState(st => ({ pick: { ...st.pick, type: v } }))),
+        this.mkDD('p-ty', 'Type', 'type', pk.type, [{ v: 'all', label: 'All', ic: 'type' }, { v: 'single', label: 'Single choice', ic: 'single' }, { v: 'multi', label: 'Multiple choice', ic: 'multi' }, { v: 'fill', label: 'Fill in the blank', ic: 'fill' }, { v: 'order', label: 'Reorder words', ic: 'order' }, { v: 'dictation', label: 'Dictation', ic: 'dictation' }, { v: 'listen', label: 'All listening', ic: 'listen' }], v => this.setState(st => ({ pick: { ...st.pick, type: v } }))),
         this.mkDD('p-so', 'Sort', 'sort', pk.sort, [{ v: 'oldest', label: 'Shown longest ago', ic: 'history' }, { v: 'recent', label: 'Shown most recently', ic: 'clock' }], v => this.setState(st => ({ pick: { ...st.pick, sort: v } }))),
       ] : [],
       pickStatusVal: pk ? pk.status || 'all' : 'all', pickSrcVal: pk ? pk.src || 'all' : 'all',
@@ -1533,7 +1662,7 @@ class Component extends DCLogic {
       libDDs: [
         this.mkDD('l-st', 'Status', 'pub', s.libFilter, [{ v: 'all', label: 'All', count: libCounts.all, ic: 'all' }, { v: 'past', label: 'Published', count: libCounts.past, ic: 'pub' }, { v: 'unpub', label: 'Not published', count: libCounts.unpub, ic: 'unpub' }, { v: 'upcoming', label: 'Upcoming', count: libCounts.upcoming, ic: 'upcoming' }, { v: 'draft', label: 'Drafts', count: libCounts.draft, ic: 'draft' }], v => this.setState({ libFilter: v })),
         this.mkDD('l-src', 'Added by', 'user', libSrc, [{ v: 'all', label: 'Anyone', count: libSrcChips[0].count, ic: 'anyone' }, { v: 'admin', label: 'Admins', count: libSrcChips[1].count, ic: 'admin' }, { v: 'users', label: 'Users', count: libSrcChips[2].count, ic: 'user' }], v => this.setState({ libSrc: v })),
-        this.mkDD('l-ty', 'Type', 'type', s.libType || 'all', [{ v: 'all', label: 'All', ic: 'type' }, { v: 'single', label: 'Single choice', ic: 'single' }, { v: 'multi', label: 'Multiple choice', ic: 'multi' }, { v: 'fill', label: 'Fill in the blank', ic: 'fill' }, { v: 'order', label: 'Reorder words', ic: 'order' }], v => this.setState({ libType: v })),
+        this.mkDD('l-ty', 'Type', 'type', s.libType || 'all', [{ v: 'all', label: 'All', ic: 'type' }, { v: 'single', label: 'Single choice', ic: 'single' }, { v: 'multi', label: 'Multiple choice', ic: 'multi' }, { v: 'fill', label: 'Fill in the blank', ic: 'fill' }, { v: 'order', label: 'Reorder words', ic: 'order' }, { v: 'dictation', label: 'Dictation', ic: 'dictation' }, { v: 'listen', label: 'All listening', ic: 'listen' }], v => this.setState({ libType: v })),
         this.mkDD('l-so', 'Sort', 'sort', s.libSort || 'newest', [{ v: 'newest', label: 'Newest date first', ic: 'newest' }, { v: 'oldest', label: 'Oldest date first', ic: 'oldest' }], v => this.setState({ libSort: v })),
       ],
       libFilterVal: s.libFilter, libSrcVal: libSrc, libTypeVal: s.libType || 'all', libSortVal: s.libSort || 'newest',
@@ -1582,7 +1711,7 @@ class Component extends DCLogic {
       scheduledCount, draftCount, schedGapCount: gapCount, coverage, rows, coverageCols: offs.length, schedTabs, isMonthMode, monthLabel, schedKicker,
       prevMonth: () => this.setState(st => ({ schedMonth: st.schedMonth - 1 })), nextMonth: () => this.setState(st => ({ schedMonth: st.schedMonth + 1 })),
       formKicker: f.fromSub ? 'Reviewing submission' : f.reuseOf !== undefined && f.reuseOf !== null ? `Reusing · ${whenLabel(f.reuseOf).toLowerCase()}` : f.editing === null ? 'Add to schedule' : 'Editing', formTitle: f.fromSub ? 'Edit before approving' : f.reuseOf !== undefined && f.reuseOf !== null ? 'Reuse question' : f.editing === null ? 'New question' : (f.dayOffset === 0 ? 'Edit today\'s question' : 'Edit question'),
-      typeCards, fText: f.text, onText: e => this.setF({ text: e.target.value }), textPlaceholder: PH[f.type],
+      ...lsVals, typeCards, fText: f.text, onText: e => this.setF({ text: e.target.value }), textPlaceholder: PH[f.type],
       isChoiceF: isChoice, isFillF: f.type === 'fill', isOrderF: f.type === 'order',
       formOptions, canAddOption: f.options.length < 6, addOption: () => this.setF({ options: [...f.options, { text: '', correct: false }] }),
       optionHelp: f.type === 'single' ? 'Tap the circle to mark the one correct answer' : 'Tick every correct answer',
@@ -1597,7 +1726,7 @@ class Component extends DCLogic {
       cannotSubmit: !ok, submitBg: ok ? OR : '#E4E4E7', submitColor: ok ? '#fff' : '#8E8E93',
       cannotDraft: !f.text.trim(), draftColor: f.text.trim() ? '#17171A' : '#8E8E93',
       saveDraft: () => f.text.trim() && this.save('draft'), saveScheduled: () => ok && this.save('scheduled'),
-      showPreview: preview, pvTypeLabel: TL[f.type], pvAuthor: author, pvInit: initials(author), pvColor: colorFor(author),
+      showPreview: preview, pvTypeLabel: tlOf({ type: f.type, audio: lsOnF }), pvAuthor: author, pvInit: initials(author), pvColor: colorFor(author),
       pvText: f.text.trim() || 'Your question appears here', pvTextColor: f.text.trim() ? '#17171A' : '#8E8E93',
       pvOptions: f.options.map((o, i) => ({ text: o.text.trim() || `Option ${LETTERS[i]}`, color: o.text.trim() ? '#17171A' : '#8E8E93', radius: f.type === 'single' ? '50%' : '6px' })),
       pvBefore: blankIdx >= 0 ? f.sentence.slice(0, blankIdx).trim() : (f.sentence || 'Sentence with a'), pvAfter: blankIdx >= 0 ? f.sentence.slice(blankIdx + 3).trim() : '',

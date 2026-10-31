@@ -11,7 +11,7 @@ import { QuestionBody } from '@/features/library/QuestionBody'
 import { emptyDays } from '@/features/schedule/scheduleModel'
 import { todayUTC } from '@/lib/dates'
 import { errorMessage } from '@/lib/errors'
-import { authorName, dayLabel, displayText } from '@/lib/question'
+import { authorName, dayLabel, displayText, isListening } from '@/lib/question'
 import { useQuestions, type Question } from '@/services/questions'
 import {
   useDeleteReply,
@@ -165,7 +165,7 @@ function QuestionCard({ question: q, stats }: { question: Question; stats: Today
   return (
     <div className="flex flex-col gap-[18px] rounded-[18px] border border-line bg-card px-6 py-[22px]">
       <div className="flex items-center justify-between gap-2.5">
-        <TypeBadge type={q.type} withIcon />
+        <TypeBadge type={q.type} listening={isListening(q)} withIcon />
         <span className="flex items-center gap-1.5 text-xs text-muted">
           By <Avatar name={authorName(q)} src={q.author?.avatar_url} size={22} />
           <b className="text-ink">{authorName(q)}</b>
