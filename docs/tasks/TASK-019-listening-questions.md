@@ -29,7 +29,8 @@ Design Oct 31 · Listening questions (`design/README.md`): admin tạo câu hỏ
 - [x] `ListeningCard`, form page, App preview.
 - [x] Nhãn / icon / bộ lọc / View modal / Today.
 - [x] `yarn build`, `yarn lint`, `yarn test` (73/73).
-- [ ] Thử trên trình duyệt với Dev (upload; TTS cần `GOOGLE_TTS_API_KEY`).
+- [x] Thử trên trình duyệt (Dev): thẻ Listening, Dictation, App preview, cảnh báo trùng, nhãn Library, modal View (phát được audio mẫu). Play preview báo đúng "Text-to-speech is not set up yet" khi thiếu key.
+- [ ] Thử TTS thật sau khi có `GOOGLE_TTS_API_KEY`; thử upload file.
 
 ## File dự kiến thay đổi
 - `src/services/{questions,audio}.ts`, `src/lib/question.ts`, `src/components/{typeIcons.ts,TypeIcon.tsx,Badge.tsx}`, `src/features/question-form/*`, `src/features/library/*`, `src/features/schedule/*`, `src/features/today/*`, `design/*`, `docs/tasks/README.md`
