@@ -6,6 +6,7 @@ import {
   Inbox,
   LogOut,
   Sun,
+  Users,
   type LucideIcon,
 } from 'lucide-react'
 import { NavLink } from 'react-router'
@@ -23,6 +24,7 @@ const NAV: { to: string; label: string; icon: LucideIcon }[] = [
   { to: '/questions/new', label: 'New question', icon: CirclePlus },
   { to: '/submissions', label: 'Submissions', icon: Inbox },
   { to: '/notifications', label: 'Notifications', icon: Bell },
+  { to: '/users', label: 'Users', icon: Users },
 ]
 
 // Filled orange badges (needs attention); the rest are grey.

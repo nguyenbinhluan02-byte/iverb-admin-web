@@ -6,6 +6,7 @@ import { NotificationsPage } from '@/features/notifications/NotificationsPage'
 import { QuestionFormPage } from '@/features/question-form/QuestionFormPage'
 import { SchedulePage } from '@/features/schedule/SchedulePage'
 import { TodayPage } from '@/features/today/TodayPage'
+import { UsersPage } from '@/features/users/UsersPage'
 import { ComingSoon } from '@/pages/ComingSoon'
 import { LoginPage } from '@/pages/LoginPage'
 
@@ -21,6 +22,7 @@ export function App() {
           <Route path="/questions/new" element={<QuestionFormPage />} />
           <Route path="/questions/:id/edit" element={<QuestionFormPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/users" element={<UsersPage />} />
           <Route
             path="/submissions"
             element={<ComingSoon kicker="From app users" title="Submissions" task="TASK-006" />}
