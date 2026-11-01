@@ -110,6 +110,25 @@ describe('SchedulePage', () => {
     expect(mutateAsync).toHaveBeenCalledWith({ id: 4, date: day2 })
   })
 
+  it('views a library question from the picker and chooses it', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(
+      within(screen.getByTestId(`day-${day2}`)).getByRole('button', { name: /From library/ }),
+    )
+    const picker = screen.getByRole('dialog')
+    await user.click(within(picker).getByRole('button', { name: 'View question 4' }))
+
+    const view = screen.getByRole('dialog', { name: 'Loose draft' })
+    expect(within(view).queryByRole('button', { name: /History/ })).not.toBeInTheDocument()
+    await user.click(within(view).getByRole('button', { name: 'Choose' }))
+
+    expect(screen.queryByRole('dialog', { name: 'Loose draft' })).not.toBeInTheDocument()
+    expect(within(picker).getByRole('radio', { name: /Loose draft/ })).toBeChecked()
+    await user.click(within(picker).getByRole('button', { name: 'Schedule' }))
+    expect(mutateAsync).toHaveBeenCalledWith({ id: 4, date: day2 })
+  })
+
   it('month view shows past days read-only', () => {
     renderPage('/schedule?view=month')
     const rows = screen.getAllByTestId(/^day-/)
