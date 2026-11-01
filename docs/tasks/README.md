@@ -24,3 +24,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-018](./TASK-018-notifications.md) | Notifications: soạn + gửi push tới mọi user, lịch sử | TASK-032 | done |
 | [TASK-019](./TASK-019-listening-questions.md) | Câu hỏi Listening: TTS / upload audio, Dictation, lọc listening | TASK-034, TASK-035 | in-progress |
 | [TASK-020](./TASK-020-auto-moderation.md) | Today: bài bị kiểm duyệt tự động ẩn — lọc Auto-hidden, lý do, Approve / Delete | TASK-038 | in-progress |
+| [TASK-021](./TASK-021-pick-view-question.md) | Choose from library: nút View xem đủ câu hỏi trước khi chọn | — | done |
