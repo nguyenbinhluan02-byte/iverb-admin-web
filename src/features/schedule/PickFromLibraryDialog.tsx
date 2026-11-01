@@ -1,4 +1,4 @@
-import { CircleCheck, Clock, EyeOff, History, Layers, Search, Type, User } from 'lucide-react'
+import { CircleCheck, Clock, Eye, EyeOff, History, Layers, Search, Type, User } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -6,6 +6,7 @@ import { FilterDropdown, type FilterOption } from '@/components/FilterDropdown'
 import { Modal, ModalClose, ModalTitle } from '@/components/Modal'
 import { TypeIcon } from '@/components/TypeIcon'
 import { GREEN_TINT, sourceOptions, typeOptions } from '@/features/library/filterOptions'
+import { footerButton, QuestionViewDialog } from '@/features/library/QuestionViewDialog'
 import { todayUTC } from '@/lib/dates'
 import { errorMessage } from '@/lib/errors'
 import { dayLabel, displayText, isListening, isUserSubmitted, typeLabel } from '@/lib/question'
@@ -41,6 +42,7 @@ function Picker({ date, onClose }: { date: string; onClose: () => void }) {
   const schedule = useScheduleQuestion()
   const [filters, setFilters] = useState<PickFilters>(DEFAULT_PICK)
   const [selected, setSelected] = useState<Question | null>(null)
+  const [viewing, setViewing] = useState<Question | null>(null)
   const set = (patch: Partial<PickFilters>) => setFilters((f) => ({ ...f, ...patch }))
 
   const query = useDebounced(filters.query)
@@ -150,41 +152,55 @@ function Picker({ date, onClose }: { date: string; onClose: () => void }) {
         {rows.map((q) => {
           const on = q.id === selected?.id
           return (
-            <button
+            <div
               key={q.id}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              onClick={() => setSelected(q)}
-              className={`mb-1.5 grid w-full grid-cols-[20px_minmax(0,1fr)] items-start gap-3 rounded-xl border-[1.5px] p-3 text-left text-ink ${
+              className={`mb-1.5 flex items-start gap-2 rounded-xl border-[1.5px] p-3 ${
                 on ? 'border-brand bg-brand-tint-2' : 'border-line bg-card'
               }`}
             >
-              <span
-                className={`mt-0.5 flex size-[18px] items-center justify-center rounded-full border-2 ${
-                  on ? 'border-brand' : 'border-disabled'
-                }`}
+              <button
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => setSelected(q)}
+                className="grid min-w-0 flex-1 grid-cols-[20px_minmax(0,1fr)] items-start gap-3 text-left text-ink"
               >
-                <span className={`size-2 rounded-full ${on ? 'bg-brand' : ''}`} />
-              </span>
-              <span className="flex min-w-0 flex-col gap-[5px]">
-                <span className="text-sm leading-[1.4] font-bold text-pretty">
-                  {displayText(q)}
+                <span
+                  className={`mt-0.5 flex size-[18px] items-center justify-center rounded-full border-2 ${
+                    on ? 'border-brand' : 'border-disabled'
+                  }`}
+                >
+                  <span className={`size-2 rounded-full ${on ? 'bg-brand' : ''}`} />
                 </span>
-                <span className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-xs font-semibold text-muted">
-                  <span className="flex items-center gap-[5px] rounded-md bg-[rgba(242,113,28,.1)] px-2 py-0.5 font-bold text-brand-deep">
-                    <TypeIcon type={q.type} listening={isListening(q)} size={12} />
-                    {typeLabel(q.type, isListening(q))}
+                <span className="flex min-w-0 flex-col gap-[5px]">
+                  <span className="text-sm leading-[1.4] font-bold text-pretty">
+                    {displayText(q)}
                   </span>
-                  {isUserSubmitted(q) && (
-                    <span className="rounded-md bg-[rgba(91,108,240,.12)] px-2 py-0.5 font-bold text-blue-text">
-                      User submitted
+                  <span className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-xs font-semibold text-muted">
+                    <span className="flex items-center gap-[5px] rounded-md bg-[rgba(242,113,28,.1)] px-2 py-0.5 font-bold text-brand-deep">
+                      <TypeIcon type={q.type} listening={isListening(q)} size={12} />
+                      {typeLabel(q.type, isListening(q))}
                     </span>
-                  )}
-                  <span>{pickWhen(q)}</span>
+                    {isUserSubmitted(q) && (
+                      <span className="rounded-md bg-[rgba(91,108,240,.12)] px-2 py-0.5 font-bold text-blue-text">
+                        User submitted
+                      </span>
+                    )}
+                    <span>{pickWhen(q)}</span>
+                  </span>
                 </span>
-              </span>
-            </button>
+              </button>
+              <button
+                type="button"
+                title="View question"
+                aria-label={`View question ${q.id}`}
+                onClick={() => setViewing(q)}
+                className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-line-strong bg-card px-2.5 text-xs font-bold text-ink hover:bg-page"
+              >
+                <Eye size={14} strokeWidth={2.4} />
+                View
+              </button>
+            </div>
           )
         })}
         {search.isPending && (
@@ -232,6 +248,23 @@ function Picker({ date, onClose }: { date: string; onClose: () => void }) {
           </button>
         </div>
       </div>
+
+      <QuestionViewDialog
+        question={viewing}
+        onClose={() => setViewing(null)}
+        actions={(q) => (
+          <button
+            type="button"
+            onClick={() => {
+              setSelected(q)
+              setViewing(null)
+            }}
+            className={`${footerButton} bg-brand text-white hover:bg-brand-hover`}
+          >
+            Choose
+          </button>
+        )}
+      />
     </>
   )
 }
