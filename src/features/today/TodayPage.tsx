@@ -1,5 +1,13 @@
 import { format, parseISO } from 'date-fns'
-import { ArrowBigUp, EyeOff, Flag, MessageCircle, Trash2, type LucideIcon } from 'lucide-react'
+import {
+  ArrowBigUp,
+  EyeOff,
+  Flag,
+  MessageCircle,
+  ShieldAlert,
+  Trash2,
+  type LucideIcon,
+} from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -22,18 +30,27 @@ import {
   useToday,
   type Explanation,
   type ExplanationFilter,
-  type ModerationStatus,
   type Reply,
   type Reports,
   type TodayStats,
 } from '@/services/today'
-import { closesIn, correctRate, optionBars, pickLabel, reportLabel, timeAgo } from './todayModel'
+import {
+  closesIn,
+  correctRate,
+  isAutoHidden,
+  moderationReasonLabel,
+  optionBars,
+  pickLabel,
+  reportLabel,
+  timeAgo,
+} from './todayModel'
 
 const number = (n: number) => n.toLocaleString('en-US')
 
 // Design: Today. Simplified (2026-10-29): no 7-day comparison.
 // Replies (TASK-014): read + delete only, admins do not reply.
 // Reports (TASK-017): All / Reported filter (no "Replied"), Dismiss / Delete.
+// Automatic moderation (TASK-020): Auto-hidden filter, reason, Approve / Delete.
 export function TodayPage() {
   const navigate = useNavigate()
   const { data: today, isPending, isError, error } = useToday()
@@ -122,6 +139,7 @@ export function TodayPage() {
             question={q}
             count={today.explanations_count}
             reportedCount={today.reported_count}
+            autoHiddenCount={today.auto_hidden_count ?? 0}
           />
         </div>
       )}
@@ -224,31 +242,39 @@ type Confirm =
 const FILTERS: { value: ExplanationFilter; label: string; icon: LucideIcon }[] = [
   { value: 'all', label: 'All', icon: MessageCircle },
   { value: 'reported', label: 'Reported', icon: Flag },
+  { value: 'auto_hidden', label: 'Auto-hidden', icon: ShieldAlert },
 ]
 
 function Explanations({
   question,
   count,
   reportedCount,
+  autoHiddenCount,
 }: {
   question: Question
   count: number
   reportedCount: number
+  autoHiddenCount: number
 }) {
   const [filter, setFilter] = useState<ExplanationFilter>('all')
   const explanations = useExplanations(question.id, filter)
   const { isPending, isError, error } = explanations
   const items = explanations.data?.pages.flatMap((p) => p.items)
-  const counts: Record<ExplanationFilter, number> = { all: count, reported: reportedCount }
+  const counts: Record<ExplanationFilter, number> = {
+    all: count,
+    reported: reportedCount,
+    auto_hidden: autoHiddenCount,
+  }
   const remove = useRemoveExplanation()
   const deleteReply = useDeleteReply()
   const dismiss = useDismissReports()
   const [confirming, setConfirming] = useState<Confirm | null>(null)
 
-  const dismissReports = async (type: 'answer' | 'reply', id: number) => {
+  // Dismiss reports, or approve a post hidden by automatic moderation.
+  const dismissReports = async (type: 'answer' | 'reply', id: number, message = 'Reports dismissed') => {
     try {
       await dismiss.mutateAsync({ type, id })
-      toast.success('Reports dismissed')
+      toast.success(message)
     } catch (e) {
       toast.error(errorMessage(e))
     }
@@ -301,7 +327,7 @@ function Explanations({
         {isError && <Empty>{errorMessage(error)}</Empty>}
         {items?.length === 0 && (
           <Empty>
-            {filter === 'reported' ? 'All caught up — nothing here.' : 'No explanations yet.'}
+            {filter === 'all' ? 'No explanations yet.' : 'All caught up — nothing here.'}
           </Empty>
         )}
         {items?.map((e) => (
@@ -312,8 +338,10 @@ function Explanations({
             dismissing={dismiss.isPending}
             onDelete={() => setConfirming({ kind: 'explanation', item: e })}
             onDismiss={() => dismissReports('answer', e.id)}
+            onApprove={() => dismissReports('answer', e.id, 'Approved')}
             onDeleteReply={(r) => setConfirming({ kind: 'reply', item: r, answerId: e.id })}
             onDismissReply={(r) => dismissReports('reply', r.id)}
+            onApproveReply={(r) => dismissReports('reply', r.id, 'Approved')}
           />
         ))}
         {explanations.hasNextPage && (
@@ -377,16 +405,20 @@ function ExplanationItem({
   dismissing,
   onDelete,
   onDismiss,
+  onApprove,
   onDeleteReply,
   onDismissReply,
+  onApproveReply,
 }: {
   item: Explanation
   question: Question
   dismissing: boolean
   onDelete: () => void
   onDismiss: () => void
+  onApprove: () => void
   onDeleteReply: (reply: Reply) => void
   onDismissReply: (reply: Reply) => void
+  onApproveReply: (reply: Reply) => void
 }) {
   const [open, setOpen] = useState(false)
   return (
@@ -404,10 +436,33 @@ function ExplanationItem({
           >
             {pickLabel(e, question)}
           </span>
-          <HiddenBadge status={e.moderation_status} />
+          <HiddenBadge post={e} />
           <span className="ml-auto text-xs text-muted">{timeAgo(e.created_at)}</span>
         </div>
         <p className="text-sm leading-normal text-pretty">{e.explanation}</p>
+        {isAutoHidden(e) && (
+          <div className="flex flex-wrap items-center gap-2.5 rounded-xl bg-[rgba(245,51,63,.08)] px-3 py-2.5">
+            <ShieldAlert size={15} strokeWidth={2.4} className="shrink-0 text-red-text" />
+            <span className="min-w-[140px] flex-1 text-[13px] font-bold text-red-text">
+              Hidden by the system · {moderationReasonLabel(e.moderation_reason)}
+            </span>
+            <button
+              type="button"
+              disabled={dismissing}
+              onClick={onApprove}
+              className="rounded-lg border border-line-strong bg-card px-3 py-1.5 text-xs font-bold text-ink disabled:opacity-60"
+            >
+              Approve
+            </button>
+            <button
+              type="button"
+              onClick={onDelete}
+              className="rounded-lg bg-red px-3 py-1.5 text-xs font-extrabold text-white"
+            >
+              Delete
+            </button>
+          </div>
+        )}
         {e.reports.count > 0 && (
           <div className="flex flex-wrap items-center gap-2.5 rounded-xl bg-[rgba(245,51,63,.08)] px-3 py-2.5">
             <Flag size={15} strokeWidth={2.4} className="shrink-0 text-red-text" />
@@ -456,6 +511,13 @@ function ExplanationItem({
               {e.reported_replies_count > 1 ? 'replies' : 'reply'}
             </span>
           )}
+          {e.auto_hidden_replies_count > 0 && (
+            <span className="flex items-center gap-[5px] font-extrabold text-red-text">
+              <ShieldAlert size={13} strokeWidth={2.2} />
+              {number(e.auto_hidden_replies_count)} auto-hidden{' '}
+              {e.auto_hidden_replies_count > 1 ? 'replies' : 'reply'}
+            </span>
+          )}
           <button
             type="button"
             onClick={onDelete}
@@ -472,6 +534,7 @@ function ExplanationItem({
             dismissing={dismissing}
             onDelete={onDeleteReply}
             onDismiss={onDismissReply}
+            onApprove={onApproveReply}
           />
         )}
       </div>
@@ -485,12 +548,14 @@ function Replies({
   dismissing,
   onDelete,
   onDismiss,
+  onApprove,
 }: {
   answerId: number
   total: number
   dismissing: boolean
   onDelete: (reply: Reply) => void
   onDismiss: (reply: Reply) => void
+  onApprove: (reply: Reply) => void
 }) {
   const replies = useReplies(answerId, true)
   const items = replies.data?.pages.flatMap((p) => p.items)
@@ -507,7 +572,7 @@ function Replies({
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <b className="text-[13px]">{r.user.name ?? 'User'}</b>
               <span className="text-muted">{timeAgo(r.created_at)}</span>
-              <HiddenBadge status={r.moderation_status} />
+              <HiddenBadge post={r} />
               <button
                 type="button"
                 onClick={() => onDelete(r)}
@@ -517,6 +582,22 @@ function Replies({
               </button>
             </div>
             <span className="text-sm leading-normal text-pretty">{r.text}</span>
+            {isAutoHidden(r) && (
+              <div className="flex flex-wrap items-center gap-2 border-t border-[rgba(245,51,63,.18)] pt-1.5">
+                <ShieldAlert size={13} strokeWidth={2.4} className="text-red-text" />
+                <span className="flex-1 text-xs font-bold text-red-text">
+                  Hidden by the system · {moderationReasonLabel(r.moderation_reason)}
+                </span>
+                <button
+                  type="button"
+                  disabled={dismissing}
+                  onClick={() => onApprove(r)}
+                  className="rounded-[7px] border border-line-strong bg-card px-2.5 py-1 text-[11px] font-bold text-ink disabled:opacity-60"
+                >
+                  Approve
+                </button>
+              </div>
+            )}
             {r.reports.count > 0 && (
               <ReplyReports
                 reports={r.reports}
@@ -568,12 +649,16 @@ function ReplyReports({
   )
 }
 
-/** Auto-hidden from app users after enough reports (not in the design). */
-function HiddenBadge({ status }: { status: ModerationStatus }) {
-  if (status !== 'hidden') return null
+/** Hidden from app users, after enough reports or by automatic moderation (not in the design). */
+function HiddenBadge({ post }: { post: Explanation | Reply }) {
+  if (post.moderation_status !== 'hidden') return null
   return (
     <span
-      title="Hidden from app users after reports"
+      title={
+        isAutoHidden(post)
+          ? 'Hidden from app users by automatic moderation (the author still sees it)'
+          : 'Hidden from app users after reports'
+      }
       className="flex items-center gap-1 rounded-full bg-page px-2 py-[3px] text-[11px] font-extrabold text-muted"
     >
       <EyeOff size={11} strokeWidth={2.4} />

@@ -16,6 +16,8 @@ export interface Today {
   explanations_count: number
   /** Explanations with reports on them or on one of their replies (TASK-029). */
   reported_count: number
+  /** Explanations hidden by automatic moderation, or with such replies (TASK-020). */
+  auto_hidden_count: number
 }
 
 export type ReportReason = 'spam' | 'misleading' | 'offensive' | 'harassment' | 'other'
@@ -39,8 +41,11 @@ export interface Explanation {
   replies_count: number
   reports: Reports
   reported_replies_count: number
-  /** hidden = auto-hidden from app users after enough reports. */
+  /** hidden = hidden from app users (after enough reports, or by automatic moderation). */
   moderation_status: ModerationStatus
+  /** Why automatic moderation hid it; null = not hidden by the system (TASK-020). */
+  moderation_reason: string | null
+  auto_hidden_replies_count: number
   created_at: string
 }
 
@@ -49,11 +54,12 @@ export interface Reply {
   user: { name: string | null; avatar_url: string | null }
   text: string
   moderation_status: ModerationStatus
+  moderation_reason: string | null
   reports: Reports
   created_at: string
 }
 
-export type ExplanationFilter = 'all' | 'reported'
+export type ExplanationFilter = 'all' | 'reported' | 'auto_hidden'
 
 export const todayKeys = {
   today: ['today'] as const,
@@ -142,7 +148,10 @@ export function useDeleteReply() {
   })
 }
 
-/** Clears the reports of a post and shows it again (api.admin_dismiss_reports). */
+/**
+ * Clears the reports of a post and shows it again (api.admin_dismiss_reports).
+ * Also approves a post hidden by automatic moderation.
+ */
 export function useDismissReports() {
   const queryClient = useQueryClient()
   return useMutation({

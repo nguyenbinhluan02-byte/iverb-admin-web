@@ -1,6 +1,15 @@
 import { makeQuestion } from '@/test/fixtures'
 import type { Explanation } from '@/services/today'
-import { closesIn, correctRate, optionBars, pickLabel, reportLabel, timeAgo } from './todayModel'
+import {
+  closesIn,
+  correctRate,
+  isAutoHidden,
+  moderationReasonLabel,
+  optionBars,
+  pickLabel,
+  reportLabel,
+  timeAgo,
+} from './todayModel'
 
 const stats = { answers_count: 8, correct_count: 5, option_votes: { a: 5, b: 3 } }
 const explanation = (over: Partial<Explanation>): Explanation => ({
@@ -15,6 +24,8 @@ const explanation = (over: Partial<Explanation>): Explanation => ({
   reports: { count: 0, top_reason: null },
   reported_replies_count: 0,
   moderation_status: 'visible',
+  moderation_reason: null,
+  auto_hidden_replies_count: 0,
   created_at: '2026-10-29T10:00:00Z',
   ...over,
 })
@@ -60,5 +71,22 @@ describe('reportLabel', () => {
       'Reported 3 times · Spam or advertising',
     )
     expect(reportLabel({ count: 1, top_reason: null })).toBe('Reported 1 time')
+  })
+})
+
+describe('automatic moderation', () => {
+  it('labels the reason', () => {
+    expect(moderationReasonLabel('link')).toBe('Link or contact info')
+    expect(moderationReasonLabel('profanity')).toBe('Bad language')
+    expect(moderationReasonLabel('ai:harassment,hate/threatening')).toBe(
+      'AI: harassment, hate / threatening',
+    )
+    expect(moderationReasonLabel(null)).toBe('Hidden')
+  })
+
+  it('auto-hidden = hidden with a reason', () => {
+    expect(isAutoHidden({ moderation_status: 'hidden', moderation_reason: 'link' })).toBe(true)
+    expect(isAutoHidden({ moderation_status: 'hidden', moderation_reason: null })).toBe(false)
+    expect(isAutoHidden({ moderation_status: 'approved', moderation_reason: 'link' })).toBe(false)
   })
 })
