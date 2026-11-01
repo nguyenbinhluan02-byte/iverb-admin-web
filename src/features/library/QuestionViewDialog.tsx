@@ -3,9 +3,10 @@ import { StatusBadge, TypeBadge, UserSubmittedBadge } from '@/components/Badge'
 import { Modal, ModalClose, ModalTitle } from '@/components/Modal'
 import { authorName, isListening, isUserSubmitted } from '@/lib/question'
 import type { Question } from '@/services/questions'
+import type { ReactNode } from 'react'
 import { QuestionBody } from './QuestionBody'
 
-const footerButton = 'rounded-[10px] px-4 py-2.5 text-sm font-extrabold whitespace-nowrap'
+export const footerButton = 'rounded-[10px] px-4 py-2.5 text-sm font-extrabold whitespace-nowrap'
 
 // Design: "View question" modal (Library & Schedule → View).
 export function QuestionViewDialog({
@@ -14,12 +15,15 @@ export function QuestionViewDialog({
   onHistory,
   onEdit,
   onReuse,
+  actions,
 }: {
   question: Question | null
   onClose: () => void
-  onHistory: (q: Question) => void
-  onEdit: (q: Question) => void
+  onHistory?: (q: Question) => void
+  onEdit?: (q: Question) => void
   onReuse?: (q: Question) => void
+  /** Replaces the default footer (History / Reuse / Edit), e.g. Choose in the library picker. */
+  actions?: (q: Question) => ReactNode
 }) {
   return (
     <Modal open={!!q} onClose={onClose} maxWidth={520} maxHeight={720}>
@@ -56,31 +60,37 @@ export function QuestionViewDialog({
           </div>
 
           <div className="flex flex-wrap justify-end gap-2 border-t border-line px-[22px] py-3.5">
-            <button
-              type="button"
-              onClick={() => onHistory(q)}
-              className={`${footerButton} border border-line-strong bg-card hover:bg-page`}
-            >
-              History · {q.usage_count}
-            </button>
-            {q.status === 'published' ? (
-              <button
-                type="button"
-                onClick={() => onReuse?.(q)}
-                disabled={!onReuse}
-                title={onReuse ? undefined : 'Coming soon'}
-                className={`${footerButton} bg-brand text-white hover:bg-brand-hover disabled:bg-line-strong disabled:text-subtle`}
-              >
-                Reuse
-              </button>
+            {actions ? (
+              actions(q)
             ) : (
-              <button
-                type="button"
-                onClick={() => onEdit(q)}
-                className={`${footerButton} border border-line-strong bg-card hover:bg-page`}
-              >
-                Edit
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => onHistory?.(q)}
+                  className={`${footerButton} border border-line-strong bg-card hover:bg-page`}
+                >
+                  History · {q.usage_count}
+                </button>
+                {q.status === 'published' ? (
+                  <button
+                    type="button"
+                    onClick={() => onReuse?.(q)}
+                    disabled={!onReuse}
+                    title={onReuse ? undefined : 'Coming soon'}
+                    className={`${footerButton} bg-brand text-white hover:bg-brand-hover disabled:bg-line-strong disabled:text-subtle`}
+                  >
+                    Reuse
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onEdit?.(q)}
+                    className={`${footerButton} border border-line-strong bg-card hover:bg-page`}
+                  >
+                    Edit
+                  </button>
+                )}
+              </>
             )}
           </div>
         </>
