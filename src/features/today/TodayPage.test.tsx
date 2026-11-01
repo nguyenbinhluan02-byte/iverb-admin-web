@@ -83,6 +83,8 @@ beforeEach(() => {
     reports: { count: 0, top_reason: null },
     reported_replies_count: 0,
     moderation_status: 'visible',
+    moderation_reason: null,
+    auto_hidden_replies_count: 0,
     created_at: new Date().toISOString(),
   }
   reply = {
@@ -90,6 +92,7 @@ beforeEach(() => {
     user: { name: 'Chi Vo', avatar_url: null },
     text: 'Same here, went is the past.',
     moderation_status: 'visible',
+    moderation_reason: null,
     reports: { count: 0, top_reason: null },
     created_at: new Date().toISOString(),
   }
@@ -99,6 +102,7 @@ beforeEach(() => {
     stats: { answers_count: 1284, correct_count: 796, option_votes: { a: 796, b: 488 } },
     explanations_count: 1,
     reported_count: 3,
+    auto_hidden_count: 2,
   }
 })
 
@@ -189,6 +193,43 @@ describe('TodayPage', () => {
     await user.click(within(box).getByRole('button', { name: 'Dismiss' }))
     expect(dismiss).toHaveBeenCalledWith({ type: 'reply', id: 21 })
     expect(screen.queryByText('Hidden')).not.toBeInTheDocument()
+  })
+
+  it('switches to the auto-hidden filter', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(screen.getByRole('button', { name: 'Auto-hidden · 2' }))
+    expect(explanationsFilter).toHaveBeenLastCalledWith(7, 'auto_hidden')
+  })
+
+  it('shows an explanation hidden by the system and approves it', async () => {
+    explanation = {
+      ...explanation,
+      moderation_status: 'hidden',
+      moderation_reason: 'link',
+      auto_hidden_replies_count: 1,
+    }
+    const user = userEvent.setup()
+    renderPage()
+    const box = screen.getByText('Hidden by the system · Link or contact info').parentElement!
+    expect(screen.getByText('1 auto-hidden reply')).toBeInTheDocument()
+    await user.click(within(box).getByRole('button', { name: 'Approve' }))
+    expect(dismiss).toHaveBeenCalledWith({ type: 'answer', id: 11 })
+
+    await user.click(within(box).getByRole('button', { name: 'Delete' }))
+    const dialog = screen.getByRole('dialog')
+    await user.click(within(dialog).getByRole('button', { name: 'Delete' }))
+    expect(remove).toHaveBeenCalledWith(11)
+  })
+
+  it('shows a reply hidden by the AI check and approves it', async () => {
+    reply = { ...reply, moderation_status: 'hidden', moderation_reason: 'ai:harassment' }
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(screen.getByRole('button', { name: 'View 2 replies' }))
+    const box = screen.getByText('Hidden by the system · AI: harassment').parentElement!
+    await user.click(within(box).getByRole('button', { name: 'Approve' }))
+    expect(dismiss).toHaveBeenCalledWith({ type: 'reply', id: 21 })
   })
 
   it('no question today', () => {

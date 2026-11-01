@@ -72,3 +72,21 @@ export function reportLabel({ count, top_reason }: Reports): string {
   const label = `Reported ${count} ${count > 1 ? 'times' : 'time'}`
   return top_reason ? `${label} · ${REPORT_REASONS[top_reason]}` : label
 }
+
+/** Hidden by automatic moderation and not reviewed yet (TASK-020). */
+export const isAutoHidden = (post: {
+  moderation_status: string
+  moderation_reason: string | null
+}) => post.moderation_status === 'hidden' && !!post.moderation_reason
+
+/** api moderation_reason: 'link' | 'profanity' | 'ai:<category>,...'. */
+export function moderationReasonLabel(reason: string | null): string {
+  if (!reason) return 'Hidden'
+  if (reason === 'link') return 'Link or contact info'
+  if (reason === 'profanity') return 'Bad language'
+  if (reason.startsWith('ai:')) {
+    const categories = reason.slice(3).split(',').filter(Boolean)
+    return `AI: ${categories.join(', ').replaceAll('/', ' / ') || 'flagged'}`
+  }
+  return reason
+}
