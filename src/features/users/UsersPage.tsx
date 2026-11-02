@@ -11,6 +11,7 @@ import {
   Gift,
   Globe,
   History,
+  Hourglass,
   KeyRound,
   Layers,
   Mail,
@@ -25,7 +26,7 @@ import { TONES } from '@/components/badgeStyles'
 import { FilterDropdown, type FilterOption } from '@/components/FilterDropdown'
 import { PageHeader } from '@/components/PageHeader'
 import { Pagination } from '@/components/Pagination'
-import { GREEN_TINT, ORANGE_TINT } from '@/features/library/filterOptions'
+import { BLUE_TINT, GREEN_TINT, ORANGE_TINT } from '@/features/library/filterOptions'
 import { todayUTC } from '@/lib/dates'
 import { errorMessage } from '@/lib/errors'
 import { pageCount } from '@/lib/pagination'
@@ -54,10 +55,11 @@ import {
   planName,
   planSubline,
   statusNote,
+  trialDate,
 } from './usersModel'
 
 const EMPTY_COUNTS: UserCounts = {
-  status: { all: 0, active: 0, expired: 0, free: 0 },
+  status: { all: 0, active: 0, trial: 0, expired: 0, free: 0 },
   plan: { all: 0, premium: 0, gift: 0, none: 0 },
   provider: { all: 0, google: 0, apple: 0, email: 0 },
 }
@@ -131,6 +133,13 @@ export function UsersPage() {
       icon: CircleCheck,
       count: counts.status.active,
       ...GREEN_TINT,
+    },
+    {
+      value: 'trial',
+      label: 'Trial',
+      icon: Hourglass,
+      count: counts.status.trial,
+      ...BLUE_TINT,
     },
     {
       value: 'expired',
@@ -290,6 +299,7 @@ function DetailPanel({ user: u, today }: { user: AdminUser; today: string }) {
   const detail = useUserDetail(u.id)
   const stats = detail.data?.id === u.id ? detail.data.stats : undefined
   const date = planDate(u)
+  const trial = trialDate(u)
   const value = (n: number | null | undefined, suffix = '') => (n == null ? '—' : `${n}${suffix}`)
 
   const account: [string, string][] = [
@@ -297,6 +307,7 @@ function DetailPanel({ user: u, today }: { user: AdminUser; today: string }) {
     ['Sign-in', PROVIDER_LABELS[u.provider]],
     ['Plan', planName(u)],
     ...(date ? [[date.label, date.value] as [string, string]] : []),
+    ...(trial ? [[trial.label, trial.value] as [string, string]] : []),
     ['Joined', formatDay(u.joined_at)],
     ['Last active', lastActiveLabel(u.last_active_at, today)],
   ]

@@ -13,6 +13,7 @@ export const DEFAULT_USER_FILTERS: UserFilters = {
 
 export const STATUS_PILL: Record<UserStatus, { label: string; tone: Tone }> = {
   active: { label: 'Active', tone: 'green' },
+  trial: { label: 'Trial', tone: 'blue' },
   expired: { label: 'Expired', tone: 'pending' },
   free: { label: 'Free', tone: 'grey' },
 }
@@ -74,15 +75,36 @@ export function planDate(
   return { label: u.plan === 'yearly' ? 'Renews' : 'Ends', value: day }
 }
 
+/** Trial date row: "Trial ends" while running, "Trial ended" after; null = none. */
+export function trialDate(
+  u: Pick<AdminUser, 'status' | 'trial_expires_at'>,
+): { label: string; value: string } | null {
+  if (!u.trial_expires_at) return null
+  const value = formatDay(u.trial_expires_at)
+  return { label: u.status === 'trial' ? 'Trial ends' : 'Trial ended', value }
+}
+
 /** Sub-line under the plan name in the table. */
-export function planSubline(u: Pick<AdminUser, 'status' | 'plan' | 'plan_expires_at'>): string {
+export function planSubline(
+  u: Pick<AdminUser, 'status' | 'plan' | 'plan_expires_at' | 'trial_expires_at'>,
+): string {
+  if (u.status === 'trial') {
+    const t = trialDate(u)
+    return t ? `${t.label} ${t.value}` : ''
+  }
   if (!u.plan) return 'Never premium'
   const d = planDate(u)
   return d ? `${d.label} ${d.value}` : ''
 }
 
-export function statusNote(u: Pick<AdminUser, 'status' | 'plan_expires_at'>): string {
+export function statusNote(
+  u: Pick<AdminUser, 'status' | 'plan_expires_at' | 'trial_expires_at'>,
+): string {
   if (u.status === 'active') return 'Can answer daily questions and post in community.'
+  if (u.status === 'trial') {
+    const when = u.trial_expires_at ? ` until ${formatDay(u.trial_expires_at)}` : ''
+    return `Free answer trial${when}. Can answer and reply, still sees ads.`
+  }
   if (u.status === 'expired') {
     const when = u.plan_expires_at ? ` ${formatDay(u.plan_expires_at)}` : ''
     return `Plan ended${when}. Can read but not answer until renewed.`
