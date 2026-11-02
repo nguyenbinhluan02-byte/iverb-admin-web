@@ -17,6 +17,7 @@ const users: AdminUser[] = [
     status: 'active',
     plan: 'yearly',
     plan_expires_at: '2027-03-05T00:00:00+00:00',
+    trial_expires_at: null,
     joined_at: '2026-10-03T00:00:00+00:00',
     last_active_at: now,
   },
@@ -30,8 +31,23 @@ const users: AdminUser[] = [
     status: 'expired',
     plan: 'gift',
     plan_expires_at: '2026-10-01T00:00:00+00:00',
+    trial_expires_at: '2025-02-09T00:00:00+00:00',
     joined_at: '2025-01-10T00:00:00+00:00',
     last_active_at: null,
+  },
+  {
+    id: 'u-3',
+    name: 'Bình',
+    email: 'binh@test.dev',
+    avatar_url: null,
+    role: 'user',
+    provider: 'google',
+    status: 'trial',
+    plan: null,
+    plan_expires_at: null,
+    trial_expires_at: '2026-12-02T00:00:00+00:00',
+    joined_at: '2026-11-02T00:00:00+00:00',
+    last_active_at: now,
   },
 ]
 
@@ -49,7 +65,7 @@ vi.mock('@/services/users', async (orig) => ({
         page,
         page_size: 12,
         counts: {
-          status: { all: 30, active: 10, expired: 5, free: 15 },
+          status: { all: 30, active: 10, trial: 4, expired: 5, free: 11 },
           plan: { all: 30, premium: 8, gift: 7, none: 15 },
           provider: { all: 30, google: 25, apple: 4, email: 1 },
         },
@@ -114,6 +130,24 @@ describe('UsersPage', () => {
     const panel = screen.getByRole('complementary', { name: 'User details' })
     expect(within(panel).getByText(/Plan ended Oct 1, 2026/)).toBeInTheDocument()
     expect(details).toHaveBeenLastCalledWith('u-2')
+  })
+
+  it('shows the free answer trial', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    expect(screen.getByText('Trial ends Dec 2, 2026')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Bình/ }))
+    const panel = screen.getByRole('complementary', { name: 'User details' })
+    expect(within(panel).getByText('Trial')).toBeInTheDocument()
+    expect(within(panel).getByText(/Free answer trial until Dec 2, 2026/)).toBeInTheDocument()
+    expect(within(panel).getByText('Trial ends')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Anna/ }))
+    expect(within(panel).getByText('Trial ended')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Status/ }))
+    await user.click(screen.getByRole('button', { name: /^Trial/ }))
+    expect(requests).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'trial' }), 1)
   })
 
   it('filters reset to page 1', async () => {

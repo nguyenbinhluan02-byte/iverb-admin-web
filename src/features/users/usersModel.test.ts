@@ -1,4 +1,4 @@
-import { lastActiveLabel, monthLabel, planDate, planSubline, statusNote } from './usersModel'
+import { lastActiveLabel, monthLabel, planDate, planSubline, statusNote, trialDate } from './usersModel'
 
 describe('usersModel', () => {
   it('labels last active in UTC days', () => {
@@ -10,27 +10,40 @@ describe('usersModel', () => {
 
   it('describes the plan date by status and plan', () => {
     const end = '2027-03-05T00:00:00+00:00'
-    expect(planSubline({ status: 'active', plan: 'yearly', plan_expires_at: end })).toBe(
+    expect(planSubline({ status: 'active', plan: 'yearly', plan_expires_at: end, trial_expires_at: null })).toBe(
       'Renews Mar 5, 2027',
     )
-    expect(planSubline({ status: 'active', plan: 'gift', plan_expires_at: end })).toBe(
+    expect(planSubline({ status: 'active', plan: 'gift', plan_expires_at: end, trial_expires_at: null })).toBe(
       'Ends Mar 5, 2027',
     )
-    expect(planSubline({ status: 'expired', plan: 'gift', plan_expires_at: end })).toBe(
+    expect(planSubline({ status: 'expired', plan: 'gift', plan_expires_at: end, trial_expires_at: null })).toBe(
       'Ended Mar 5, 2027',
     )
     expect(planDate({ status: 'active', plan: 'lifetime', plan_expires_at: null })).toEqual({
       label: 'Ends',
       value: 'Never',
     })
-    expect(planSubline({ status: 'free', plan: null, plan_expires_at: null })).toBe('Never premium')
+    expect(planSubline({ status: 'free', plan: null, plan_expires_at: null, trial_expires_at: null })).toBe('Never premium')
   })
 
   it('explains what each status can do', () => {
-    expect(statusNote({ status: 'expired', plan_expires_at: '2026-10-01T00:00:00Z' })).toBe(
+    expect(statusNote({ status: 'expired', plan_expires_at: '2026-10-01T00:00:00Z', trial_expires_at: null })).toBe(
       'Plan ended Oct 1, 2026. Can read but not answer until renewed.',
     )
-    expect(statusNote({ status: 'free', plan_expires_at: null })).toMatch(/never had premium/)
+    expect(statusNote({ status: 'free', plan_expires_at: null, trial_expires_at: null })).toMatch(/never had premium/)
+  })
+
+  it('describes the free answer trial', () => {
+    const trial = { status: 'trial' as const, trial_expires_at: '2026-12-02T00:00:00Z' }
+    expect(planSubline({ ...trial, plan: null, plan_expires_at: null })).toBe('Trial ends Dec 2, 2026')
+    expect(statusNote({ ...trial, plan_expires_at: null })).toBe(
+      'Free answer trial until Dec 2, 2026. Can answer and reply, still sees ads.',
+    )
+    expect(trialDate({ status: 'free', trial_expires_at: '2026-10-01T00:00:00Z' })).toEqual({
+      label: 'Trial ended',
+      value: 'Oct 1, 2026',
+    })
+    expect(trialDate({ status: 'free', trial_expires_at: null })).toBeNull()
   })
 
   it('names months', () => {

@@ -3,7 +3,8 @@ import { supabase } from '@/lib/supabase'
 
 // api.admin_list_users / api.admin_get_user (iverb-supabase TASK-039, admin-api.md → Users).
 
-export type UserStatus = 'active' | 'expired' | 'free'
+/** trial: no premium in use, free answer trial not over (iverb-supabase TASK-042). */
+export type UserStatus = 'active' | 'trial' | 'expired' | 'free'
 export type UserPlan = 'yearly' | 'lifetime' | 'gift' | 'manual'
 export type Provider = 'google' | 'apple' | 'email'
 
@@ -24,6 +25,8 @@ export interface AdminUser {
   plan: UserPlan | null
   /** Active: when it ends (null = lifetime). Expired: when it ended. */
   plan_expires_at: string | null
+  /** End of the free answer trial, also when over; null = none. */
+  trial_expires_at: string | null
   joined_at: string
   last_active_at: string | null
 }
