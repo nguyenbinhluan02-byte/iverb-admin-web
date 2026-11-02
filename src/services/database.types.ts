@@ -142,9 +142,14 @@ export type Database = {
         Args: { p_body: string; p_title: string; p_user: string }
         Returns: number
       }
+      mark_answer_trial_seen: { Args: never; Returns: Json }
       mark_legacy_gift_seen: { Args: never; Returns: Json }
       moderation_target: {
         Args: { p_id: number; p_target: string }
+        Returns: Json
+      }
+      register_push_token: {
+        Args: { p_app_version?: string; p_platform: string; p_token: string }
         Returns: Json
       }
       report_content: {
@@ -169,6 +174,7 @@ export type Database = {
         Returns: Json
       }
       toggle_like: { Args: { p_answer_id: number }; Returns: Json }
+      unregister_push_token: { Args: { p_token: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never

@@ -7,6 +7,7 @@ import type { SourceFilter, TypeFilter } from './filter'
 
 // Option icon tints from the design (ICC / ICB).
 export const GREEN_TINT = { iconColor: 'var(--color-green-text)', iconBg: 'rgba(31,169,113,.12)' }
+export const BLUE_TINT = { iconColor: 'var(--color-blue-text)', iconBg: 'rgba(91,108,240,.12)' }
 export const ORANGE_TINT = { iconColor: 'var(--color-brand-deep)', iconBg: 'rgba(242,113,28,.12)' }
 const TYPE_TINT = { iconColor: 'var(--color-brand-deep)', iconBg: 'rgba(242,113,28,.1)' }
 
