@@ -42,10 +42,21 @@ The screens **Today, Library, Submissions, Users and Add/Edit question** are the
 | Draft | anything else | bg `#FFF4EC`, text `#B4500F` |
 
 - Action: Empty → "Plan week", Ended → "View", otherwise → "Edit".
+- **Move button** (icon ⇅, tooltip "Move to another week") left of the action button, only on future weeks that aren't Empty. The last grid column is now 150px. Opens the Move dialog (§3.1).
+
+### 3.1 Move lesson to another week
+Opened from the Weeks list or from the editor header ("Move to week…").
+- Title "Move lesson to another week". Sub: "{type} · {title} · now {range}. The lesson, its 7 daily questions, translations and pronunciation move together."
+- Lists every **future** week except the current one (range, "{type} · {title}" or "No lesson yet", status badge). Pick one (radio).
+- Target Empty → button **"Move lesson"**. Target has a lesson → orange notice "{range} already has "{title}". The two weeks will swap…", button **"Swap weeks"**. No target → disabled "Choose a week".
+- Footer note: "Live and ended weeks can't be moved." They are neither source nor target (they have user answers/stats).
+- **What moves**: lesson type, title, cards/words, translations (all locales + review status), pronunciation/images, and each day's question by weekday position (Mon→Mon…). **What stays** with the week: date range, day names/dates, answer stats.
+- Backend: one transaction `admin-move-lesson({ from_week_id, to_week_id })`; swap if the target isn't empty. No re-translation needed. Recompute both weeks' status.
+- After: toast "Moved to {range}" / "Swapped {range A} and {range B}". If done from the editor, the editor follows the lesson to its new week.
 
 ## 4. Week editor
 
-**Header**: breadcrumb "Weeks", H1 = range, status badge, 2 checks ("Lesson ready/incomplete", "q/7 questions"; green if OK, orange if not), **"Save & translate"** button.
+**Header**: breadcrumb "Weeks", H1 = range, status badge, 2 checks ("Lesson ready/incomplete", "q/7 questions"; green if OK, orange if not), **"Move to week…"** (future, non-Empty weeks only; opens §3.1), **"Save & translate"** button.
 **Notice**: Live → "This week is live. Changes reach users right away." · Ended → "This week has ended. Users can still review it in the Last week tab."
 **2 tabs**: "Lesson · {n cards/words}" and "Daily questions · {q}/7".
 

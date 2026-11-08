@@ -1,4 +1,4 @@
-import { Check, ChevronLeft, Loader2, Plus } from 'lucide-react'
+import { ArrowUpDown, Check, ChevronLeft, Loader2, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
@@ -19,6 +19,7 @@ import {
   useMarkLocaleReviewed,
   type TranslationItem,
 } from '@/services/translations'
+import { MoveWeekDialog } from '@/features/weeks/MoveWeekDialog'
 import { CardEditor } from './CardEditor'
 import { DailyQuestionsTab } from './DailyQuestionsTab'
 import { LanguagesCard } from './LanguagesCard'
@@ -66,6 +67,7 @@ export function WeekEditorPage() {
       initial={fromLesson(data.lesson)}
       lesson={data.lesson}
       status={data.week?.status ?? 'empty'}
+      upcoming={data.week?.week_status === 'upcoming'}
       questionsCount={data.week?.question_days.filter(Boolean).length ?? 0}
     />
   )
@@ -76,12 +78,15 @@ function Editor({
   initial,
   lesson,
   status,
+  upcoming,
   questionsCount,
 }: {
   weekStart: string
   initial: LessonForm
   lesson: LessonDetail | null
   status: keyof typeof WEEK_STATUS
+  /** After the live week: can move to another week (TASK-028). */
+  upcoming: boolean
   questionsCount: number
 }) {
   const navigate = useNavigate()
@@ -99,6 +104,7 @@ function Editor({
   const { data: trSummary } = useLessonTranslations(lesson?.id ?? null)
   const { data: trItems } = useLessonTranslation(lesson?.id ?? null, locale)
   const markAll = useMarkLocaleReviewed()
+  const [moving, setMoving] = useState(false)
 
   const cards = cardsOf(form)
   const card = cards[Math.min(current, cards.length - 1)] ?? null
@@ -233,6 +239,17 @@ function Editor({
               </span>
             ))}
           </span>
+          {upcoming && status !== 'empty' && (
+            <button
+              type="button"
+              disabled={!!busy}
+              onClick={() => setMoving(true)}
+              className="flex items-center gap-1.5 rounded-[10px] border border-line-strong bg-card px-3.5 py-2.5 text-sm font-bold whitespace-nowrap"
+            >
+              <ArrowUpDown size={15} strokeWidth={2.2} />
+              Move to week…
+            </button>
+          )}
           {!readOnly && (
             <button
               type="button"
@@ -485,6 +502,12 @@ function Editor({
           </div>
         </div>
       )}
+      <MoveWeekDialog
+        weekStart={moving ? weekStart : null}
+        lesson={lesson}
+        onClose={() => setMoving(false)}
+        onMoved={(to) => navigate(`/weeks/${to}${tab === 'questions' ? '?tab=questions' : ''}`)}
+      />
       {lesson == null && !readOnly && (
         <span className="text-xs text-subtle">Nothing is saved for this week yet.</span>
       )}

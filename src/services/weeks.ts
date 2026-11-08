@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 
 // Weekly lessons (backend iverb-supabase docs/solutions/weekly-lesson.md §5 Admin).
@@ -114,5 +114,18 @@ export function useWeeksNeedingWork() {
       if (error) throw error
       return data as unknown as WeeksNeedingWork
     },
+  })
+}
+
+/** Move a lesson (+ its 7 questions) to another upcoming week; swaps if taken (TASK-055). */
+export function useMoveWeek() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ from, to }: { from: string; to: string }) => {
+      const { data, error } = await supabase.rpc('admin_move_week', { p_from: from, p_to: to })
+      if (error) throw error
+      return data as unknown as { from: string; to: string; swapped: boolean }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: weekKeys.all }),
   })
 }

@@ -1,22 +1,24 @@
-import { Plus } from 'lucide-react'
+import { ArrowUpDown, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { plusDays, todayUTC } from '@/lib/dates'
 import { contentLabel, LESSON_KIND, relativeWeek, weekAction, weekRange, weekStartOf } from '@/lib/weeks'
-import { useLessonWeeks, useWeeksNeedingWork } from '@/services/weeks'
+import { useLessonWeeks, useWeeksNeedingWork, type WeekRow } from '@/services/weeks'
+import { MoveWeekDialog } from './MoveWeekDialog'
 import { WeekStatusBadge } from './WeekStatusBadge'
 
 // Design: Weekly Lessons.dc.html "WEEKS" (changes since v1 §3). Two weeks back,
 // then every week up to the last one planned (at least next week). "Add week"
 // shows one more empty week after the last row; it is saved when planned.
 
-const COLS = 'grid-cols-[130px_minmax(200px,1fr)_80px_140px_96px_96px]'
+const COLS = 'grid-cols-[130px_minmax(200px,1fr)_80px_140px_96px_150px]'
 
 export function WeeksPage() {
   const navigate = useNavigate()
   const current = weekStartOf(todayUTC())
   const { data: needing } = useWeeksNeedingWork()
   const [extra, setExtra] = useState(0)
+  const [moving, setMoving] = useState<WeekRow | null>(null)
 
   const lastPlanned = needing?.last_planned_week_start
   const base = lastPlanned && lastPlanned > plusDays(current, 7) ? lastPlanned : plusDays(current, 7)
@@ -93,16 +95,29 @@ export function WeeksPage() {
               <span>
                 <WeekStatusBadge status={w.status} />
               </span>
-              <button
-                onClick={() => navigate(`/weeks/${w.week_start}`)}
-                className="justify-self-end rounded-[9px] border border-line-strong bg-card px-3.5 py-2 text-[13px] font-bold whitespace-nowrap"
-              >
-                {weekAction(w.status)}
-              </button>
+              <span className="flex items-center gap-2 justify-self-end">
+                {w.week_status === 'upcoming' && w.status !== 'empty' && (
+                  <button
+                    title="Move to another week"
+                    aria-label="Move to another week"
+                    onClick={() => setMoving(w)}
+                    className="flex size-9 items-center justify-center rounded-[9px] border border-line-strong bg-card text-muted hover:text-ink"
+                  >
+                    <ArrowUpDown size={16} strokeWidth={2.2} />
+                  </button>
+                )}
+                <button
+                  onClick={() => navigate(`/weeks/${w.week_start}`)}
+                  className="rounded-[9px] border border-line-strong bg-card px-3.5 py-2 text-[13px] font-bold whitespace-nowrap"
+                >
+                  {weekAction(w.status)}
+                </button>
+              </span>
             </div>
           )
         })}
       </div>
+      <MoveWeekDialog weekStart={moving?.week_start ?? null} lesson={moving?.lesson ?? null} onClose={() => setMoving(null)} />
     </div>
   )
 }
