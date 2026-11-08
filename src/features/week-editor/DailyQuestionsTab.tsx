@@ -16,6 +16,8 @@ import type { LessonDetail } from '@/services/lessons'
 import { useSetQuestionCard } from '@/services/lessons'
 import { useQuestions, useSaveQuestion, type Question } from '@/services/questions'
 import { weekKeys } from '@/services/weeks'
+import { fromQuestion } from '@/features/question-form/formModel'
+import { DailyPhonePreview } from './DailyPhonePreview'
 import { FieldLabel } from './ui'
 
 // Week editor · Daily questions (design changes since v1 §4.2): the 7 days on
@@ -100,6 +102,7 @@ export function DailyQuestionsTab({
           questionId={mode.kind === 'edit' ? mode.id : null}
           date={selected}
           onDone={onFormDone}
+          preview={(values) => <DailyPhonePreview values={values} date={selected} />}
         />
       )
     }
@@ -195,8 +198,10 @@ export function DailyQuestionsTab({
   }
 
   return (
-    <div className="flex flex-wrap items-start gap-[18px]">
-      <div className="flex flex-[0_0_260px] flex-col gap-1 rounded-[18px] border border-line bg-card p-3">
+    // One row from 1180px (sidebar 228 + padding): the day list and the
+    // question column shrink so the 280px phone stays on the right.
+    <div className="flex flex-wrap items-start gap-[18px] min-[1180px]:flex-nowrap">
+      <div className="flex flex-[0_0_340px] flex-col gap-1 rounded-[18px] border border-line bg-card p-3 min-[1180px]:min-w-[220px] min-[1180px]:flex-[0_1_340px]">
         {isPending && <span className="p-2 text-sm text-muted">Loading…</span>}
         {days.map((d) => {
           const q = byDay.get(d)
@@ -227,7 +232,15 @@ export function DailyQuestionsTab({
         })}
       </div>
 
-      <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-3.5">{panel()}</div>
+      {/* Form: its card and the preview become the 2nd and 3rd columns. */}
+      {mode.kind !== 'view' ? (
+        panel()
+      ) : (
+        <>
+          <div className="flex min-w-0 flex-[1_1_440px] flex-col gap-3.5">{panel()}</div>
+          {question && <DailyPhonePreview values={fromQuestion(question, selected)} date={selected} />}
+        </>
+      )}
 
       <PickFromLibraryDialog
         date={picking}
