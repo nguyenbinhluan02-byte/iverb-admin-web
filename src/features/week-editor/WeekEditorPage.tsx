@@ -385,7 +385,7 @@ function Editor({
                 <span className="text-xs font-extrabold tracking-[.05em] text-subtle uppercase">
                   {form.type === 'grammar' ? 'Cards' : 'Words'}
                 </span>
-                <span className="text-xs text-subtle">Recommended 5–8</span>
+                <span className="text-xs text-subtle">{form.type === 'grammar' ? 'Recommended 5–8' : 'Recommended 10–15'}</span>
               </div>
               {cards.map((c, i) => {
                 const on = card?.key === c.key

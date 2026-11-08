@@ -35,3 +35,4 @@ Design `design/Quiz Admin v3 - changes since v1.md` §4 + §4.1 (`Weekly Lessons
 - Từ lưu trước TASK-054 (chưa có `audio_meta`) coi như audio tạo từ chính từ đó (Ready).
 - Play khi chưa Ready gọi TTS ngay và giữ file đó cho lần lưu.
 - Chưa chạy thử trên trình duyệt với dữ liệu Dev.
+- 2026-11-08: gợi ý số thẻ theo loại bài: grammar "Recommended 5–8", vocabulary "Recommended 10–15" (user: 8 từ quá ít cho 1 chủ đề; batch 01 dùng 15 từ).
