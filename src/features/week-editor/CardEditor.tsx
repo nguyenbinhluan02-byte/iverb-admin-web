@@ -257,6 +257,7 @@ function VocabFields({
           placeholder="Drop or click to add"
           disabled={readOnly}
           className="aspect-[16/10] w-60 max-w-full"
+          minSize={{ width: 800, height: 500 }}
         />
         <span className="text-xs text-subtle">Shown at the top of the flashcard.</span>
       </div>

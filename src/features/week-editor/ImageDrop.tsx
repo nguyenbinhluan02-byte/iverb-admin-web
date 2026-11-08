@@ -1,9 +1,13 @@
 import { ImagePlus, Loader2, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { compressImage } from '@/lib/image'
 import { uploadLessonMedia } from '@/services/lessons'
 
 // Drop or click to add an image (cover / word image) → lesson-media bucket.
+// Resized to 1600 px and re-encoded as WebP before upload (TASK-029).
+
+const TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 export function ImageDrop({
   url,
@@ -11,12 +15,15 @@ export function ImageDrop({
   placeholder,
   disabled,
   className,
+  minSize,
 }: {
   url: string | null
   onChange: (url: string | null) => void
   placeholder: string
   disabled?: boolean
   className: string
+  /** Warn (still upload) when the picture is smaller. */
+  minSize?: { width: number; height: number }
 }) {
   const input = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
@@ -24,13 +31,19 @@ export function ImageDrop({
 
   const upload = async (file: File | undefined) => {
     if (!file) return
-    if (!file.type.startsWith('image/')) {
+    if (!TYPES.includes(file.type)) {
       toast.error('Choose a JPG, PNG or WebP image.')
       return
     }
     setBusy(true)
     try {
-      onChange((await uploadLessonMedia(file)).url)
+      const small = await compressImage(file)
+      if (minSize && (small.width < minSize.width || small.height < minSize.height)) {
+        toast.warning(
+          `This image is ${small.width}×${small.height}. Use at least ${minSize.width}×${minSize.height} so it stays sharp.`,
+        )
+      }
+      onChange((await uploadLessonMedia(small.file)).url)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e))
     } finally {
