@@ -29,3 +29,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-023](./TASK-023-users-trial.md) | Users: trạng thái Trial (lọc, pill, hạn dùng thử) | done |
 | [TASK-024](./TASK-024-weeks-pages.md) | 3.1.0 sidebar v3, This week (dashboard), Weeks (danh sách tuần), bỏ Publish date ở form câu hỏi | TASK-052, TASK-053 | done |
 | [TASK-025](./TASK-025-week-editor-lesson.md) | 3.1.0 week editor — tab Lesson: loại bài, thẻ grammar (8 block), thẻ vocab (ảnh, phát âm TTS / file), xem trước, Save & translate | TASK-052, TASK-054 | done |
+| [TASK-026](./TASK-026-week-editor-questions.md) | 3.1.0 week editor — tab Daily questions: 7 ngày, viết / chọn từ library / sửa / gỡ câu, Tests lesson card | TASK-053 | done |

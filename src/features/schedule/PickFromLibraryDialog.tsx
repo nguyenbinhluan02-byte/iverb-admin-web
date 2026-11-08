@@ -25,19 +25,22 @@ import { relativeDay } from './scheduleModel'
 // Design: "Choose from library" modal (Schedule → empty day → From library).
 export function PickFromLibraryDialog({
   date,
+  from = '/schedule',
   onClose,
 }: {
   date: string | null
+  /** Where "Edit first" returns (week editor: its Daily questions tab). */
+  from?: string
   onClose: () => void
 }) {
   return (
     <Modal open={!!date} onClose={onClose} maxWidth={640} maxHeight={720}>
-      {date && <Picker key={date} date={date} onClose={onClose} />}
+      {date && <Picker key={date} date={date} from={from} onClose={onClose} />}
     </Modal>
   )
 }
 
-function Picker({ date, onClose }: { date: string; onClose: () => void }) {
+function Picker({ date, from, onClose }: { date: string; from: string; onClose: () => void }) {
   const navigate = useNavigate()
   const schedule = useScheduleQuestion()
   const [filters, setFilters] = useState<PickFilters>(DEFAULT_PICK)
@@ -88,7 +91,7 @@ function Picker({ date, onClose }: { date: string; onClose: () => void }) {
   // Published → a new copy in the form; drafts / unscheduled → edit that question.
   const editFirst = () => {
     if (!selected) return
-    const state = { from: '/schedule' }
+    const state = { from }
     if (selected.status === 'published')
       navigate(`/questions/new?from=${selected.id}&date=${date}`, { state })
     else navigate(`/questions/${selected.id}/edit?date=${date}`, { state })

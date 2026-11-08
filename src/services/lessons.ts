@@ -200,3 +200,18 @@ export async function translateLesson(
   }
   return total
 }
+
+/** "Tests lesson card": the lesson card a question checks (null clears). */
+export function useSetQuestionCard() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ questionId, cardId }: { questionId: number; cardId: number | null }) => {
+      const { error } = await supabase.rpc('admin_set_question_card', {
+        p_question_id: questionId,
+        p_card_id: cardId as number,
+      })
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: weekKeys.all }),
+  })
+}

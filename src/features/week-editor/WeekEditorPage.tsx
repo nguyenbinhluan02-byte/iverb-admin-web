@@ -4,8 +4,15 @@ import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { errorMessage } from '@/lib/errors'
 import { WEEK_STATUS, weekRange } from '@/lib/weeks'
-import { speakWord, translateLesson, useSaveWeekLesson, useWeekLesson } from '@/services/lessons'
+import {
+  speakWord,
+  translateLesson,
+  useSaveWeekLesson,
+  useWeekLesson,
+  type LessonDetail,
+} from '@/services/lessons'
 import { CardEditor } from './CardEditor'
+import { DailyQuestionsTab } from './DailyQuestionsTab'
 import {
   cardsOf,
   fromLesson,
@@ -24,7 +31,7 @@ import { FieldLabel, inputCls } from './ui'
 
 // Week editor (design Weekly Lessons.dc.html "WEEK EDITOR", changes since v1
 // §4): header with checks + Save & translate, notice, Lesson / Daily questions
-// tabs. Languages (§5) and the Daily questions tab come in TASK-026 / TASK-027.
+// tabs. Daily questions: DailyQuestionsTab (TASK-026). Languages (§5): TASK-027.
 
 const TYPES = [
   { id: 'grammar', label: 'Grammar', desc: 'Cards built from blocks' },
@@ -45,7 +52,7 @@ export function WeekEditorPage() {
       key={`${weekStart}-${data.lesson?.id ?? 'new'}`}
       weekStart={weekStart}
       initial={fromLesson(data.lesson)}
-      lessonId={data.lesson?.id ?? null}
+      lesson={data.lesson}
       status={data.week?.status ?? 'empty'}
       questionsCount={data.week?.question_days.filter(Boolean).length ?? 0}
     />
@@ -55,13 +62,13 @@ export function WeekEditorPage() {
 function Editor({
   weekStart,
   initial,
-  lessonId,
+  lesson,
   status,
   questionsCount,
 }: {
   weekStart: string
   initial: LessonForm
-  lessonId: number | null
+  lesson: LessonDetail | null
   status: keyof typeof WEEK_STATUS
   questionsCount: number
 }) {
@@ -219,13 +226,7 @@ function Editor({
       </div>
 
       {tab === 'questions' ? (
-        <div className="rounded-[18px] border-[1.5px] border-dashed border-line-strong bg-card px-5 py-10 text-center text-sm text-muted">
-          Daily questions for this week are edited here in the next update (TASK-026). For now use{' '}
-          <button type="button" className="font-bold text-brand" onClick={() => navigate('/library')}>
-            Library
-          </button>
-          .
-        </div>
+        <DailyQuestionsTab weekStart={weekStart} lesson={lesson} readOnly={readOnly} />
       ) : (
         <div className="flex flex-col gap-[18px]">
           <div className="flex flex-wrap items-start gap-5 rounded-[18px] border border-line bg-card px-5 py-[18px]">
@@ -381,7 +382,7 @@ function Editor({
           </div>
         </div>
       )}
-      {lessonId == null && !readOnly && (
+      {lesson == null && !readOnly && (
         <span className="text-xs text-subtle">Nothing is saved for this week yet.</span>
       )}
     </div>

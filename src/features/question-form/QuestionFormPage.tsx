@@ -104,16 +104,49 @@ export function QuestionFormPage() {
   )
 }
 
+/** The same form inside the week editor's Daily questions tab (TASK-026). */
+export function EmbeddedQuestionForm({
+  questionId,
+  sourceId,
+  date,
+  onDone,
+}: {
+  questionId: number | null
+  /** Reuse a copy of this (published) question. */
+  sourceId?: number | null
+  date: string
+  onDone: (saved: Question | null) => void
+}) {
+  const { data: questions, isPending, isError, error } = useQuestions()
+  if (isPending) return <Notice>Loading…</Notice>
+  if (isError) return <Notice>{errorMessage(error)}</Notice>
+  const editing = questionId ? (questions.find((q) => q.id === questionId) ?? null) : null
+  const source = sourceId ? (questions.find((q) => q.id === sourceId) ?? null) : null
+  return (
+    <QuestionForm
+      key={`${questionId ?? 'new'}-${sourceId ?? ''}-${date}`}
+      questions={questions}
+      editing={editing}
+      source={source}
+      requestedDate={date}
+      embedded={{ onDone }}
+    />
+  )
+}
+
 function QuestionForm({
   questions,
   editing,
   source,
   requestedDate,
+  embedded,
 }: {
   questions: Question[]
   editing: Question | null
   source: Question | null
   requestedDate: string | null
+  /** Inside the week editor (TASK-026): no page header, done → back to the tab. */
+  embedded?: { onDone: (saved: Question | null) => void }
 }) {
   const navigate = useNavigate()
   const location = useLocation()
@@ -224,7 +257,8 @@ function QuestionForm({
       toast.success(
         `${publish ? (live ? 'Saved' : saved.date ? 'Scheduled' : 'Saved to library') : 'Draft saved'}${when}`,
       )
-      navigate(backTo)
+      if (embedded) embedded.onDone(saved)
+      else navigate(backTo)
     } catch (e) {
       toast.error(errorMessage(e))
     }
@@ -245,7 +279,7 @@ function QuestionForm({
 
   return (
     <div className="mx-auto flex max-w-[1180px] flex-col gap-5">
-      <PageHeader kicker={kicker} title={title} />
+      {!embedded && <PageHeader kicker={kicker} title={title} />}
 
       <div className="flex flex-wrap items-start gap-[22px]">
         <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-[26px] rounded-[18px] border border-line bg-card p-6">
@@ -490,7 +524,11 @@ function QuestionForm({
           </label>
 
           <div className="flex flex-wrap justify-end gap-2.5 border-t border-line pt-[18px]">
-            <Button variant="secondary" type="button" onClick={() => navigate(backTo)}>
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => (embedded ? embedded.onDone(null) : navigate(backTo))}
+            >
               Cancel
             </Button>
             {!live && (
