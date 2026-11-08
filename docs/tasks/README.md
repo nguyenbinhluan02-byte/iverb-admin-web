@@ -32,3 +32,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-026](./TASK-026-week-editor-questions.md) | 3.1.0 week editor — tab Daily questions: 7 ngày, viết / chọn từ library / sửa / gỡ câu, Tests lesson card | TASK-053 | done |
 | [TASK-027](./TASK-027-week-editor-languages.md) | 3.1.0 week editor — Languages: trạng thái 24 ngôn ngữ, re-translate, mark reviewed, màn duyệt / sửa bản dịch từng thẻ | TASK-050, TASK-053 | done |
 | [TASK-028](./TASK-028-move-week.md) | 3.1.0 chuyển bài sang tuần khác: nút ⇅ ở Weeks, "Move to week…" trong editor, dialog Move / Swap | TASK-055 | done |
+| [TASK-029](./TASK-029-compress-images.md) | 3.1.0 nén ảnh bài học trước khi upload (1600 px, WebP 0.8), cảnh báo ảnh từ vựng < 800×500 | — | done |
