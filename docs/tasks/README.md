@@ -27,3 +27,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-021](./TASK-021-pick-view-question.md) | Choose from library: nút View xem đủ câu hỏi trước khi chọn | — | done |
 | [TASK-022](./TASK-022-users-screen.md) | Users: danh sách tài khoản chỉ đọc (tìm, lọc, tháng tham gia, chi tiết + thống kê) | TASK-039 | done |
 | [TASK-023](./TASK-023-users-trial.md) | Users: trạng thái Trial (lọc, pill, hạn dùng thử) | done |
+| [TASK-024](./TASK-024-weeks-pages.md) | 3.1.0 sidebar v3, This week (dashboard), Weeks (danh sách tuần), bỏ Publish date ở form câu hỏi | TASK-052, TASK-053 | done |

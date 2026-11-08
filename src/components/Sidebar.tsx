@@ -1,6 +1,7 @@
 import {
   Bell,
   BookOpen,
+  BookOpenText,
   CalendarDays,
   CirclePlus,
   Inbox,
@@ -9,17 +10,18 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react'
+import { Fragment } from 'react'
 import { NavLink } from 'react-router'
 import { useAuth } from '@/auth/useAuth'
-import { emptyDays } from '@/features/schedule/scheduleModel'
-import { todayUTC } from '@/lib/dates'
-import { useQuestions } from '@/services/questions'
 import { useToday } from '@/services/today'
+import { useWeeksNeedingWork } from '@/services/weeks'
 import { Avatar } from './Avatar'
 
-const NAV: { to: string; label: string; icon: LucideIcon }[] = [
+// Design v3 §1: This week + Weeks after Today, then a divider.
+const NAV: { to: string; label: string; icon: LucideIcon; divider?: boolean }[] = [
   { to: '/today', label: 'Today', icon: Sun },
-  { to: '/schedule', label: 'Schedule', icon: CalendarDays },
+  { to: '/week', label: 'This week', icon: BookOpenText },
+  { to: '/weeks', label: 'Weeks', icon: CalendarDays, divider: true },
   { to: '/library', label: 'Library', icon: BookOpen },
   { to: '/questions/new', label: 'New question', icon: CirclePlus },
   { to: '/submissions', label: 'Submissions', icon: Inbox },
@@ -28,16 +30,16 @@ const NAV: { to: string; label: string; icon: LucideIcon }[] = [
 ]
 
 // Filled orange badges (needs attention); the rest are grey.
-const ORANGE_BADGES = new Set(['/today'])
+const ORANGE_BADGES = new Set(['/today', '/weeks'])
 
 export function Sidebar() {
   const { me, signOut } = useAuth()
-  const { data: questions } = useQuestions()
   const { data: today } = useToday()
-  // Design: Today = reported explanations (orange), Schedule = empty days in the next 14 (grey).
+  const { data: needing } = useWeeksNeedingWork()
+  // Design: Today = reported explanations, Weeks = upcoming weeks not ready (empty / draft).
   const badges: Record<string, number> = {
     '/today': today?.reported_count ?? 0,
-    '/schedule': questions ? emptyDays(questions, todayUTC()).length : 0,
+    '/weeks': needing?.count ?? 0,
   }
 
   return (
@@ -48,14 +50,14 @@ export function Sidebar() {
         </span>
         <span className="flex flex-col leading-[1.2]">
           <span className="text-[15px] font-extrabold">IVerbs Admin</span>
-          <span className="text-xs text-muted">English daily quiz</span>
+          <span className="text-xs text-muted">Weekly lessons</span>
         </span>
       </div>
 
       <nav className="mt-[30px] flex flex-col gap-1">
-        {NAV.map(({ to, label, icon: Icon }) => (
+        {NAV.map(({ to, label, icon: Icon, divider }) => (
+          <Fragment key={to}>
           <NavLink
-            key={to}
             to={to}
             end
             className={({ isActive }) =>
@@ -78,6 +80,8 @@ export function Sidebar() {
               </span>
             )}
           </NavLink>
+          {divider && <span className="mx-1 my-2 h-px bg-line" />}
+          </Fragment>
         ))}
       </nav>
 

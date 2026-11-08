@@ -20,6 +20,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_clear_week: { Args: { p_week_start: string }; Returns: Json }
+      admin_delete_lesson: { Args: { p_id: number }; Returns: Json }
       admin_delete_reply: { Args: { p_reply_id: number }; Returns: Json }
       admin_dismiss_reports: {
         Args: { p_target_id: number; p_target_type: string }
@@ -34,8 +36,21 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_get_lesson: { Args: { p_id: number }; Returns: Json }
       admin_get_today: { Args: never; Returns: Json }
       admin_get_user: { Args: { p_id: string }; Returns: Json }
+      admin_lesson_translation: {
+        Args: { p_lesson_id: number; p_locale: string }
+        Returns: Json
+      }
+      admin_lesson_translations: {
+        Args: { p_lesson_id: number }
+        Returns: Json
+      }
+      admin_lesson_weeks: {
+        Args: { p_from: string; p_to: string }
+        Returns: Json
+      }
       admin_list_explanations: {
         Args: { p_limit?: number; p_question_id: number }
         Returns: Json
@@ -55,10 +70,18 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_mark_locale_reviewed: {
+        Args: { p_lesson_id: number; p_locale: string }
+        Returns: Json
+      }
       admin_question_history: { Args: { p_question_id: number }; Returns: Json }
       admin_remove_explanation: { Args: { p_answer_id: number }; Returns: Json }
       admin_replies_page: {
         Args: { p_answer_id: number; p_cursor?: Json; p_limit?: number }
+        Returns: Json
+      }
+      admin_save_card_translation: {
+        Args: { p_card_id: number; p_content: Json; p_locale: string }
         Returns: Json
       }
       admin_save_question: {
@@ -73,6 +96,19 @@ export type Database = {
           p_publish: boolean
           p_type: string
         }
+        Returns: Json
+      }
+      admin_save_vocab_translation: {
+        Args: {
+          p_example?: string
+          p_locale: string
+          p_meaning: string
+          p_vocab_item_id: number
+        }
+        Returns: Json
+      }
+      admin_save_week_lesson: {
+        Args: { p_lesson: Json; p_week_start: string }
         Returns: Json
       }
       admin_schedule_question: {
@@ -93,6 +129,25 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_set_question_card: {
+        Args: { p_card_id: number; p_question_id: number }
+        Returns: Json
+      }
+      admin_set_question_lesson: {
+        Args: { p_lesson_id: number; p_question_id: number }
+        Returns: Json
+      }
+      admin_set_translation_status: {
+        Args: {
+          p_id: number
+          p_kind: string
+          p_locale: string
+          p_status: string
+        }
+        Returns: Json
+      }
+      admin_week_dashboard: { Args: { p_week_start?: string }; Returns: Json }
+      admin_weeks_needing_work: { Args: never; Returns: Json }
       apply_ai_moderation: {
         Args: {
           p_id: number
@@ -131,12 +186,15 @@ export type Database = {
         Returns: Json
       }
       get_app_config: { Args: never; Returns: Json }
+      get_apple_refresh_token: { Args: { p_user_id: string }; Returns: string }
       get_community_answers: {
         Args: { p_cursor?: Json; p_limit?: number; p_question_id: number }
         Returns: Json
       }
       get_daily_question: { Args: { p_day?: string }; Returns: Json }
+      get_day_question: { Args: { p_date: string }; Returns: Json }
       get_me: { Args: never; Returns: Json }
+      get_week: { Args: { p_locale?: string; p_which?: string }; Returns: Json }
       is_admin_user: { Args: { p_user: string }; Returns: boolean }
       log_admin_push: {
         Args: { p_body: string; p_title: string; p_user: string }
@@ -161,10 +219,27 @@ export type Database = {
         }
         Returns: Json
       }
+      save_apple_sign_in: {
+        Args: {
+          p_full_name?: string
+          p_refresh_token?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      save_lesson_progress: {
+        Args: {
+          p_card_ids: number[]
+          p_completed?: boolean
+          p_lesson_id: number
+        }
+        Returns: Json
+      }
       submit_answer: {
         Args: {
           p_explanation?: string
           p_question_id: number
+          p_require_lesson?: boolean
           p_response: Json
         }
         Returns: Json
@@ -174,6 +249,23 @@ export type Database = {
         Returns: Json
       }
       toggle_like: { Args: { p_answer_id: number }; Returns: Json }
+      translate_jobs: {
+        Args: { p_force?: boolean; p_lesson_id: number; p_locales?: string[] }
+        Returns: Json
+      }
+      translate_save_card: {
+        Args: { p_card_id: number; p_content: Json; p_locale: string }
+        Returns: Json
+      }
+      translate_save_word: {
+        Args: {
+          p_example: string
+          p_locale: string
+          p_meaning: string
+          p_vocab_item_id: number
+        }
+        Returns: Json
+      }
       unregister_push_token: { Args: { p_token: string }; Returns: Json }
     }
     Enums: {

@@ -11,14 +11,14 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { useAuth } from '@/auth/useAuth'
 import { Button } from '@/components/Button'
 import { PageHeader } from '@/components/PageHeader'
-import { nextDays, todayUTC } from '@/lib/dates'
+import { todayUTC } from '@/lib/dates'
 import { errorMessage } from '@/lib/errors'
 import { dayLabel, LETTERS, TYPE_LABELS } from '@/lib/question'
 import { generateSpeech, uploadAudio } from '@/services/audio'
@@ -70,7 +70,6 @@ const field =
 const label = 'text-[13px] font-extrabold'
 const labelNote = 'font-semibold text-muted'
 
-const DAYS_AHEAD = 14
 
 /**
  * Routes:
@@ -118,19 +117,11 @@ function QuestionForm({
 }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const backTo = (location.state as { from?: string } | null)?.from ?? '/schedule'
+  const backTo = (location.state as { from?: string } | null)?.from ?? '/library'
   const { me } = useAuth()
   const save = useSaveQuestion()
 
   const today = todayUTC()
-  const days = useMemo(() => nextDays(today, DAYS_AHEAD), [today])
-  // Day → question already there (other than the one being edited).
-  const taken = useMemo(() => {
-    const map = new Map<string, Question>()
-    for (const q of questions) if (q.date && q.id !== editing?.id) map.set(q.date, q)
-    return map
-  }, [questions, editing])
-
   const live = editing?.status === 'live'
   const locked = !!editing?.has_answers
 
@@ -140,8 +131,10 @@ function QuestionForm({
       return requestedDate && requestedDate > today && editing.status !== 'live'
         ? requestedDate
         : editing.date
+    // Design v3 §1.3: no publish date here; days are set in the week editor
+    // (which passes ?date=). Otherwise the question goes to the library.
     if (requestedDate && requestedDate > today) return requestedDate
-    return days.find((d) => !taken.has(d)) ?? days[0]
+    return null
   }
   const { register, control, setValue, getValues } = useForm<FormValues>({
     defaultValues: editing
@@ -172,9 +165,8 @@ function QuestionForm({
     [editing?.id, source?.id].filter((x): x is number => x != null),
   )
 
-  const publishable = canPublish(values) && !!values.date
+  const publishable = canPublish(values)
   const draftable = canSaveDraft(values) && !live
-  const takenBy = values.date && !live ? taken.get(values.date) : undefined
   const blankMissing =
     values.type === 'fill' && !!values.sentence.trim() && !values.sentence.includes(BLANK)
   const wordCount = words(values.sentence).length
@@ -229,7 +221,9 @@ function QuestionForm({
         publish,
       })
       const when = saved.date ? ` for ${dayLabel(saved.date)}` : ''
-      toast.success(`${publish ? (live ? 'Saved' : 'Scheduled') : 'Draft saved'}${when}`)
+      toast.success(
+        `${publish ? (live ? 'Saved' : saved.date ? 'Scheduled' : 'Saved to library') : 'Draft saved'}${when}`,
+      )
       navigate(backTo)
     } catch (e) {
       toast.error(errorMessage(e))
@@ -485,47 +479,6 @@ function QuestionForm({
             />
           </label>
 
-          <div className="flex flex-col gap-2.5">
-            <div className="flex items-baseline justify-between gap-2.5">
-              <span className={label}>Publish date</span>
-              <span className="text-xs text-muted">
-                {live ? 'Today · live now' : values.date ? dayLabel(values.date) : 'Not scheduled'}
-              </span>
-            </div>
-            <div className="grid grid-cols-7 gap-1.5">
-              {days.map((d) => {
-                const on = values.date === d
-                const has = taken.has(d)
-                return (
-                  <button
-                    key={d}
-                    type="button"
-                    disabled={live}
-                    title={has ? taken.get(d)!.prompt : undefined}
-                    onClick={() => setValue('date', d)}
-                    className={`flex flex-col items-center gap-0.5 rounded-[10px] border-[1.5px] py-2 disabled:cursor-not-allowed disabled:opacity-50 ${
-                      on ? 'border-brand bg-brand text-white' : 'border-line bg-card text-ink'
-                    }`}
-                  >
-                    <span className="text-[10px] font-extrabold tracking-[.04em] uppercase opacity-80">
-                      {dayLabel(d).slice(0, 3)}
-                    </span>
-                    <span className="text-base font-extrabold">{Number(d.slice(8))}</span>
-                    <span
-                      className="size-[5px] rounded-full"
-                      style={{ background: has ? (on ? '#fff' : '#D4D4D8') : 'transparent' }}
-                    />
-                  </button>
-                )
-              })}
-            </div>
-            {takenBy && (
-              <span className="text-xs font-bold text-brand-deeper">
-                This day already has a question — scheduling will replace it.
-              </span>
-            )}
-          </div>
-
           <label className="flex max-w-[320px] flex-col gap-2">
             <span className={label}>Shown as author</span>
             <input
@@ -556,7 +509,7 @@ function QuestionForm({
               onClick={() => submit(true)}
               className="px-[22px]"
             >
-              {live ? 'Save changes' : 'Schedule'}
+              {live ? 'Save changes' : values.date ? 'Schedule' : 'Save to library'}
             </Button>
           </div>
         </div>

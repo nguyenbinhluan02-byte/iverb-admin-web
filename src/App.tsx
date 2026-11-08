@@ -4,9 +4,10 @@ import { AppLayout } from '@/components/AppLayout'
 import { LibraryPage } from '@/features/library/LibraryPage'
 import { NotificationsPage } from '@/features/notifications/NotificationsPage'
 import { QuestionFormPage } from '@/features/question-form/QuestionFormPage'
-import { SchedulePage } from '@/features/schedule/SchedulePage'
 import { TodayPage } from '@/features/today/TodayPage'
 import { UsersPage } from '@/features/users/UsersPage'
+import { ThisWeekPage } from '@/features/weeks/ThisWeekPage'
+import { WeeksPage } from '@/features/weeks/WeeksPage'
 import { ComingSoon } from '@/pages/ComingSoon'
 import { LoginPage } from '@/pages/LoginPage'
 
@@ -17,7 +18,14 @@ export function App() {
       <Route element={<RequireAdmin />}>
         <Route element={<AppLayout />}>
           <Route path="/today" element={<TodayPage />} />
-          <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/week" element={<ThisWeekPage />} />
+          <Route path="/weeks" element={<WeeksPage />} />
+          <Route
+            path="/weeks/:weekStart"
+            element={<ComingSoon kicker="Week editor" title="Edit week" task="TASK-025" />}
+          />
+          {/* v1 Schedule → Weeks (design v3 §1) */}
+          <Route path="/schedule" element={<Navigate to="/weeks" replace />} />
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/questions/new" element={<QuestionFormPage />} />
           <Route path="/questions/:id/edit" element={<QuestionFormPage />} />
@@ -29,7 +37,7 @@ export function App() {
           />
         </Route>
       </Route>
-      <Route path="*" element={<Navigate to="/today" replace />} />
+      <Route path="*" element={<Navigate to="/week" replace />} />
     </Routes>
   )
 }

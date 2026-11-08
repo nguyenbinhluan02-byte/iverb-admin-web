@@ -42,7 +42,7 @@ const renderAt = (path: string) =>
       <Routes>
         <Route path="/questions/new" element={<QuestionFormPage />} />
         <Route path="/questions/:id/edit" element={<QuestionFormPage />} />
-        <Route path="/schedule" element={<div>schedule</div>} />
+        <Route path="/library" element={<div>library</div>} />
       </Routes>
     </MemoryRouter>,
   )
@@ -53,12 +53,14 @@ beforeEach(() => {
 })
 
 describe('QuestionFormPage', () => {
-  it('creates a single-choice question on the first empty day', async () => {
+  // Design v3 §1.3: no publish date here; days are set in the week editor.
+  it('creates a single-choice question in the library', async () => {
     const user = userEvent.setup()
     renderAt('/questions/new')
     expect(screen.getByRole('heading', { name: 'New question' })).toBeInTheDocument()
+    expect(screen.queryByText('Publish date')).not.toBeInTheDocument()
 
-    const schedule = screen.getByRole('button', { name: 'Schedule' })
+    const schedule = screen.getByRole('button', { name: 'Save to library' })
     expect(schedule).toBeDisabled()
 
     await user.type(screen.getByPlaceholderText(/past simple of "catch"/), 'Past of "catch"?')
@@ -82,19 +84,16 @@ describe('QuestionFormPage', () => {
         },
         answer_key: { correct: ['a'] },
         author_name: 'Linh Tran',
-        date: dayAfter, // tomorrow is taken
+        date: null,
         publish: true,
       }),
     )
-    expect(await screen.findByText('schedule')).toBeInTheDocument()
+    expect(await screen.findByText('library')).toBeInTheDocument()
   })
 
-  it('warns when the picked day is taken', async () => {
-    const user = userEvent.setup()
+  it('keeps the day passed by the week editor', () => {
     renderAt(`/questions/new?date=${dayAfter}`)
-    expect(screen.queryByText(/scheduling will replace it/)).not.toBeInTheDocument()
-    await user.click(screen.getByTitle('Taken tomorrow'))
-    expect(screen.getByText(/scheduling will replace it/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Schedule' })).toBeInTheDocument()
   })
 
   it('answered live question: answers locked, original JSON sent back', async () => {
