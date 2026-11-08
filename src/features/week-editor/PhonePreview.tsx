@@ -1,5 +1,5 @@
 import { Lightbulb, Volume2 } from 'lucide-react'
-import type { GrammarBlock, Tone } from '@/services/lessons'
+import type { GrammarBlock, GrammarContent, Tone } from '@/services/lessons'
 import { splitStarred, toGrammarBlock, type CardForm } from './editorModel'
 
 // "App preview" phone (design: 320 × 650, sticky). Shows the current card the
@@ -164,16 +164,20 @@ export function PhonePreview({
   count,
   lessonTitle,
   locale,
+  translated,
 }: {
   card: CardForm | null
   index: number
   count: number
   lessonTitle: string
   locale: string
+  /** The selected language's version of this card (TASK-027). */
+  translated?: { grammar?: GrammarContent; meaning?: string; exampleTranslation?: string | null }
 }) {
   const last = index === count - 1
   const isVocab = card?.kind === 'vocab'
-  const label = card ? (card.kind === 'grammar' ? card.label : lessonTitle || 'Vocabulary') : ''
+  const grammar = card?.kind === 'grammar' ? (translated?.grammar ?? null) : null
+  const label = card ? (card.kind === 'grammar' ? (grammar?.label ?? card.label) : lessonTitle || 'Vocabulary') : ''
   const labelColor = card?.kind === 'grammar' && card.label === 'Common mistake' ? RED : ACCENT
 
   return (
@@ -203,11 +207,11 @@ export function PhonePreview({
                 {card.kind === 'grammar' ? (
                   <div className="flex flex-col gap-3.5">
                     <h2 className="m-0 text-[21px] leading-[1.25] font-extrabold tracking-[-0.01em]">
-                      {card.heading || 'Heading'}
+                      {grammar?.heading ?? (card.heading || 'Heading')}
                     </h2>
-                    {card.blocks.map((b, i) => (
+                    {(grammar ? grammar.blocks : card.blocks.map(toGrammarBlock)).map((b, i) => (
                       <div key={i} className="flex flex-col gap-2">
-                        <Block block={toGrammarBlock(b)} />
+                        <Block block={b} />
                       </div>
                     ))}
                   </div>
@@ -227,8 +231,11 @@ export function PhonePreview({
                         <Volume2 size={18} />
                       </span>
                     </div>
-                    <span className="text-[15px] font-bold">{card.meaning || 'Meaning'}</span>
+                    <span className="text-[15px] font-bold">{translated?.meaning ?? (card.meaning || 'Meaning')}</span>
                     <Starred text={card.example || 'Example with the *word*.'} className="border-t border-line pt-2.5 text-[13px] leading-normal" />
+                    {translated?.exampleTranslation && (
+                      <span className="-mt-1.5 text-xs text-subtle">{translated.exampleTranslation}</span>
+                    )}
                   </div>
                 )}
               </>

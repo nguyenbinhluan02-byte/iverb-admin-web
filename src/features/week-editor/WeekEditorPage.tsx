@@ -11,8 +11,19 @@ import {
   useWeekLesson,
   type LessonDetail,
 } from '@/services/lessons'
+import {
+  localeName,
+  useInvalidateTranslations,
+  useLessonTranslation,
+  useLessonTranslations,
+  useMarkLocaleReviewed,
+  type TranslationItem,
+} from '@/services/translations'
 import { CardEditor } from './CardEditor'
 import { DailyQuestionsTab } from './DailyQuestionsTab'
+import { LanguagesCard } from './LanguagesCard'
+import { TranslationReview } from './TranslationReview'
+import { ITEM_STATE, itemState } from './translationModel'
 import {
   cardsOf,
   fromLesson,
@@ -31,7 +42,8 @@ import { FieldLabel, inputCls } from './ui'
 
 // Week editor (design Weekly Lessons.dc.html "WEEK EDITOR", changes since v1
 // §4): header with checks + Save & translate, notice, Lesson / Daily questions
-// tabs. Daily questions: DailyQuestionsTab (TASK-026). Languages (§5): TASK-027.
+// tabs. Daily questions: DailyQuestionsTab (TASK-026). Languages (§5):
+// LanguagesCard + TranslationReview (TASK-027).
 
 const TYPES = [
   { id: 'grammar', label: 'Grammar', desc: 'Cards built from blocks' },
@@ -80,6 +92,13 @@ function Editor({
   const [current, setCurrent] = useState(0)
   const [busy, setBusy] = useState<string | null>(null)
   const readOnly = status === 'ended'
+  // Languages (TASK-027): null = English source.
+  const [locale, setLocale] = useState<string | null>(null)
+  const [busyLocales, setBusyLocales] = useState<Set<string>>(new Set())
+  const invalidateTranslations = useInvalidateTranslations()
+  const { data: trSummary } = useLessonTranslations(lesson?.id ?? null)
+  const { data: trItems } = useLessonTranslation(lesson?.id ?? null, locale)
+  const markAll = useMarkLocaleReviewed()
 
   const cards = cardsOf(form)
   const card = cards[Math.min(current, cards.length - 1)] ?? null
@@ -92,6 +111,38 @@ function Editor({
         ? { ...f, grammar: next as LessonForm['grammar'] }
         : { ...f, vocab: next as LessonForm['vocab'] },
     )
+
+  // Translation item of a form card (cards: card id; words: the word's id).
+  const itemOf = (c: CardForm | null): TranslationItem | undefined => {
+    if (!c?.id || !trItems) return undefined
+    if (c.kind === 'grammar') return trItems.find((t) => t.kind === 'card' && t.id === c.id)
+    const wordId = lesson?.cards.find((x) => x.id === c.id && x.kind === 'vocab')
+    const id = wordId?.kind === 'vocab' ? wordId.word.id : null
+    return trItems.find((t) => t.kind === 'word' && t.id === id)
+  }
+
+  const runTranslate = async (loc: string, force: boolean) => {
+    if (!lesson) return
+    if (force && trItems?.length && trItems.every((t) => t.status === 'reviewed' && t.fresh)) {
+      toast(`All ${localeName(loc)} cards are reviewed · nothing to re-translate`)
+      return
+    }
+    setBusyLocales((b) => new Set(b).add(loc))
+    try {
+      const r = await translateLesson(lesson.id, { locales: [loc], force })
+      if (r.errors.length) toast.warning(`${localeName(loc)}: ${r.errors[0].error}`)
+      else toast.success(`${localeName(loc)} translated`)
+    } catch (e) {
+      toast.error(errorMessage(e))
+    } finally {
+      setBusyLocales((b) => {
+        const n = new Set(b)
+        n.delete(loc)
+        return n
+      })
+      invalidateTranslations()
+    }
+  }
 
   const addCard = () => {
     setCards([...cards, form.type === 'grammar' ? newGrammarCard() : newVocabCard()])
@@ -132,7 +183,11 @@ function Editor({
       toast.success('Saved. Translating…')
 
       setBusy('Translating…')
-      const result = await translateLesson(saved.id)
+      setBusyLocales(new Set(['*']))
+      const result = await translateLesson(saved.id).finally(() => {
+        setBusyLocales(new Set())
+        invalidateTranslations()
+      })
       if (result.errors.length) {
         toast.warning(`Translations updated with ${result.errors.length} problem(s) · review them in Languages`)
       } else {
@@ -287,6 +342,26 @@ function Editor({
             </div>
           </div>
 
+          <LanguagesCard
+            summary={trSummary}
+            saved={!!lesson}
+            locale={locale}
+            onLocale={setLocale}
+            busy={busyLocales}
+            hasMachine={!!trItems?.some((t) => t.translation && t.status === 'machine')}
+            onRetranslate={(loc) => runTranslate(loc, true)}
+            onMarkAll={(loc) =>
+              lesson &&
+              markAll.mutate(
+                { lessonId: lesson.id, locale: loc },
+                {
+                  onSuccess: (n) => toast.success(`${n} ${localeName(loc)} translation(s) marked reviewed`),
+                  onError: (e) => toast.error(errorMessage(e)),
+                },
+              )
+            }
+          />
+
           <div className="flex flex-wrap items-start gap-[18px]">
             <div className="flex flex-[0_0_240px] flex-col gap-1 rounded-[18px] border border-line bg-card p-3">
               <div className="flex items-center justify-between px-1.5 pt-1 pb-2">
@@ -315,6 +390,17 @@ function Editor({
                       <span className="truncate text-xs text-muted">
                         {c.kind === 'grammar' ? c.heading || 'No heading' : c.meaning || '—'}
                       </span>
+                      {locale && (() => {
+                        const st = ITEM_STATE[itemState(itemOf(c), busyLocales.has(locale) || busyLocales.has('*'))]
+                        return (
+                          <span
+                            className="mt-1 self-start rounded-[5px] px-1.5 py-0.5 text-[10px] font-extrabold tracking-[.04em] uppercase"
+                            style={{ background: st.bg, color: st.fg }}
+                          >
+                            {st.label}
+                          </span>
+                        )
+                      })()}
                     </span>
                   </button>
                 )
@@ -332,7 +418,17 @@ function Editor({
             </div>
 
             <div className="flex min-w-0 flex-[1_1_440px] flex-col gap-3.5">
-              {card ? (
+              {card && locale ? (
+                <TranslationReview
+                  key={`${locale}-${card.key}`}
+                  item={itemOf(card)}
+                  locale={locale}
+                  index={cards.indexOf(card)}
+                  busy={busyLocales.has(locale) || busyLocales.has('*')}
+                  onTranslate={() => runTranslate(locale, false)}
+                  readOnly={readOnly}
+                />
+              ) : card ? (
                 <CardEditor
                   card={card}
                   index={cards.indexOf(card)}
@@ -377,7 +473,14 @@ function Editor({
               index={card ? cards.indexOf(card) : 0}
               count={cards.length}
               lessonTitle={form.title}
-              locale="English"
+              locale={locale ? localeName(locale) : 'English'}
+              translated={(() => {
+                const it = locale ? itemOf(card) : undefined
+                if (!it?.translation) return undefined
+                return it.kind === 'card'
+                  ? { grammar: it.translation }
+                  : { meaning: it.translation.meaning, exampleTranslation: it.translation.example }
+              })()}
             />
           </div>
         </div>
