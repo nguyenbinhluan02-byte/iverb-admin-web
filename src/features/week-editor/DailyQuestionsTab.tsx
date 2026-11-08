@@ -201,7 +201,7 @@ export function DailyQuestionsTab({
     // One row from 1180px (sidebar 228 + padding): the day list and the
     // question column shrink so the 280px phone stays on the right.
     <div className="flex flex-wrap items-start gap-[18px] min-[1180px]:flex-nowrap">
-      <div className="flex flex-[0_0_260px] flex-col gap-1 rounded-[18px] border border-line bg-card p-3 min-[1180px]:min-w-[200px] min-[1180px]:flex-[0_1_260px]">
+      <div className="flex flex-[0_0_340px] flex-col gap-1 rounded-[18px] border border-line bg-card p-3 min-[1180px]:min-w-[220px] min-[1180px]:flex-[0_1_340px]">
         {isPending && <span className="p-2 text-sm text-muted">Loading…</span>}
         {days.map((d) => {
           const q = byDay.get(d)
