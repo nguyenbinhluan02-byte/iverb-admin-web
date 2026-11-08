@@ -8,6 +8,7 @@ import { TodayPage } from '@/features/today/TodayPage'
 import { UsersPage } from '@/features/users/UsersPage'
 import { ThisWeekPage } from '@/features/weeks/ThisWeekPage'
 import { WeeksPage } from '@/features/weeks/WeeksPage'
+import { WeekEditorPage } from '@/features/week-editor/WeekEditorPage'
 import { ComingSoon } from '@/pages/ComingSoon'
 import { LoginPage } from '@/pages/LoginPage'
 
@@ -20,10 +21,7 @@ export function App() {
           <Route path="/today" element={<TodayPage />} />
           <Route path="/week" element={<ThisWeekPage />} />
           <Route path="/weeks" element={<WeeksPage />} />
-          <Route
-            path="/weeks/:weekStart"
-            element={<ComingSoon kicker="Week editor" title="Edit week" task="TASK-025" />}
-          />
+          <Route path="/weeks/:weekStart" element={<WeekEditorPage />} />
           {/* v1 Schedule → Weeks (design v3 §1) */}
           <Route path="/schedule" element={<Navigate to="/weeks" replace />} />
           <Route path="/library" element={<LibraryPage />} />
