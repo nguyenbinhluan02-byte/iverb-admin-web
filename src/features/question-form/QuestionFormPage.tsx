@@ -11,7 +11,7 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
@@ -110,12 +110,15 @@ export function EmbeddedQuestionForm({
   sourceId,
   date,
   onDone,
+  preview,
 }: {
   questionId: number | null
   /** Reuse a copy of this (published) question. */
   sourceId?: number | null
   date: string
   onDone: (saved: Question | null) => void
+  /** Right column: the week editor's phone preview (laid out by the tab). */
+  preview?: (values: FormValues) => ReactNode
 }) {
   const { data: questions, isPending, isError, error } = useQuestions()
   if (isPending) return <Notice>Loading…</Notice>
@@ -129,7 +132,7 @@ export function EmbeddedQuestionForm({
       editing={editing}
       source={source}
       requestedDate={date}
-      embedded={{ onDone }}
+      embedded={{ onDone, preview }}
     />
   )
 }
@@ -146,7 +149,10 @@ function QuestionForm({
   source: Question | null
   requestedDate: string | null
   /** Inside the week editor (TASK-026): no page header, done → back to the tab. */
-  embedded?: { onDone: (saved: Question | null) => void }
+  embedded?: {
+    onDone: (saved: Question | null) => void
+    preview?: (values: FormValues) => ReactNode
+  }
 }) {
   const navigate = useNavigate()
   const location = useLocation()
@@ -278,11 +284,16 @@ function QuestionForm({
       : 'New question'
 
   return (
-    <div className="mx-auto flex max-w-[1180px] flex-col gap-5">
+    // Embedded: the card and the preview are columns of the tab's row.
+    <div className={embedded ? 'contents' : 'mx-auto flex max-w-[1180px] flex-col gap-5'}>
       {!embedded && <PageHeader kicker={kicker} title={title} />}
 
-      <div className="flex flex-wrap items-start gap-[22px]">
-        <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-[26px] rounded-[18px] border border-line bg-card p-6">
+      <div className={embedded ? 'contents' : 'flex flex-wrap items-start gap-[22px]'}>
+        <div
+          className={`flex min-w-0 flex-col gap-[26px] rounded-[18px] border border-line bg-card p-6 ${
+            embedded ? 'flex-[1_1_440px]' : 'flex-[1_1_520px]'
+          }`}
+        >
           {locked && (
             <div className="flex items-center gap-2 rounded-xl bg-page px-3.5 py-3 text-[13px] font-semibold text-muted">
               <Lock size={15} strokeWidth={2.4} className="shrink-0" />
@@ -552,7 +563,7 @@ function QuestionForm({
           </div>
         </div>
 
-        <AppPreview values={values} />
+        {embedded?.preview ? embedded.preview(values) : <AppPreview values={values} />}
       </div>
     </div>
   )

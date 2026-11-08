@@ -16,6 +16,8 @@ import type { LessonDetail } from '@/services/lessons'
 import { useSetQuestionCard } from '@/services/lessons'
 import { useQuestions, useSaveQuestion, type Question } from '@/services/questions'
 import { weekKeys } from '@/services/weeks'
+import { fromQuestion } from '@/features/question-form/formModel'
+import { DailyPhonePreview } from './DailyPhonePreview'
 import { FieldLabel } from './ui'
 
 // Week editor · Daily questions (design changes since v1 §4.2): the 7 days on
@@ -100,6 +102,7 @@ export function DailyQuestionsTab({
           questionId={mode.kind === 'edit' ? mode.id : null}
           date={selected}
           onDone={onFormDone}
+          preview={(values) => <DailyPhonePreview values={values} date={selected} />}
         />
       )
     }
@@ -227,7 +230,15 @@ export function DailyQuestionsTab({
         })}
       </div>
 
-      <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-3.5">{panel()}</div>
+      {/* Form: its card and the preview become the 2nd and 3rd columns. */}
+      {mode.kind !== 'view' ? (
+        panel()
+      ) : (
+        <>
+          <div className="flex min-w-0 flex-[1_1_440px] flex-col gap-3.5">{panel()}</div>
+          {question && <DailyPhonePreview values={fromQuestion(question, selected)} date={selected} />}
+        </>
+      )}
 
       <PickFromLibraryDialog
         date={picking}
