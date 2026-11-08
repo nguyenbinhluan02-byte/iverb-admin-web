@@ -16,12 +16,12 @@ export function DailyPhonePreview({ values, date }: { values: FormValues; date: 
   const explanation = values.explanation.trim()
 
   return (
-    <div className="sticky top-5 flex flex-[0_0_320px] flex-col items-center gap-2.5">
+    <div className="sticky top-5 flex flex-[0_0_280px] flex-col items-center gap-2.5">
       <span className="text-xs font-extrabold tracking-[.05em] text-subtle uppercase">
         App preview · after answering
       </span>
-      <div className="h-[650px] w-[320px] rounded-[44px] bg-[#1B1B1D] p-[9px]">
-        <div className="flex size-full flex-col gap-3 overflow-y-auto rounded-[36px] bg-page px-3.5 pt-10 pb-3.5 [scrollbar-width:none]">
+      <div className="h-[570px] w-[280px] rounded-[40px] bg-[#1B1B1D] p-[9px]">
+        <div className="flex size-full flex-col gap-3 overflow-y-auto rounded-[32px] bg-page px-3 pt-9 pb-3.5 [scrollbar-width:none]">
           <div className="flex flex-col gap-3.5 rounded-[18px] bg-card p-4">
             <div className="flex items-center justify-between gap-2">
               <span className="text-[11px] font-extrabold tracking-[.05em] text-brand uppercase">
