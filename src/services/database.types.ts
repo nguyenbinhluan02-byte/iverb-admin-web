@@ -75,6 +75,7 @@ export type Database = {
         Returns: Json
       }
       admin_question_history: { Args: { p_question_id: number }; Returns: Json }
+      admin_move_week: { Args: { p_from: string; p_to: string }; Returns: Json }
       admin_remove_explanation: { Args: { p_answer_id: number }; Returns: Json }
       admin_replies_page: {
         Args: { p_answer_id: number; p_cursor?: Json; p_limit?: number }
