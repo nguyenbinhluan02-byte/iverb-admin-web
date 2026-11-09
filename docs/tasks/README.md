@@ -34,3 +34,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-028](./TASK-028-move-week.md) | 3.1.0 chuyển bài sang tuần khác: nút ⇅ ở Weeks, "Move to week…" trong editor, dialog Move / Swap | TASK-055 | done |
 | [TASK-029](./TASK-029-compress-images.md) | 3.1.0 nén ảnh bài học trước khi upload (1600 px, WebP 0.8), cảnh báo ảnh từ vựng < 800×500 | — | done |
 | [TASK-030](./TASK-030-daily-preview-column.md) | App preview luôn hiện ở tab Daily questions (cột thứ 3, after answering) | done |
+| [TASK-031](./TASK-031-app-config.md) | 3.1.0 trang App config (quảng cáo, trial, xem thử bài, link pháp lý), BE TASK-060 | done |
