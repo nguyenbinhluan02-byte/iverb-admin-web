@@ -144,11 +144,6 @@ export function NotificationsPage() {
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <span className={label}>Preview</span>
-            <PhonePreview title={title.trim()} body={body.trim()} image={image} />
-          </div>
-
           <AudiencePicker
             mode={mode}
             onMode={setMode}
@@ -169,7 +164,13 @@ export function NotificationsPage() {
           </div>
         </form>
 
-        <History />
+        <div className="flex flex-col gap-[18px]">
+          <section className="flex flex-col gap-4 rounded-[18px] border border-line bg-card px-6 py-[22px]">
+            <h2 className="text-base font-extrabold">Preview</h2>
+            <PhonePreview title={title.trim()} body={body.trim()} image={image} />
+          </section>
+          <History />
+        </div>
       </div>
 
       <Modal

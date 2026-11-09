@@ -37,3 +37,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-031](./TASK-031-app-config.md) | 3.1.0 trang App config (quảng cáo, trial, xem thử bài, link pháp lý), BE TASK-060 | done |
 | [TASK-032](./TASK-032-push-image.md) | 3.1.0 gửi notification kèm ảnh (Android; iOS sau), BE TASK-061 | done |
 | [TASK-033](./TASK-033-push-audience.md) | 3.1.0 chọn người nhận notification (phiên bản app, nền tảng, gói, user cụ thể), BE TASK-062 | done |
+| [TASK-034](./TASK-034-preview-right.md) | Notifications: Preview sang cột phải, trên lịch sử Sent | — | done |
