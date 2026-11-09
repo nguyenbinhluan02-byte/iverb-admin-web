@@ -1,15 +1,28 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { PushError, type Push } from '@/services/pushes'
+import { PushError, type NewPush, type Push } from '@/services/pushes'
 import { NotificationsPage } from './NotificationsPage'
 
-const send = vi.fn(async (_push: { title: string; body: string }) => ({ id: 1, status: 'sent' }))
+const send = vi.fn(async (_push: NewPush) => ({ id: 1, status: 'sent' }))
 let pushes: Push[] = []
 const toastSuccess = vi.fn()
 const toastError = vi.fn()
 
 vi.mock('sonner', () => ({
   toast: { success: (m: string) => toastSuccess(m), error: (m: string) => toastError(m) },
+}))
+// Upload goes through admin-lesson-media; here a button "uploads" a fixed URL.
+vi.mock('@/features/week-editor/ImageDrop', () => ({
+  ImageDrop: ({ url, onChange }: { url: string | null; onChange: (u: string | null) => void }) =>
+    url ? (
+      <button type="button" onClick={() => onChange(null)}>
+        Remove image
+      </button>
+    ) : (
+      <button type="button" onClick={() => onChange('https://cdn.test/push.webp')}>
+        Upload image
+      </button>
+    ),
 }))
 vi.mock('@/services/pushes', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/services/pushes')>()),
@@ -21,6 +34,7 @@ const push = (over: Partial<Push>): Push => ({
   id: 1,
   title: 'Hello',
   body: 'World',
+  image_url: null,
   status: 'sent',
   error: null,
   sent_by: { name: 'Luan' },
@@ -69,6 +83,30 @@ test('asks for confirmation, then sends trimmed title / body', async () => {
   expect(send).toHaveBeenCalledWith({ title: 'New quiz', body: 'Try it now' })
   expect(toastSuccess).toHaveBeenCalledWith('Notification sent')
   expect(screen.getByPlaceholderText('New quiz is live!')).toHaveValue('')
+})
+
+test('sends the uploaded image and shows it in preview / confirm', async () => {
+  const { container } = render(<NotificationsPage />)
+  const user = await fill('3.1 is here', 'Learn mode is live')
+  await user.click(screen.getByRole('button', { name: 'Upload image' }))
+  expect(container.querySelector('img[src="https://cdn.test/push.webp"]')).toBeInTheDocument()
+  await user.click(sendButton())
+  const dialog = await screen.findByRole('dialog')
+  expect(dialog.querySelector('img[src="https://cdn.test/push.webp"]')).toBeInTheDocument()
+  await user.click(within(dialog).getByRole('button', { name: 'Send' }))
+  expect(send).toHaveBeenCalledWith({
+    title: '3.1 is here',
+    body: 'Learn mode is live',
+    image_url: 'https://cdn.test/push.webp',
+  })
+  // cleared after sending
+  expect(screen.getByRole('button', { name: 'Upload image' })).toBeInTheDocument()
+})
+
+test('history shows the image of a push', () => {
+  pushes = [push({ image_url: 'https://cdn.test/old.webp' })]
+  const { container } = render(<NotificationsPage />)
+  expect(container.querySelector('a[href="https://cdn.test/old.webp"] img')).toBeInTheDocument()
 })
 
 test.each([
