@@ -9,8 +9,15 @@ import { Button } from '@/components/Button'
 import { Modal, ModalTitle } from '@/components/Modal'
 import { PageHeader } from '@/components/PageHeader'
 import { timeAgo } from '@/features/today/todayModel'
+import { ImageDrop } from '@/features/week-editor/ImageDrop'
 import { errorMessage } from '@/lib/errors'
-import { usePushes, useSendPush, type Push, type PushStatus } from '@/services/pushes'
+import {
+  usePushes,
+  useSendPush,
+  type NewPush,
+  type Push,
+  type PushStatus,
+} from '@/services/pushes'
 import {
   BODY_MAX,
   pushErrorMessage,
@@ -32,7 +39,8 @@ const STATUS: Record<PushStatus, [string, Tone]> = {
 // No design: built from the existing cards / form fields (TASK-018).
 export function NotificationsPage() {
   const send = useSendPush()
-  const [confirming, setConfirming] = useState<{ title: string; body: string } | null>(null)
+  const [confirming, setConfirming] = useState<NewPush | null>(null)
+  const [image, setImage] = useState<string | null>(null)
   const { register, control, handleSubmit, reset, formState } = useForm<PushValues>({
     resolver: zodResolver(pushSchema),
     mode: 'onChange',
@@ -47,6 +55,7 @@ export function NotificationsPage() {
       await send.mutateAsync(confirming)
       toast.success('Notification sent')
       setConfirming(null)
+      setImage(null)
       reset()
     } catch (e) {
       toast.error(pushErrorMessage(e))
@@ -59,7 +68,9 @@ export function NotificationsPage() {
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(380px,1fr))] items-start gap-[18px]">
         <form
-          onSubmit={handleSubmit((v) => setConfirming({ title: v.title, body: v.body }))}
+          onSubmit={handleSubmit((v) =>
+            setConfirming({ title: v.title, body: v.body, ...(image ? { image_url: image } : {}) }),
+          )}
           className="flex flex-col gap-5 rounded-[18px] border border-line bg-card px-6 py-[22px]"
         >
           <h2 className="text-base font-extrabold">New notification</h2>
@@ -84,8 +95,22 @@ export function NotificationsPage() {
           </label>
 
           <div className="flex flex-col gap-2">
+            <span className="flex items-center justify-between gap-2">
+              <span className={label}>Image</span>
+              <span className="text-xs font-bold text-muted">Optional · Android only for now</span>
+            </span>
+            <ImageDrop
+              url={image}
+              onChange={setImage}
+              placeholder="Add an image (2:1, e.g. 1024×512)"
+              disabled={send.isPending}
+              className="aspect-[2/1] w-full max-w-[420px]"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
             <span className={label}>Preview</span>
-            <PhonePreview title={title.trim()} body={body.trim()} />
+            <PhonePreview title={title.trim()} body={body.trim()} image={image} />
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -116,6 +141,13 @@ export function NotificationsPage() {
               <span className="text-sm leading-normal break-words whitespace-pre-line">
                 {confirming.body}
               </span>
+              {confirming.image_url && (
+                <img
+                  src={confirming.image_url}
+                  alt=""
+                  className="mt-1.5 aspect-[2/1] w-full rounded-lg object-cover"
+                />
+              )}
             </div>
             <span className="text-[13px] leading-normal text-muted">
               This will be sent to all app users (Android). It can&apos;t be undone.
@@ -148,19 +180,34 @@ function Counter({ value, max }: { value: string; max: number }) {
   )
 }
 
-function PhonePreview({ title, body }: { title: string; body: string }) {
+function PhonePreview({
+  title,
+  body,
+  image,
+}: {
+  title: string
+  body: string
+  image: string | null
+}) {
   return (
     <div className="rounded-2xl bg-page p-3.5">
       <div className="flex gap-3 rounded-[14px] bg-card px-3.5 py-3 shadow-menu">
         <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand text-white">
           <Bell size={16} />
         </span>
-        <div className="flex min-w-0 flex-col gap-0.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="text-[11px] font-semibold text-muted">Irregular Verbs · now</span>
           <b className="truncate text-sm">{title || 'Title'}</b>
           <span className="line-clamp-2 text-[13px] leading-snug break-words text-muted">
             {body || 'Message'}
           </span>
+          {image && (
+            <img
+              src={image}
+              alt=""
+              className="mt-2 aspect-[2/1] w-full rounded-[10px] object-cover"
+            />
+          )}
         </div>
       </div>
     </div>
@@ -199,6 +246,11 @@ function PushItem({ push: p }: { push: Push }) {
       <span className="text-[13px] leading-normal break-words whitespace-pre-line text-ink">
         {p.body}
       </span>
+      {p.image_url && (
+        <a href={p.image_url} target="_blank" rel="noreferrer" className="w-fit">
+          <img src={p.image_url} alt="" className="aspect-[2/1] w-40 rounded-lg object-cover" />
+        </a>
+      )}
       {p.status === 'failed' && p.error && (
         <span className="text-xs break-words text-red-text">{p.error}</span>
       )}
