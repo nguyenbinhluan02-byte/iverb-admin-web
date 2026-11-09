@@ -57,6 +57,7 @@ export type Database = {
         Returns: Json
       }
       admin_list_pushes: { Args: { p_limit?: number }; Returns: Json }
+      admin_push_audience: { Args: { p_audience?: Json }; Returns: Json }
       admin_list_questions: { Args: never; Returns: Json }
       admin_list_users: {
         Args: {

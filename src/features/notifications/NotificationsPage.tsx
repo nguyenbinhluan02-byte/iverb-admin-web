@@ -12,14 +12,21 @@ import { timeAgo } from '@/features/today/todayModel'
 import { ImageDrop } from '@/features/week-editor/ImageDrop'
 import { errorMessage } from '@/lib/errors'
 import {
+  usePushAudience,
   usePushes,
   useSendPush,
   type NewPush,
   type Push,
   type PushStatus,
 } from '@/services/pushes'
+import type { AdminUser } from '@/services/users'
+import { AudiencePicker } from './AudiencePicker'
 import {
+  audienceLabel,
   BODY_MAX,
+  buildAudience,
+  type AudienceFilter,
+  type AudienceMode,
   pushErrorMessage,
   pushSchema,
   TITLE_MAX,
@@ -29,6 +36,8 @@ import {
 const field =
   'w-full rounded-[11px] border border-line-strong bg-card px-3.5 py-3 text-[15px] text-ink disabled:bg-page disabled:text-muted'
 const label = 'text-[13px] font-extrabold'
+
+const EMPTY_FILTER: AudienceFilter = { versions: [], platforms: [], statuses: [] }
 
 const STATUS: Record<PushStatus, [string, Tone]> = {
   sent: ['Sent', 'green'],
@@ -41,6 +50,22 @@ export function NotificationsPage() {
   const send = useSendPush()
   const [confirming, setConfirming] = useState<NewPush | null>(null)
   const [image, setImage] = useState<string | null>(null)
+  const [mode, setMode] = useState<AudienceMode>('all')
+  const [filter, setFilter] = useState<AudienceFilter>(EMPTY_FILTER)
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const audience = buildAudience(
+    mode,
+    filter,
+    users.map((u) => u.id),
+  )
+  const reach = usePushAudience(audience ?? {}, mode !== 'all')
+  const noRecipients =
+    mode !== 'all' &&
+    (!reach.data || reach.data.devices === 0 || (mode === 'users' && !users.length))
+  const sendLabel =
+    mode === 'all'
+      ? 'Send to all users'
+      : `Send to ${reach.data?.devices ?? 0} ${reach.data?.devices === 1 ? 'device' : 'devices'}`
   const { register, control, handleSubmit, reset, formState } = useForm<PushValues>({
     resolver: zodResolver(pushSchema),
     mode: 'onChange',
@@ -52,8 +77,14 @@ export function NotificationsPage() {
   const confirmSend = async () => {
     if (!confirming) return
     try {
-      await send.mutateAsync(confirming)
-      toast.success('Notification sent')
+      const res = await send.mutateAsync(confirming)
+      toast.success(
+        res.sent === undefined
+          ? 'Notification sent'
+          : `Sent to ${res.sent} ${res.sent === 1 ? 'device' : 'devices'}${
+              res.failed ? ` (${res.failed} failed)` : ''
+            }`,
+      )
       setConfirming(null)
       setImage(null)
       reset()
@@ -69,7 +100,12 @@ export function NotificationsPage() {
       <div className="grid grid-cols-[repeat(auto-fit,minmax(380px,1fr))] items-start gap-[18px]">
         <form
           onSubmit={handleSubmit((v) =>
-            setConfirming({ title: v.title, body: v.body, ...(image ? { image_url: image } : {}) }),
+            setConfirming({
+              title: v.title,
+              body: v.body,
+              ...(image ? { image_url: image } : {}),
+              ...(audience ? { audience } : {}),
+            }),
           )}
           className="flex flex-col gap-5 rounded-[18px] border border-line bg-card px-6 py-[22px]"
         >
@@ -113,14 +149,22 @@ export function NotificationsPage() {
             <PhonePreview title={title.trim()} body={body.trim()} image={image} />
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="max-w-[340px] text-xs leading-normal text-muted">
-              Goes to every Android device with the app that has not turned off News &amp;
-              announcements.
-            </span>
-            <Button type="submit" disabled={!formState.isValid || send.isPending}>
+          <AudiencePicker
+            mode={mode}
+            onMode={setMode}
+            filter={filter}
+            onFilter={setFilter}
+            users={users}
+            onUsers={setUsers}
+            reach={reach.data}
+            reachLoading={reach.isFetching}
+            disabled={send.isPending}
+          />
+
+          <div className="flex justify-end">
+            <Button type="submit" disabled={!formState.isValid || send.isPending || noRecipients}>
               <Send size={16} />
-              Send to all users
+              {sendLabel}
             </Button>
           </div>
         </form>
@@ -135,7 +179,11 @@ export function NotificationsPage() {
       >
         {confirming && (
           <div className="flex flex-col gap-4 p-6">
-            <ModalTitle className="text-lg font-extrabold">Send to all users?</ModalTitle>
+            <ModalTitle className="text-lg font-extrabold">
+              {confirming.audience
+                ? `Send to ${reach.data?.devices ?? 0} ${reach.data?.devices === 1 ? 'device' : 'devices'}?`
+                : 'Send to all users?'}
+            </ModalTitle>
             <div className="flex flex-col gap-1 rounded-xl bg-hover px-3.5 py-3">
               <b className="text-sm break-words">{confirming.title}</b>
               <span className="text-sm leading-normal break-words whitespace-pre-line">
@@ -150,7 +198,10 @@ export function NotificationsPage() {
               )}
             </div>
             <span className="text-[13px] leading-normal text-muted">
-              This will be sent to all app users (Android). It can&apos;t be undone.
+              {confirming.audience
+                ? `${audienceLabel(confirming.audience)} (${reach.data?.users ?? 0} users). `
+                : 'This will be sent to all app users. '}
+              It can&apos;t be undone.
             </span>
             <div className="flex justify-end gap-2.5">
               <Button
@@ -259,6 +310,11 @@ function PushItem({ push: p }: { push: Push }) {
         title={`${new Date(p.created_at).toISOString().slice(0, 16).replace('T', ' ')} UTC`}
       >
         {timeAgo(p.created_at)} · by {p.sent_by?.name ?? 'Admin'}
+      </span>
+      <span className="text-xs text-muted">
+        To {audienceLabel(p.audience)}
+        {p.sent_count !== null &&
+          ` · ${p.sent_count} delivered${p.failed_count ? `, ${p.failed_count} failed` : ''}`}
       </span>
     </li>
   )
