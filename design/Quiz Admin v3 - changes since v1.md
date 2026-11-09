@@ -147,3 +147,21 @@ Opened from the Weeks list or from the editor header ("Move to week…").
   - Each field shows the English above a textarea. Editing a field marks the card **Reviewed**. A "Mark reviewed" toggle is also available.
   - Locked fields (the word, example sentences, formulas, signal words, quick-check question) stay in English: "Locked parts stay in English. They're what users are learning."
   - Translatable fields: card label, heading, text/tip, example translations, compare titles, mistake "Why", quick-check "If right/If wrong". For vocab: Meaning and the example translation.
+
+
+## App config (new page)
+Sidebar: new item **"App config"** below Users, after a divider. An orange dot shows when there are unsaved changes. The page edits the `app_config` table (key text, value jsonb) and has no new keys.
+
+Header: kicker "Applies to all users on next app launch". Buttons: **Discard** (only when edited) and a primary button that reads "Saved" / "Save N changes" / "Fix errors to save". Save writes every changed key in one call, then shows the toast "App config saved". Edited rows get a light orange background and the badge "Edited · was {old}".
+
+| Group | Key | Control | Rule / helper |
+|---|---|---|---|
+| Full-screen ads | `lesson_interstitial_every` | stepper 0–20, "lesson(s)" | 0 = off. Note: "Ad after every lesson" / "every 3rd lesson" |
+| Full-screen ads | `verb_detail_interstitial_every` | stepper 0–50, "verb(s)" | 0 = off |
+| Free trial & preview | `answer_trial_days` | stepper 0–365, "day(s)" | "Ends N days after sign-up". 0 = "No trial" |
+| Free trial & preview | `lesson_preview_cards` | stepper 0–20, "card(s)" | "First N cards free". 0 = "Lessons fully locked" |
+| App versions | `latest_version` | text, monospace | semver `x.y.z` → optional update prompt |
+| App versions | `min_supported_version` | text, monospace | semver, must be ≤ latest → force update |
+| Legal links | `privacy_url`, `terms_url` | text + open-link button | must start with `https://` |
+
+The ads group subtitle says premium users never see interstitials. **Assumption to confirm:** 0 means off. Number values are saved as JSON numbers; versions and URLs are saved as JSON strings.

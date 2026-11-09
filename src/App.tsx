@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router'
 import { RequireAdmin } from '@/auth/RequireAdmin'
+import { AppConfigPage } from '@/features/app-config/AppConfigPage'
 import { AppLayout } from '@/components/AppLayout'
 import { LibraryPage } from '@/features/library/LibraryPage'
 import { NotificationsPage } from '@/features/notifications/NotificationsPage'
@@ -29,6 +30,7 @@ export function App() {
           <Route path="/questions/:id/edit" element={<QuestionFormPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/users" element={<UsersPage />} />
+          <Route path="/config" element={<AppConfigPage />} />
           <Route
             path="/submissions"
             element={<ComingSoon kicker="From app users" title="Submissions" task="TASK-006" />}

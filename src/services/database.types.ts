@@ -36,6 +36,7 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_get_app_config: { Args: never; Returns: Json }
       admin_get_lesson: { Args: { p_id: number }; Returns: Json }
       admin_get_today: { Args: never; Returns: Json }
       admin_get_user: { Args: { p_id: string }; Returns: Json }
@@ -74,13 +75,14 @@ export type Database = {
         Args: { p_lesson_id: number; p_locale: string }
         Returns: Json
       }
-      admin_question_history: { Args: { p_question_id: number }; Returns: Json }
       admin_move_week: { Args: { p_from: string; p_to: string }; Returns: Json }
+      admin_question_history: { Args: { p_question_id: number }; Returns: Json }
       admin_remove_explanation: { Args: { p_answer_id: number }; Returns: Json }
       admin_replies_page: {
         Args: { p_answer_id: number; p_cursor?: Json; p_limit?: number }
         Returns: Json
       }
+      admin_save_app_config: { Args: { p_values: Json }; Returns: Json }
       admin_save_card_translation: {
         Args: { p_card_id: number; p_content: Json; p_locale: string }
         Returns: Json

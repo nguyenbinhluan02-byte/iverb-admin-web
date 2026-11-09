@@ -5,6 +5,7 @@ import {
   CalendarDays,
   CirclePlus,
   Inbox,
+  SlidersVertical,
   LogOut,
   Sun,
   Users,
@@ -13,6 +14,7 @@ import {
 import { Fragment } from 'react'
 import { NavLink } from 'react-router'
 import { useAuth } from '@/auth/useAuth'
+import { useAppConfigDirty } from '@/features/app-config/draftStore'
 import { useToday } from '@/services/today'
 import { useWeeksNeedingWork } from '@/services/weeks'
 import { Avatar } from './Avatar'
@@ -26,7 +28,9 @@ const NAV: { to: string; label: string; icon: LucideIcon; divider?: boolean }[] 
   { to: '/questions/new', label: 'New question', icon: CirclePlus },
   { to: '/submissions', label: 'Submissions', icon: Inbox },
   { to: '/notifications', label: 'Notifications', icon: Bell },
-  { to: '/users', label: 'Users', icon: Users },
+  { to: '/users', label: 'Users', icon: Users, divider: true },
+  // Design v3 "App config": below Users, after a divider.
+  { to: '/config', label: 'App config', icon: SlidersVertical },
 ]
 
 // Filled orange badges (needs attention); the rest are grey.
@@ -36,6 +40,7 @@ export function Sidebar() {
   const { me, signOut } = useAuth()
   const { data: today } = useToday()
   const { data: needing } = useWeeksNeedingWork()
+  const configDirty = useAppConfigDirty()
   // Design: Today = reported explanations, Weeks = upcoming weeks not ready (empty / draft).
   const badges: Record<string, number> = {
     '/today': today?.reported_count ?? 0,
@@ -57,30 +62,33 @@ export function Sidebar() {
       <nav className="mt-[30px] flex flex-col gap-1">
         {NAV.map(({ to, label, icon: Icon, divider }) => (
           <Fragment key={to}>
-          <NavLink
-            to={to}
-            end
-            className={({ isActive }) =>
-              `flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-sm font-bold ${
-                isActive ? 'bg-brand-tint text-brand-deep' : 'text-ink hover:bg-hover'
-              }`
-            }
-          >
-            <Icon size={18} strokeWidth={2} />
-            <span className="flex-1">{label}</span>
-            {!!badges[to] && (
-              <span
-                className={`flex h-5 min-w-[22px] items-center justify-center rounded-full px-1.5 text-[11px] font-extrabold ${
-                  ORANGE_BADGES.has(to)
-                    ? 'bg-brand text-white'
-                    : 'border border-line-strong bg-page text-ink'
-                }`}
-              >
-                {badges[to]}
-              </span>
-            )}
-          </NavLink>
-          {divider && <span className="mx-1 my-2 h-px bg-line" />}
+            <NavLink
+              to={to}
+              end
+              className={({ isActive }) =>
+                `flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-sm font-bold ${
+                  isActive ? 'bg-brand-tint text-brand-deep' : 'text-ink hover:bg-hover'
+                }`
+              }
+            >
+              <Icon size={18} strokeWidth={2} />
+              <span className="flex-1">{label}</span>
+              {to === '/config' && configDirty && (
+                <span aria-label="Unsaved changes" className="size-2 rounded-full bg-brand" />
+              )}
+              {!!badges[to] && (
+                <span
+                  className={`flex h-5 min-w-[22px] items-center justify-center rounded-full px-1.5 text-[11px] font-extrabold ${
+                    ORANGE_BADGES.has(to)
+                      ? 'bg-brand text-white'
+                      : 'border border-line-strong bg-page text-ink'
+                  }`}
+                >
+                  {badges[to]}
+                </span>
+              )}
+            </NavLink>
+            {divider && <span className="mx-1 my-2 h-px bg-line" />}
           </Fragment>
         ))}
       </nav>

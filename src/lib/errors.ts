@@ -7,6 +7,8 @@ const MESSAGES: Record<string, string> = {
   invalid_date: 'Pick a day from tomorrow on.',
   live_must_publish: "Today's question has to stay published.",
   day_taken: 'That day already has a question. Pick an empty day.',
+  invalid_key: 'This setting can no longer be changed here.',
+  invalid_value: 'One of the values is not valid. Check the fields and try again.',
   has_answers: 'Users already answered this question, so its answers can no longer change.',
   'Invalid login credentials': 'Wrong email or password.',
 }
