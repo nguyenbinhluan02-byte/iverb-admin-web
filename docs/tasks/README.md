@@ -38,3 +38,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-032](./TASK-032-push-image.md) | 3.1.0 gửi notification kèm ảnh (Android; iOS sau), BE TASK-061 | done |
 | [TASK-033](./TASK-033-push-audience.md) | 3.1.0 chọn người nhận notification (phiên bản app, nền tảng, gói, user cụ thể), BE TASK-062 | done |
 | [TASK-034](./TASK-034-preview-right.md) | Notifications: Preview sang cột phải, trên lịch sử Sent | — | done |
+| [TASK-035](./TASK-035-ai-word-image.md) | 3.1.0 nút "Generate with AI" cho ảnh từ vựng, BE TASK-063 | in-progress |

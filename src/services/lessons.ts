@@ -148,8 +148,9 @@ const MEDIA_ERRORS: Record<string, string> = {
   invalid_file: 'Choose a JPG, PNG or WebP image, or an MP3, M4A or WAV file.',
   too_large: 'The file must be 5 MB or smaller.',
   invalid_text: 'Type the word first.',
-  not_configured: 'Text-to-speech is not set up yet (GOOGLE_TTS_API_KEY).',
+  not_configured: 'This feature is not set up yet (missing API key on the server).',
   tts_failed: 'Could not generate the audio. Try again.',
+  image_failed: 'Could not generate the image. Try again.',
   upload_failed: 'Could not save the file. Try again.',
 }
 
@@ -165,6 +166,20 @@ export async function uploadLessonMedia(file: File) {
 export async function speakWord(text: string, voice: Voice) {
   const { data, error } = await supabase.functions.invoke('admin-lesson-media', {
     body: { text, voice },
+  })
+  if (error) throw await functionError(error)
+  return (data as { url: string }).url
+}
+
+/** AI word image (BE TASK-063): flat illustration, no text. New picture on every call. */
+export async function generateWordImage(word: {
+  word: string
+  pos?: string | null
+  example?: string | null
+  hint?: string | null
+}) {
+  const { data, error } = await supabase.functions.invoke('admin-lesson-media', {
+    body: { image: word },
   })
   if (error) throw await functionError(error)
   return (data as { url: string }).url
