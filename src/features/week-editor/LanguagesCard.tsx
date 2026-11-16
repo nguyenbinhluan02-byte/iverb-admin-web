@@ -68,7 +68,7 @@ export function LanguagesCard({
   return (
     <div className="flex flex-col gap-3 rounded-[18px] border border-line bg-card px-4 py-3.5">
       <div className="flex flex-wrap items-center justify-between gap-2.5">
-        <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex min-w-0 flex-1 basis-[280px] items-center gap-2.5">
           <span className="flex size-[30px] flex-none items-center justify-center rounded-lg bg-page">
             <Languages size={16} strokeWidth={2.2} />
           </span>
@@ -81,25 +81,26 @@ export function LanguagesCard({
           </span>
         </div>
         {current && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-none gap-2">
             <button
               type="button"
               disabled={busy.has(current.code)}
-              title="Reviewed cards are kept unless the English changed"
+              title={`Re-translate ${current.name}. Reviewed cards are kept unless the English changed.`}
               onClick={() => onRetranslate(current.code)}
               className="flex items-center gap-1.5 rounded-[9px] border border-line-strong bg-card px-3 py-2 text-[13px] font-bold whitespace-nowrap disabled:opacity-50"
             >
               <RefreshCw size={14} strokeWidth={2.4} />
-              <span>Re-translate {current.name}</span>
+              <span>Re-translate</span>
             </button>
             {hasMachine && (
               <button
                 type="button"
                 onClick={() => onMarkAll(current.code)}
+                title={`Mark all ${current.name} translations reviewed`}
                 className="flex items-center gap-1.5 rounded-[9px] border border-line-strong bg-card px-3 py-2 text-[13px] font-bold whitespace-nowrap"
               >
                 <CheckCheck size={14} strokeWidth={2.4} />
-                <span>Mark all {current.name} reviewed</span>
+                <span>Mark all reviewed</span>
               </button>
             )}
           </div>
