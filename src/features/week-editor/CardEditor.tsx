@@ -1,8 +1,8 @@
-import { ChevronDown, ChevronUp, Loader2, Music, Play, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, Loader2, Music, Play, Sparkles, Trash2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { audioDuration } from '@/services/audio'
-import { speakWord, uploadLessonMedia } from '@/services/lessons'
+import { generateWordImage, speakWord, uploadLessonMedia } from '@/services/lessons'
 import { BlockEditor } from './BlockEditor'
 import {
   audioStatus,
@@ -205,6 +205,51 @@ function Pronunciation({
   )
 }
 
+// Generate the word image with AI (BE TASK-063): flat illustration, no text,
+// from the word, part of speech and example; an optional hint steers it.
+export function AiImage({ card, onChange }: { card: VocabCardForm; onChange: (card: VocabCardForm) => void }) {
+  const [hint, setHint] = useState('')
+  const [busy, setBusy] = useState(false)
+  const generate = async () => {
+    setBusy(true)
+    try {
+      const imageUrl = await generateWordImage({
+        word: card.word.trim(),
+        pos: card.pos || null,
+        example: card.example.trim() || null,
+        hint: hint.trim() || null,
+      })
+      onChange({ ...card, imageUrl })
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="flex max-w-[480px] flex-wrap items-center gap-2">
+      <input
+        value={hint}
+        onChange={(e) => setHint(e.target.value)}
+        placeholder="Hint for AI · optional, e.g. a man waiting at the gate"
+        maxLength={300}
+        disabled={busy}
+        className={`${inputCls} min-w-0 flex-1`}
+      />
+      <button
+        type="button"
+        onClick={generate}
+        disabled={busy || !card.word.trim()}
+        title={card.word.trim() ? undefined : 'Type the word first'}
+        className="flex h-[34px] items-center gap-1.5 rounded-[9px] border border-line-strong bg-card px-3 text-[13px] font-bold whitespace-nowrap disabled:opacity-50"
+      >
+        {busy ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+        {busy ? 'Generating… ~30 s' : card.imageUrl ? 'Regenerate with AI' : 'Generate with AI'}
+      </button>
+    </div>
+  )
+}
+
 function VocabFields({
   card,
   onChange,
@@ -260,6 +305,7 @@ function VocabFields({
           minSize={{ width: 800, height: 500 }}
         />
         <span className="text-xs text-subtle">Shown at the top of the flashcard.</span>
+        {!readOnly && <AiImage card={card} onChange={onChange} />}
       </div>
       <Pronunciation card={card} onChange={onChange} readOnly={readOnly} />
     </>
