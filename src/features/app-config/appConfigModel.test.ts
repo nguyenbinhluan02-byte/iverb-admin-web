@@ -45,6 +45,10 @@ describe('appConfigModel', () => {
       'Off · premium and trial only',
     )
     expect((field('free_can_reply') as ToggleField).note(true)).toBe('On · everyone signed in')
+    expect((field('reply_push_window_minutes') as NumberField).note(0)).toBe('A push for every reply')
+    expect((field('reply_push_window_minutes') as NumberField).note(15)).toBe(
+      'At most one push per answer every 15 minutes',
+    )
     expect(fieldError(field('day_story_banner'), 1)).toBe('')
     expect(fieldError(field('day_story_banner'), 2)).toBe('Must be on or off')
     expect((field('answer_trial_days') as NumberField).note(0)).toBe('No trial')

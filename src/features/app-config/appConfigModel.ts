@@ -172,6 +172,25 @@ export const GROUPS: ConfigGroup[] = [
     ],
   },
   {
+    title: 'Notifications',
+    sub: 'Pushes the server sends to one user.',
+    fields: [
+      {
+        kind: 'number',
+        key: 'reply_push_window_minutes',
+        label: 'Reply push window',
+        help: 'After a reply push, later replies to the same answer send no push for this long. 0 = a push for every reply.',
+        min: 0,
+        max: 1440,
+        unit: plural('minute', 'minutes'),
+        note: (n) =>
+          n === 0
+            ? 'A push for every reply'
+            : `At most one push per answer every ${n} ${n === 1 ? 'minute' : 'minutes'}`,
+      },
+    ],
+  },
+  {
     title: 'Legal links',
     sub: 'Opened from Settings and the sign-up screen.',
     fields: [
