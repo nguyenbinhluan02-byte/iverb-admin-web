@@ -23,7 +23,13 @@ export interface UrlField extends FieldBase {
   placeholder: string
 }
 
-export type ConfigField = NumberField | UrlField
+/** On / off switch stored as 0 / 1 (an int rule 0–1 on the server). */
+export interface ToggleField extends FieldBase {
+  kind: 'toggle'
+  note: (on: boolean) => string
+}
+
+export type ConfigField = NumberField | UrlField | ToggleField
 
 export interface ConfigGroup {
   title: string
@@ -73,6 +79,28 @@ export const GROUPS: ConfigGroup[] = [
             : n === 1
               ? 'Ad card after every lesson card'
               : `Ad card after every ${n} lesson cards`,
+      },
+      {
+        kind: 'number',
+        key: 'story_native_ad_every',
+        label: 'Inside question stories',
+        help: 'An ad card between questions in the past-day and saved-question stories.',
+        min: 0,
+        max: 20,
+        unit: plural('question', 'questions'),
+        note: (n) =>
+          n === 0
+            ? 'Off · no ad cards'
+            : n === 1
+              ? 'Ad card after every question'
+              : `Ad card after every ${n} questions`,
+      },
+      {
+        kind: 'toggle',
+        key: 'day_story_banner',
+        label: 'Banner in past-day story',
+        help: 'The banner under the date when a past day is opened from the week strip.',
+        note: (on) => (on ? 'Shown' : 'Hidden'),
       },
       {
         kind: 'number',
@@ -151,6 +179,7 @@ export const parseNumberInput = (text: string, field: NumberField) => {
 
 /** '' when valid. Same rule as the server (admin_save_app_config). */
 export function fieldError(field: ConfigField, value: AppConfig[AppConfigKey] | undefined): string {
+  if (field.kind === 'toggle') return value === 0 || value === 1 ? '' : 'Must be on or off'
   if (field.kind === 'url')
     return typeof value === 'string' && /^https:\/\/\S+\.\S+$/.test(value)
       ? ''
