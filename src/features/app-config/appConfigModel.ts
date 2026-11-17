@@ -91,12 +91,14 @@ export const GROUPS: ConfigGroup[] = [
         kind: 'number',
         key: 'lesson_preview_cards',
         label: 'Lesson preview',
-        help: 'Cards a free user can open in a locked lesson.',
+        help: 'Cards users without premium (guests included) can open. 0 = every card, lessons open to everyone.',
         min: 0,
         max: 20,
         unit: plural('card', 'cards'),
         note: (n) =>
-          n === 0 ? 'Lessons fully locked' : `First ${n} ${n === 1 ? 'card' : 'cards'} free`,
+          n === 0
+            ? 'Off · lessons open to everyone'
+            : `First ${n} ${n === 1 ? 'card' : 'cards'} free, then Unlock`,
       },
     ],
   },

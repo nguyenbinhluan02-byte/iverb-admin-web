@@ -40,3 +40,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-034](./TASK-034-preview-right.md) | Notifications: Preview sang cột phải, trên lịch sử Sent | — | done |
 | [TASK-035](./TASK-035-ai-word-image.md) | 3.1.0 nút "Generate with AI" cho ảnh từ vựng, BE TASK-063 | in-progress |
 | [TASK-036](./TASK-036-languages-header.md) | Thẻ Languages: nhãn nút gọn, mô tả tự xuống dòng để nút không bị đẩy xuống | done |
+| [TASK-038](./TASK-038-open-lessons.md) | App config: Lesson preview 0 = bài học mở cho mọi người (kể cả khách) | done |

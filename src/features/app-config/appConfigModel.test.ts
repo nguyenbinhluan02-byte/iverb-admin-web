@@ -31,8 +31,12 @@ describe('appConfigModel', () => {
     expect(lessons.note(1)).toBe('Ad on every lesson opened')
     expect(lessons.note(3)).toBe('Ad on every 3rd lesson opened')
     expect((field('answer_trial_days') as NumberField).note(0)).toBe('No trial')
-    expect((field('lesson_preview_cards') as NumberField).note(1)).toBe('First 1 card free')
-    expect((field('lesson_preview_cards') as NumberField).note(0)).toBe('Lessons fully locked')
+    expect((field('lesson_preview_cards') as NumberField).note(1)).toBe(
+      'First 1 card free, then Unlock',
+    )
+    expect((field('lesson_preview_cards') as NumberField).note(0)).toBe(
+      'Off · lessons open to everyone',
+    )
   })
 
   it('number input keeps digits and clamps', () => {
