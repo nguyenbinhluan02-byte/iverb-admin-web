@@ -67,6 +67,18 @@ export const GROUPS: ConfigGroup[] = [
       },
       {
         kind: 'number',
+        key: 'question_interstitial_every',
+        label: 'On question stories',
+        help: 'Shown when the user opens a past day or a saved question.',
+        min: 0,
+        max: 20,
+        unit: plural('story', 'stories'),
+        note: adNote((n) =>
+          n === 1 ? 'Ad on every story opened' : `Ad on every ${ordinal(n)} story opened`,
+        ),
+      },
+      {
+        kind: 'number',
         key: 'lesson_native_ad_every',
         label: 'Inside lessons',
         help: 'An ad card between lesson cards. It does not count toward lesson progress.',
