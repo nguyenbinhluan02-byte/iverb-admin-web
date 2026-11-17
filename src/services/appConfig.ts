@@ -10,6 +10,7 @@ export interface AppConfig {
   day_story_banner: number
   question_interstitial_every: number
   free_can_answer: number
+  free_can_reply: number
   verb_detail_interstitial_every: number
   answer_trial_days: number
   lesson_preview_cards: number

@@ -44,6 +44,7 @@ describe('appConfigModel', () => {
     expect((field('free_can_answer') as ToggleField).note(false)).toBe(
       'Off · premium and trial only',
     )
+    expect((field('free_can_reply') as ToggleField).note(true)).toBe('On · everyone signed in')
     expect(fieldError(field('day_story_banner'), 1)).toBe('')
     expect(fieldError(field('day_story_banner'), 2)).toBe('Must be on or off')
     expect((field('answer_trial_days') as NumberField).note(0)).toBe('No trial')
