@@ -8,6 +8,7 @@ export interface AppConfig {
   lesson_native_ad_every: number
   story_native_ad_every: number
   day_story_banner: number
+  question_interstitial_every: number
   free_can_answer: number
   free_can_reply: number
   verb_detail_interstitial_every: number

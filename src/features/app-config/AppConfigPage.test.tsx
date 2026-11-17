@@ -9,6 +9,7 @@ const saved: AppConfig = {
   lesson_native_ad_every: 3,
   story_native_ad_every: 3,
   day_story_banner: 1,
+  question_interstitial_every: 2,
   free_can_answer: 0,
   free_can_reply: 0,
   verb_detail_interstitial_every: 5,
