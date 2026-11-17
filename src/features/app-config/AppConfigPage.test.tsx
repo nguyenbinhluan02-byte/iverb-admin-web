@@ -12,6 +12,7 @@ const saved: AppConfig = {
   question_interstitial_every: 2,
   free_can_answer: 0,
   free_can_reply: 0,
+  reply_push_window_minutes: 15,
   verb_detail_interstitial_every: 5,
   answer_trial_days: 30,
   lesson_preview_cards: 2,

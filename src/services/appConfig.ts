@@ -11,6 +11,7 @@ export interface AppConfig {
   question_interstitial_every: number
   free_can_answer: number
   free_can_reply: number
+  reply_push_window_minutes: number
   verb_detail_interstitial_every: number
   answer_trial_days: number
   lesson_preview_cards: number
