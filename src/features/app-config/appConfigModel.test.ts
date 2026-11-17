@@ -30,6 +30,10 @@ describe('appConfigModel', () => {
     expect(lessons.note(0)).toBe('Off · no full-screen ads')
     expect(lessons.note(1)).toBe('Ad on every lesson opened')
     expect(lessons.note(3)).toBe('Ad on every 3rd lesson opened')
+    expect((field('lesson_native_ad_every') as NumberField).note(0)).toBe('Off · no ad cards')
+    expect((field('lesson_native_ad_every') as NumberField).note(3)).toBe(
+      'Ad card after every 3 lesson cards',
+    )
     expect((field('answer_trial_days') as NumberField).note(0)).toBe('No trial')
     expect((field('lesson_preview_cards') as NumberField).note(1)).toBe('First 1 card free')
     expect((field('lesson_preview_cards') as NumberField).note(0)).toBe('Lessons fully locked')

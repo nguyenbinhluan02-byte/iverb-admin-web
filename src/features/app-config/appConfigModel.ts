@@ -44,8 +44,8 @@ const adNote = (every: (n: number) => string) => (n: number) =>
 
 export const GROUPS: ConfigGroup[] = [
   {
-    title: 'Full-screen ads',
-    sub: 'Interstitial ads shown to free users. Premium users never see them. Set 0 to turn off.',
+    title: 'Ads',
+    sub: 'Ads shown to free users. Premium users never see them. Set 0 to turn off.',
     fields: [
       {
         kind: 'number',
@@ -58,6 +58,21 @@ export const GROUPS: ConfigGroup[] = [
         note: adNote((n) =>
           n === 1 ? 'Ad on every lesson opened' : `Ad on every ${ordinal(n)} lesson opened`,
         ),
+      },
+      {
+        kind: 'number',
+        key: 'lesson_native_ad_every',
+        label: 'Inside lessons',
+        help: 'An ad card between lesson cards. It does not count toward lesson progress.',
+        min: 0,
+        max: 20,
+        unit: plural('card', 'cards'),
+        note: (n) =>
+          n === 0
+            ? 'Off · no ad cards'
+            : n === 1
+              ? 'Ad card after every lesson card'
+              : `Ad card after every ${n} lesson cards`,
       },
       {
         kind: 'number',
