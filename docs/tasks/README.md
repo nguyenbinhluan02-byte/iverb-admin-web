@@ -44,3 +44,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-038](./TASK-038-open-lessons.md) | App config: Lesson preview 0 = bài học mở cho mọi người (kể cả khách) | done |
 | [TASK-039](./TASK-039-story-ads.md) | App config: quảng cáo trong story câu hỏi (`story_native_ad_every`), công tắc banner story ngày cũ | done |
 | [TASK-040](./TASK-040-toggle-fix.md) | Sửa công tắc banner story (nút lệch) + field server chưa có không chặn lưu | done |
+| [TASK-042](./TASK-042-free-can-answer.md) | App config: công tắc "Free users can answer" (`free_can_answer`) | done |
