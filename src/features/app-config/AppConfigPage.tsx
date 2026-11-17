@@ -29,7 +29,9 @@ export function AppConfigPage() {
 
   const values: AppConfig = { ...saved, ...draft }
   const changed = FIELDS.filter((f) => f.key in draft)
-  const hasErrors = FIELDS.some((f) => fieldError(f, values[f.key]))
+  // Keys the server does not have yet (backend not deployed) are shown as
+  // unavailable and never block saving the others.
+  const hasErrors = FIELDS.some((f) => saved[f.key] !== undefined && fieldError(f, values[f.key]))
   const canSave = changed.length > 0 && !hasErrors && !save.isPending
 
   const onSave = async () => {
@@ -98,7 +100,7 @@ function FieldRow({
 }: {
   field: ConfigField
   value: number | string
-  savedValue: number | string
+  savedValue: number | string | undefined
   edited: boolean
   first: boolean
   onChange: (value: number | string) => void
@@ -123,7 +125,9 @@ function FieldRow({
         <span className="text-[13px] text-pretty text-muted">{field.help}</span>
         <span className="font-mono text-[11px] text-subtle">{field.key}</span>
       </div>
-      {field.kind === 'number' ? (
+      {savedValue === undefined ? (
+        <span className="text-[13px] font-bold text-subtle">Not on the server yet</span>
+      ) : field.kind === 'number' ? (
         <NumberControl field={field} value={Number(value)} onChange={onChange} />
       ) : field.kind === 'toggle' ? (
         <ToggleControl field={field} value={Number(value)} onChange={onChange} />
@@ -159,7 +163,7 @@ function ToggleControl({
         className={`relative h-7 w-12 rounded-full transition-colors ${on ? 'bg-brand' : 'bg-line-strong'}`}
       >
         <span
-          className={`absolute top-0.5 size-6 rounded-full bg-card shadow transition-transform ${
+          className={`absolute top-0.5 left-0 size-6 rounded-full bg-card shadow transition-transform ${
             on ? 'translate-x-[22px]' : 'translate-x-0.5'
           }`}
         />
