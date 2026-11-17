@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 
 export interface AppConfig {
   lesson_interstitial_every: number
+  lesson_native_ad_every: number
   verb_detail_interstitial_every: number
   answer_trial_days: number
   lesson_preview_cards: number

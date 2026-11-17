@@ -6,6 +6,7 @@ import { appConfigDraft } from './draftStore'
 
 const saved: AppConfig = {
   lesson_interstitial_every: 1,
+  lesson_native_ad_every: 3,
   verb_detail_interstitial_every: 5,
   answer_trial_days: 30,
   lesson_preview_cards: 2,
