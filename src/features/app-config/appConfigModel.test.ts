@@ -5,6 +5,7 @@ import {
   parseNumberInput,
   saveLabel,
   type NumberField,
+  type ToggleField,
 } from './appConfigModel'
 
 const field = (key: string) => FIELDS.find((f) => f.key === key)!
@@ -39,6 +40,9 @@ describe('appConfigModel', () => {
     )
     expect((field('story_native_ad_every') as NumberField).note(3)).toBe(
       'Ad card after every 3 questions',
+    )
+    expect((field('free_can_answer') as ToggleField).note(false)).toBe(
+      'Off · premium and trial only',
     )
     expect(fieldError(field('day_story_banner'), 1)).toBe('')
     expect(fieldError(field('day_story_banner'), 2)).toBe('Must be on or off')

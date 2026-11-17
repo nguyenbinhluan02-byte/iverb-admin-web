@@ -133,6 +133,13 @@ export const GROUPS: ConfigGroup[] = [
     sub: 'What new and free users can access before upgrading.',
     fields: [
       {
+        kind: 'toggle',
+        key: 'free_can_answer',
+        label: 'Free users can answer',
+        help: 'Signed-in users without premium answer daily questions like in the answer trial: answer, explanation and Community. Ads stay.',
+        note: (on) => (on ? 'On · everyone signed in' : 'Off · premium and trial only'),
+      },
+      {
         kind: 'number',
         key: 'answer_trial_days',
         label: 'Answer trial',

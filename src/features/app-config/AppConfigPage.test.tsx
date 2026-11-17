@@ -10,6 +10,7 @@ const saved: AppConfig = {
   story_native_ad_every: 3,
   day_story_banner: 1,
   question_interstitial_every: 2,
+  free_can_answer: 0,
   verb_detail_interstitial_every: 5,
   answer_trial_days: 30,
   lesson_preview_cards: 2,
@@ -18,8 +19,9 @@ const saved: AppConfig = {
 }
 const mutateAsync = vi.fn(async (v: Partial<AppConfig>) => ({ ...saved, ...v }))
 
+const useAppConfigData = { current: saved }
 vi.mock('@/services/appConfig', () => ({
-  useAppConfig: () => ({ data: saved, isLoading: false, error: null }),
+  useAppConfig: () => ({ data: useAppConfigData.current, isLoading: false, error: null }),
   useSaveAppConfig: () => ({ mutateAsync, isPending: false }),
 }))
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
@@ -61,6 +63,22 @@ describe('AppConfigPage', () => {
     expect(screen.getByText('Hidden')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Save 1 change' }))
     expect(mutateAsync).toHaveBeenCalledWith({ day_story_banner: 0 })
+  })
+
+  it('keys missing on the server are unavailable and do not block saving', async () => {
+    const user = userEvent.setup()
+    const { day_story_banner: _banner, ...older } = saved
+    void _banner
+    useAppConfigData.current = older as AppConfig
+    render(<AppConfigPage />)
+
+    expect(
+      screen.queryByRole('switch', { name: 'Banner in past-day story' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByText('Not on the server yet')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Increase Answer trial' }))
+    expect(screen.getByRole('button', { name: 'Save 1 change' })).toBeEnabled()
+    useAppConfigData.current = saved
   })
 
   it('blocks saving an invalid link; Discard resets', async () => {
