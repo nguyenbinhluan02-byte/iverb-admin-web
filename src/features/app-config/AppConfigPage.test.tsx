@@ -7,6 +7,8 @@ import { appConfigDraft } from './draftStore'
 const saved: AppConfig = {
   lesson_interstitial_every: 1,
   lesson_native_ad_every: 3,
+  story_native_ad_every: 3,
+  day_story_banner: 1,
   verb_detail_interstitial_every: 5,
   answer_trial_days: 30,
   lesson_preview_cards: 2,
@@ -45,6 +47,19 @@ describe('AppConfigPage', () => {
       lesson_preview_cards: 3,
     })
     expect(screen.getByRole('button', { name: 'Saved' })).toBeInTheDocument()
+  })
+
+  it('the story banner switch saves 0 / 1', async () => {
+    const user = userEvent.setup()
+    render(<AppConfigPage />)
+
+    const banner = screen.getByRole('switch', { name: 'Banner in past-day story' })
+    expect(banner).toHaveAttribute('aria-checked', 'true')
+    await user.click(banner)
+    expect(banner).toHaveAttribute('aria-checked', 'false')
+    expect(screen.getByText('Hidden')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Save 1 change' }))
+    expect(mutateAsync).toHaveBeenCalledWith({ day_story_banner: 0 })
   })
 
   it('blocks saving an invalid link; Discard resets', async () => {

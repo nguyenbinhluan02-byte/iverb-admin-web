@@ -34,6 +34,11 @@ describe('appConfigModel', () => {
     expect((field('lesson_native_ad_every') as NumberField).note(3)).toBe(
       'Ad card after every 3 lesson cards',
     )
+    expect((field('story_native_ad_every') as NumberField).note(3)).toBe(
+      'Ad card after every 3 questions',
+    )
+    expect(fieldError(field('day_story_banner'), 1)).toBe('')
+    expect(fieldError(field('day_story_banner'), 2)).toBe('Must be on or off')
     expect((field('answer_trial_days') as NumberField).note(0)).toBe('No trial')
     expect((field('lesson_preview_cards') as NumberField).note(1)).toBe(
       'First 1 card free, then Unlock',

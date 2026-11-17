@@ -7,6 +7,7 @@ import { type AppConfig, useAppConfig, useSaveAppConfig } from '@/services/appCo
 import {
   type ConfigField,
   type NumberField,
+  type ToggleField,
   type UrlField,
   FIELDS,
   GROUPS,
@@ -124,9 +125,45 @@ function FieldRow({
       </div>
       {field.kind === 'number' ? (
         <NumberControl field={field} value={Number(value)} onChange={onChange} />
+      ) : field.kind === 'toggle' ? (
+        <ToggleControl field={field} value={Number(value)} onChange={onChange} />
       ) : (
         <UrlControl field={field} value={String(value ?? '')} onChange={onChange} />
       )}
+    </div>
+  )
+}
+
+function ToggleControl({
+  field,
+  value,
+  onChange,
+}: {
+  field: ToggleField
+  value: number
+  onChange: (value: number) => void
+}) {
+  const on = value === 1
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="min-w-[58px] text-right text-[13px] font-bold text-muted">
+        {field.note(on)}
+      </span>
+      <button
+        id={field.key}
+        type="button"
+        role="switch"
+        aria-checked={on}
+        aria-label={field.label}
+        onClick={() => onChange(on ? 0 : 1)}
+        className={`relative h-7 w-12 rounded-full transition-colors ${on ? 'bg-brand' : 'bg-line-strong'}`}
+      >
+        <span
+          className={`absolute top-0.5 size-6 rounded-full bg-card shadow transition-transform ${
+            on ? 'translate-x-[22px]' : 'translate-x-0.5'
+          }`}
+        />
+      </button>
     </div>
   )
 }
