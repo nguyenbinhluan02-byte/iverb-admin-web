@@ -43,3 +43,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-037](./TASK-037-lesson-native-ad.md) | App config: ô "Inside lessons" (`lesson_native_ad_every`, card quảng cáo trong bài học) | done |
 | [TASK-038](./TASK-038-open-lessons.md) | App config: Lesson preview 0 = bài học mở cho mọi người (kể cả khách) | done |
 | [TASK-039](./TASK-039-story-ads.md) | App config: quảng cáo trong story câu hỏi (`story_native_ad_every`), công tắc banner story ngày cũ | done |
+| [TASK-041](./TASK-041-question-interstitial.md) | App config: quảng cáo toàn màn hình khi mở story câu hỏi (`question_interstitial_every`) | done |

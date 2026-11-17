@@ -34,6 +34,9 @@ describe('appConfigModel', () => {
     expect((field('lesson_native_ad_every') as NumberField).note(3)).toBe(
       'Ad card after every 3 lesson cards',
     )
+    expect((field('question_interstitial_every') as NumberField).note(2)).toBe(
+      'Ad on every 2nd story opened',
+    )
     expect((field('story_native_ad_every') as NumberField).note(3)).toBe(
       'Ad card after every 3 questions',
     )
