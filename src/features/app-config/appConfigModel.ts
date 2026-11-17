@@ -124,7 +124,14 @@ export const GROUPS: ConfigGroup[] = [
         kind: 'toggle',
         key: 'free_can_answer',
         label: 'Free users can answer',
-        help: 'Signed-in users without premium answer daily questions like in the answer trial: answer, explanation and Community. Ads stay.',
+        help: 'Signed-in users without premium answer daily questions like in the answer trial: answer and explanation. Ads stay.',
+        note: (on) => (on ? 'On · everyone signed in' : 'Off · premium and trial only'),
+      },
+      {
+        kind: 'toggle',
+        key: 'free_can_reply',
+        label: 'Free users can reply',
+        help: 'Signed-in users without premium reply to answers in Community. Apps before 3.2.0 show Reply but get an error when it is off.',
         note: (on) => (on ? 'On · everyone signed in' : 'Off · premium and trial only'),
       },
       {
