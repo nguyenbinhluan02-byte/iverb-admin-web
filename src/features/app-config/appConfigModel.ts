@@ -1,8 +1,8 @@
 import type { AppConfig, AppConfigKey } from '@/services/appConfig'
 
-// Design v3 "App config". Decided with the user (2026-11-09): the App versions
-// group is hidden (the app does not use those keys yet); the lesson ad counts
-// lesson opens, like the app does.
+// Design v3 "App config". The lesson ad counts lesson opens, like the app
+// does. App versions (hidden until app 3.2.0 used them, TASK-045): one
+// version for iOS and Android (user decision 2026-11-18).
 
 interface FieldBase {
   key: AppConfigKey
@@ -29,7 +29,13 @@ export interface ToggleField extends FieldBase {
   note: (on: boolean) => string
 }
 
-export type ConfigField = NumberField | UrlField | ToggleField
+/** Semver 'x.y.z' text, monospace (design v3 "App versions"). */
+export interface VersionField extends FieldBase {
+  kind: 'version'
+  placeholder: string
+}
+
+export type ConfigField = NumberField | UrlField | ToggleField | VersionField
 
 export interface ConfigGroup {
   title: string
@@ -191,6 +197,26 @@ export const GROUPS: ConfigGroup[] = [
     ],
   },
   {
+    title: 'App versions',
+    sub: 'Users below the minimum version must update before using the app. One version for iOS and Android: change it when both stores have the new build.',
+    fields: [
+      {
+        kind: 'version',
+        key: 'latest_version',
+        label: 'Latest version',
+        help: 'Users below this see an optional “Update available” prompt, once per version. 0.0.0 = off.',
+        placeholder: '3.2.0',
+      },
+      {
+        kind: 'version',
+        key: 'min_supported_version',
+        label: 'Minimum version',
+        help: 'Users below this must update: the app is blocked until they do. 0.0.0 = off.',
+        placeholder: '3.0.0',
+      },
+    ],
+  },
+  {
     title: 'Legal links',
     sub: 'Opened from Settings and the sign-up screen.',
     fields: [
@@ -222,9 +248,38 @@ export const parseNumberInput = (text: string, field: NumberField) => {
   return clamp(Number.isNaN(n) ? 0 : n, field.min, field.max)
 }
 
-/** '' when valid. Same rule as the server (admin_save_app_config). */
-export function fieldError(field: ConfigField, value: AppConfig[AppConfigKey] | undefined): string {
+const SEMVER = /^\d{1,6}\.\d{1,6}\.\d{1,6}$/
+
+/** -1 / 0 / 1, both 'x.y.z'. */
+export const compareVersions = (a: string, b: string) => {
+  const pa = a.split('.').map(Number)
+  const pb = b.split('.').map(Number)
+  for (let i = 0; i < 3; i++) {
+    if (pa[i] !== pb[i]) return pa[i] < pb[i] ? -1 : 1
+  }
+  return 0
+}
+
+/** '' when valid. Same rules as the server (admin_save_app_config), which
+ * also checks min ≤ latest (needs the other values). */
+export function fieldError(
+  field: ConfigField,
+  value: AppConfig[AppConfigKey] | undefined,
+  values?: Partial<AppConfig>,
+): string {
   if (field.kind === 'toggle') return value === 0 || value === 1 ? '' : 'Must be on or off'
+  if (field.kind === 'version') {
+    if (typeof value !== 'string' || !SEMVER.test(value)) return 'Use a version like 3.2.0'
+    const latest = values?.latest_version
+    if (
+      field.key === 'min_supported_version' &&
+      typeof latest === 'string' &&
+      SEMVER.test(latest) &&
+      compareVersions(value, latest) > 0
+    )
+      return "Can't be higher than the latest version"
+    return ''
+  }
   if (field.kind === 'url')
     return typeof value === 'string' && /^https:\/\/\S+\.\S+$/.test(value)
       ? ''

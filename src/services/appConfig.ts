@@ -17,6 +17,8 @@ export interface AppConfig {
   lesson_preview_cards: number
   privacy_url: string
   terms_url: string
+  latest_version: string
+  min_supported_version: string
 }
 
 export type AppConfigKey = keyof AppConfig
