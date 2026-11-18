@@ -35,7 +35,15 @@ export interface VersionField extends FieldBase {
   placeholder: string
 }
 
-export type ConfigField = NumberField | UrlField | ToggleField | VersionField
+/** Text, one item per line (backend rule kind 'lines', TASK-046). */
+export interface LinesField extends FieldBase {
+  kind: 'lines'
+  maxLines: number
+  maxLength: number
+  placeholder: string
+}
+
+export type ConfigField = NumberField | UrlField | ToggleField | VersionField | LinesField
 
 export interface ConfigGroup {
   title: string
@@ -208,6 +216,15 @@ export const GROUPS: ConfigGroup[] = [
         placeholder: '3.2.0',
       },
       {
+        kind: 'lines',
+        key: 'latest_version_notes',
+        label: "What's new in the latest version",
+        help: 'Listed in the “Update available” prompt, one feature per line. Empty = a short generic sentence.',
+        maxLines: 5,
+        maxLength: 80,
+        placeholder: 'Saved tab for lessons, words and questions\nDaily Quiz in two steps',
+      },
+      {
         kind: 'version',
         key: 'min_supported_version',
         label: 'Minimum version',
@@ -268,6 +285,14 @@ export function fieldError(
   values?: Partial<AppConfig>,
 ): string {
   if (field.kind === 'toggle') return value === 0 || value === 1 ? '' : 'Must be on or off'
+  if (field.kind === 'lines') {
+    if (typeof value !== 'string') return 'Must be text'
+    const lines = value.split('\n')
+    if (value && lines.length > field.maxLines) return `At most ${field.maxLines} lines`
+    if (lines.some((l) => l.length > field.maxLength))
+      return `At most ${field.maxLength} characters per line`
+    return ''
+  }
   if (field.kind === 'version') {
     if (typeof value !== 'string' || !SEMVER.test(value)) return 'Use a version like 3.2.0'
     const latest = values?.latest_version

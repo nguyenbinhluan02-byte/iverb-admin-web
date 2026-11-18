@@ -19,6 +19,7 @@ export interface AppConfig {
   terms_url: string
   latest_version: string
   min_supported_version: string
+  latest_version_notes: string
 }
 
 export type AppConfigKey = keyof AppConfig

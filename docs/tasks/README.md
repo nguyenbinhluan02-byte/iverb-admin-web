@@ -49,3 +49,4 @@ Mẫu: [`_TEMPLATE.md`](./_TEMPLATE.md). Mỗi task có phần FE (repo này) v�
 | [TASK-043](./TASK-043-free-can-reply.md) | App config: công tắc "Free users can reply" (`free_can_reply`) | done |
 | [TASK-044](./TASK-044-reply-push-window.md) | App config: "Reply push window" (`reply_push_window_minutes`) | done |
 | [TASK-045](./TASK-045-app-versions.md) | App config: nhóm "App versions" (`latest_version`, `min_supported_version`) cho nhắc / bắt buộc cập nhật | done |
+| [TASK-046](./TASK-046-update-notes.md) | App config: "What's new in the latest version" (`latest_version_notes`, ≤ 5 dòng × 80 ký tự) | done |
