@@ -9,6 +9,7 @@ import {
   type NumberField,
   type ToggleField,
   type UrlField,
+  type VersionField,
   FIELDS,
   GROUPS,
   clamp,
@@ -31,7 +32,9 @@ export function AppConfigPage() {
   const changed = FIELDS.filter((f) => f.key in draft)
   // Keys the server does not have yet (backend not deployed) are shown as
   // unavailable and never block saving the others.
-  const hasErrors = FIELDS.some((f) => saved[f.key] !== undefined && fieldError(f, values[f.key]))
+  const hasErrors = FIELDS.some(
+    (f) => saved[f.key] !== undefined && fieldError(f, values[f.key], values),
+  )
   const canSave = changed.length > 0 && !hasErrors && !save.isPending
 
   const onSave = async () => {
@@ -81,6 +84,7 @@ export function AppConfigPage() {
               savedValue={saved[field.key]}
               edited={field.key in draft}
               first={i === 0}
+              values={values}
               onChange={(v) => appConfigDraft.set(field.key, v as never, saved)}
             />
           ))}
@@ -96,6 +100,7 @@ function FieldRow({
   savedValue,
   edited,
   first,
+  values,
   onChange,
 }: {
   field: ConfigField
@@ -103,6 +108,7 @@ function FieldRow({
   savedValue: number | string | undefined
   edited: boolean
   first: boolean
+  values: AppConfig
   onChange: (value: number | string) => void
 }) {
   return (
@@ -131,6 +137,13 @@ function FieldRow({
         <NumberControl field={field} value={Number(value)} onChange={onChange} />
       ) : field.kind === 'toggle' ? (
         <ToggleControl field={field} value={Number(value)} onChange={onChange} />
+      ) : field.kind === 'version' ? (
+        <VersionControl
+          field={field}
+          value={String(value ?? '')}
+          error={fieldError(field, value, values)}
+          onChange={onChange}
+        />
       ) : (
         <UrlControl field={field} value={String(value ?? '')} onChange={onChange} />
       )}
@@ -217,6 +230,39 @@ function NumberControl({
       <span className={`text-xs font-bold ${value === 0 ? 'text-brand-deeper' : 'text-muted'}`}>
         {field.note(value)}
       </span>
+    </div>
+  )
+}
+
+function VersionControl({
+  field,
+  value,
+  error,
+  onChange,
+}: {
+  field: VersionField
+  value: string
+  error: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <div className="flex flex-col items-end gap-1.5">
+      <input
+        id={field.key}
+        value={value}
+        placeholder={field.placeholder}
+        inputMode="decimal"
+        onChange={(e) => onChange(e.target.value.trim())}
+        aria-invalid={!!error}
+        className={`h-10 w-[140px] rounded-[10px] border-[1.5px] bg-card px-3 text-right font-mono text-sm ${
+          error ? 'border-red' : 'border-line-strong'
+        }`}
+      />
+      {error ? (
+        <span className="text-xs font-bold text-red-text">{error}</span>
+      ) : (
+        value === '0.0.0' && <span className="text-xs font-bold text-brand-deeper">Off</span>
+      )}
     </div>
   )
 }

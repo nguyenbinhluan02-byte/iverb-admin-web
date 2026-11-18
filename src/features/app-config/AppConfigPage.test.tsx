@@ -18,6 +18,8 @@ const saved: AppConfig = {
   lesson_preview_cards: 2,
   privacy_url: 'https://example.com/privacy',
   terms_url: 'https://example.com/terms',
+  latest_version: '3.2.0',
+  min_supported_version: '0.0.0',
 }
 const mutateAsync = vi.fn(async (v: Partial<AppConfig>) => ({ ...saved, ...v }))
 
@@ -39,7 +41,7 @@ describe('AppConfigPage', () => {
     render(<AppConfigPage />)
 
     expect(screen.getByRole('button', { name: 'Saved' })).toBeDisabled()
-    expect(screen.queryByText('App versions')).not.toBeInTheDocument()
+    expect(screen.getByText('App versions')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Decrease On lessons' }))
     expect(screen.getByText('Off · no full-screen ads')).toBeInTheDocument()
@@ -96,6 +98,30 @@ describe('AppConfigPage', () => {
     await user.click(screen.getByRole('button', { name: 'Discard' }))
     expect(screen.getByLabelText('Privacy policy')).toHaveValue('https://example.com/privacy')
     expect(screen.getByRole('button', { name: 'Saved' })).toBeDisabled()
+  })
+
+  it('app versions: semver only, minimum not above latest', async () => {
+    const user = userEvent.setup()
+    render(<AppConfigPage />)
+
+    const min = screen.getByLabelText('Minimum version')
+    await user.clear(min)
+    await user.type(min, '3.2')
+    expect(screen.getByText('Use a version like 3.2.0')).toBeInTheDocument()
+
+    await user.clear(min)
+    await user.type(min, '3.10.0')
+    expect(screen.getByText("Can't be higher than the latest version")).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Fix errors to save' })).toBeDisabled()
+
+    const latest = screen.getByLabelText('Latest version')
+    await user.clear(latest)
+    await user.type(latest, '3.10.0')
+    await user.click(screen.getByRole('button', { name: 'Save 2 changes' }))
+    expect(mutateAsync).toHaveBeenCalledWith({
+      latest_version: '3.10.0',
+      min_supported_version: '3.10.0',
+    })
   })
 
   it('setting a value back to the saved one is not a change', async () => {
