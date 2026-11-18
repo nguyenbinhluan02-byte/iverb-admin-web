@@ -10,6 +10,7 @@ import {
   type ToggleField,
   type UrlField,
   type VersionField,
+  type LinesField,
   FIELDS,
   GROUPS,
   clamp,
@@ -137,6 +138,13 @@ function FieldRow({
         <NumberControl field={field} value={Number(value)} onChange={onChange} />
       ) : field.kind === 'toggle' ? (
         <ToggleControl field={field} value={Number(value)} onChange={onChange} />
+      ) : field.kind === 'lines' ? (
+        <LinesControl
+          field={field}
+          value={String(value ?? '')}
+          error={fieldError(field, value, values)}
+          onChange={onChange}
+        />
       ) : field.kind === 'version' ? (
         <VersionControl
           field={field}
@@ -229,6 +237,39 @@ function NumberControl({
       </div>
       <span className={`text-xs font-bold ${value === 0 ? 'text-brand-deeper' : 'text-muted'}`}>
         {field.note(value)}
+      </span>
+    </div>
+  )
+}
+
+function LinesControl({
+  field,
+  value,
+  error,
+  onChange,
+}: {
+  field: LinesField
+  value: string
+  error: string
+  onChange: (value: string) => void
+}) {
+  const count = value ? value.split('\n').length : 0
+  return (
+    <div className="flex max-w-[420px] flex-[1_1_300px] flex-col gap-1.5">
+      <textarea
+        id={field.key}
+        value={value}
+        rows={field.maxLines}
+        placeholder={field.placeholder}
+        onChange={(e) => onChange(e.target.value.replace(/\r/g, ''))}
+        onBlur={() => onChange(value.split('\n').map((l) => l.trim()).filter(Boolean).join('\n'))}
+        aria-invalid={!!error}
+        className={`min-h-[120px] w-full resize-y rounded-[10px] border-[1.5px] bg-card px-3 py-2 text-sm leading-5 ${
+          error ? 'border-red' : 'border-line-strong'
+        }`}
+      />
+      <span className={`text-xs font-bold ${error ? 'text-red-text' : 'text-muted'}`}>
+        {error || `${count}/${field.maxLines} lines · ${field.maxLength} characters each`}
       </span>
     </div>
   )

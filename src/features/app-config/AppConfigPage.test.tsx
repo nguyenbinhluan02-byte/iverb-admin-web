@@ -20,6 +20,7 @@ const saved: AppConfig = {
   terms_url: 'https://example.com/terms',
   latest_version: '3.2.0',
   min_supported_version: '0.0.0',
+  latest_version_notes: '',
 }
 const mutateAsync = vi.fn(async (v: Partial<AppConfig>) => ({ ...saved, ...v }))
 
@@ -122,6 +123,26 @@ describe('AppConfigPage', () => {
       latest_version: '3.10.0',
       min_supported_version: '3.10.0',
     })
+  })
+
+  it("what's new lines: at most 5 lines of 80 characters, trimmed on blur", async () => {
+    const user = userEvent.setup()
+    render(<AppConfigPage />)
+
+    const notes = screen.getByLabelText("What's new in the latest version")
+    await user.type(notes, '1{Enter}2{Enter}3{Enter}4{Enter}5{Enter}6')
+    expect(screen.getByText('At most 5 lines')).toBeInTheDocument()
+
+    await user.clear(notes)
+    await user.type(notes, 'x'.repeat(81))
+    expect(screen.getByText('At most 80 characters per line')).toBeInTheDocument()
+
+    await user.clear(notes)
+    await user.type(notes, '  Saved tab {Enter}{Enter}Daily Quiz')
+    await user.tab()
+    expect(notes).toHaveValue('Saved tab\nDaily Quiz')
+    await user.click(screen.getByRole('button', { name: 'Save 1 change' }))
+    expect(mutateAsync).toHaveBeenCalledWith({ latest_version_notes: 'Saved tab\nDaily Quiz' })
   })
 
   it('setting a value back to the saved one is not a change', async () => {
